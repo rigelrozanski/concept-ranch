@@ -6,55 +6,66 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rigelrozanski/wb/lib"
+	"github.com/rigelrozanski/wt/lib"
 )
 
-//keywords used throughout wb
+//keywords used throughout wt
 const (
+	keyView       = "cat"
 	keyNew        = "new"
 	keyCopy       = "cp"
-	keyRename     = "rename"
-	keyView       = "cat"
 	keyRemove     = "rm"
+	keyTags       = "tags"
+	keyKillTag    = "kill-tag"
+	keyAddTag     = "add-tag"
+	keyRenameTag  = "rename-tag"
+	keyDestroyTag = "destroy-tag"
 	keyRecover    = "recover"
 	keyEmptyTrash = "empty-trash"
+	keyListTrash  = "ls-trash"
 	keyList       = "ls"
 	keyLog        = "log"
-	keyStats      = "stats"
 	keyPush       = "push"
 
 	keyHelp1 = "--help"
 	keyHelp2 = "-h"
 
-	defaultWB   = "wb"
-	lsWB        = "lsls"
-	logWB       = "loglog"
-	shortcutsWB = "shortcuts"
+	logWT       = "loglog"
+	shortcutsWT = "shortcuts"
+
+	// filestructure: 123456_YYYYMMDD_eYYYYMMDD_cYYYYMMDD_tag_tag_tag_tag...
+	// 123456 = id
+	// YYYYMMDD = creation date
+	// eYYYYMMDD = edited date
+	// cYYYYMMDD = consumed date
 
 	help = `
 /|||||\ |-o-o-~|
-
 Usage: 
-
-wb [name]               -> vim into a wb
-wb [name] [entry]       -> fast entry appended as new line in wb
-wb new [name]           -> create a new wb
-wb cp [copy] [name]     -> duplicate a wb
-wb rename [old] [name]  -> rename a wb
-wb cat [name]           -> print wb contents to console
-wb rm [name]            -> remove a wb (add to trash)
-wb recover [name]       -> remove a wb from trash
-wb empty-trash          -> empty trash
-wb ls                   -> list all the wb in console
-wb log                  -> list the log
-wb stats                -> list git statistics per wb
-wb push [msg]           -> git push the boards directory
-
+here [query] field can either be populated with an id aka a 6 digit number such
+as "123456" or a list of tags seperated by commas such as "tag1,tag2,tag3..."
+wt [query]                 -> open a vim tab with the contents of the query 
+wt cat [query]             -> print wt contents to console with provide tags
+wt [tag1,tag2...] [entry]  -> fast entry appended as new line in wt
+wt new [tag1,tag2...]      -> create a new wt with the provided tags
+wt cp [id]                 -> duplicate a wt at the provided id
+wt rm [id]                 -> remove a wt by id (add to the trash)
+wt tags [id]               -> list the tags at an id 
+wt kill-tag [id]           -> remove a tag from a wt by id
+wt add-tag [id]            -> add a tag from a wt by id
+wt rename-tag [id]         -> rename all instances of a tag for all wbs
+wt destroy-tag [id]        -> remove all instances of a tag for all wbs
+wt recover [id]            -> recover a wt from trash
+wt empty-trash             -> empty trash
+wt ls-trash                -> list trash ids
+wt ls                      -> list all the wt tags 
+wt log                     -> list the log
+wt push [msg]              -> git push the boards directory
 notes:
-- if the [name] is not provided, 
-  the default board named 'wb' will be used
-- special reserved wb names: wb, lsls, loglog
-
+- if a tag is not provided then the the default empty "" tag is used,
+  the default board named 'wt' will be used
+- special reserved wt names: wt, lsls, loglog
+- tags cannot include underscores (_)
 `
 )
 
@@ -64,7 +75,7 @@ func main() {
 	var err error
 	switch len(args) {
 	case 0:
-		err = edit(defaultWB)
+		err = edit(defaultWT)
 	case 1:
 		err = handle1Args(args)
 	case 2:
@@ -90,9 +101,9 @@ func handle1Args(args []string) (err error) {
 		fmt.Println(help)
 	case keyPush:
 		err = push(fmt.Sprintf("%v", time.Now()))
-		lib.MustClearWB(logWB)
+		lib.MustClearWT(logWT)
 	case keyView:
-		err = view(defaultWB)
+		err = view(defaultWT)
 	case keyList:
 		err = list()
 	case keyEmptyTrash:
@@ -145,7 +156,7 @@ func handle2Args(args []string) error {
 	switch {
 	case Bnew:
 		name := args[boardArg]
-		return freshWB(name)
+		return freshWT(name)
 	case Bview:
 		return view(args[boardArg])
 	case Bdelete:
