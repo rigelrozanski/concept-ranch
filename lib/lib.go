@@ -12,7 +12,33 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
+
+	dbm "github.com/tendermint/tm-db"
 )
+
+var db dbm.DB
+
+func init() {
+	var err error
+	db, err = NewLevelDB("wt", "./wtdb/")
+	if err != nil {
+		panic(err)
+	}
+}
+
+// NewLevelDB instantiate a new LevelDB instance according to DBBackend.
+func NewLevelDB(name, dir string) (db dbm.DB, err error) {
+	backend := dbm.GoLevelDBBackend
+	if DBBackend == string(dbm.CLevelDBBackend) {
+		backend = dbm.CLevelDBBackend
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("couldn't create db: %v", r)
+		}
+	}()
+	return dbm.NewDB(name, backend, dir), err
+}
 
 // directory name where boards are stored in repo
 var (
