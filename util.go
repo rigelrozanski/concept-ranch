@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rigelrozanski/wb/lib"
+	"github.com/rigelrozanski/qi/lib"
 
 	cmn "github.com/rigelrozanski/common"
 )
@@ -135,32 +135,6 @@ func remove(name string) error {
 	return nil
 }
 
-func recoverWb(name string) error {
-	err := lib.RecoverWbFromTrash(name)
-	if err != nil {
-		return err
-	}
-
-	err = lib.AddToLS(lsWB, name)
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("roger, recovered")
-	log("recovered wb", name)
-	return nil
-}
-
-func emptyTrash() error {
-	err := lib.EmptyTrash()
-	if err != nil {
-		return err
-	}
-	fmt.Println("roger, emptied the trash")
-	log("emptied trash", "n/a")
-	return nil
-}
-
 func freshWB(name string) error {
 	wbPath, err := lib.GetWbPath(name)
 	if err != nil {
@@ -190,30 +164,6 @@ func freshWB(name string) error {
 	}
 	log("created wb", name)
 	return nil
-}
-
-func getNameFromShortcut(shortcutName string) (name string, err error) {
-	shortcuts, foundSC := lib.GetWB(shortcutsWB)
-	if !foundSC {
-		return "", fmt.Errorf("that wb is not found (nor the shortcuts)")
-	}
-
-	shortcutFound := false
-	for _, shortcut := range shortcuts {
-		str := strings.Fields(shortcut)
-		if len(str) < 3 {
-			continue
-		}
-		if str[0] == shortcutName && str[1] == "->" { // shortcut found
-			shortcutFound = true
-			name = str[2]
-			break
-		}
-	}
-	if !shortcutFound {
-		return "", fmt.Errorf("error can't edit non-existent white board, please create it first by using %v", keyNew)
-	}
-	return name, nil
 }
 
 func edit(name string) (err error) {
@@ -356,32 +306,5 @@ func view(name string) error {
 		}
 		fmt.Println(string(wb))
 	}
-	return nil
-}
-
-func push(commitMsg string) error {
-	if commitMsg == "" {
-		commitMsg = "wb commit"
-	}
-	wbBackupDir, err := lib.GetWbBackupRepoPath()
-	if err != nil {
-		return err
-	}
-	shPath, err := cmn.GetRelPath("/src/github.com/rigelrozanski/wb", "push.sh")
-	if err != nil {
-		return err
-	}
-	cmn.WriteLines([]string{`#!/bin/bash
-git -C "` + wbBackupDir + `" add -A
-git -C "` + wbBackupDir + `" commit -m "` + commitMsg + `"
-git -C "` + wbBackupDir + `" push
-		`}, shPath)
-	cmd := exec.Command("/bin/bash", shPath)
-	_, err = cmd.Output()
-	if err != nil {
-		return err
-	}
-	fmt.Println("backup git push complete!")
-	log("pushed", "n/a")
 	return nil
 }
