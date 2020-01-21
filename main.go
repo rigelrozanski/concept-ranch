@@ -60,7 +60,6 @@ qi rename-tag [id] ----------------------> rename all instances of a tag for all
 qi add-tag [id] -------------------------> add a tag from an idea by id
 qi destroy-tag --------------------------> remove all instances of a tag for all ideas
 qi ls -----------------------------------> list all tags used
-qi log ----------------------------------> list the log
 qi pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -97,7 +96,7 @@ func main() {
 	case keyHelp1, keyHelp2:
 		fmt.Println(help)
 	case keyCat:
-
+		QuickEntry(args[1], strings.Join(args[2:], " "))
 	case keyScan:
 
 	case keyTranscribe:
@@ -127,16 +126,10 @@ func main() {
 	case keyLs:
 		ListAllTags()
 
-	case keyLog:
-
 	default:
 		if len(args) == 1 { // quick query
 			QuickQuery(args[0])
 		} else if len(args) >= 2 { // quick entry
-			//var entry string
-			//for i := 1; i < len(args); i++ {
-			//entry += " " + args[i]
-			//}
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}
