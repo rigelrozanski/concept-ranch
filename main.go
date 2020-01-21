@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 // filestructure:
@@ -129,14 +130,14 @@ func main() {
 	case keyLog:
 
 	default:
-		if len(args) == 2 { // quick query
-			QuickQuery(args[1])
-		} else if len(args) >= 3 { // quick entry
-			var entry string
-			for i := 2; i < len(args); i++ {
-				entry += " " + args[i]
-			}
-			QuickEntry(args[1], entry)
+		if len(args) == 1 { // quick query
+			QuickQuery(args[0])
+		} else if len(args) >= 2 { // quick entry
+			//var entry string
+			//for i := 1; i < len(args); i++ {
+			//entry += " " + args[i]
+			//}
+			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}
 	if err != nil {

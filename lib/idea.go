@@ -16,6 +16,8 @@ const (
 	kindText  = "text"
 )
 
+var zeroDate time.Time
+
 //_______________
 
 type Ideas []Idea
@@ -71,14 +73,14 @@ func (idea *Idea) CreateFilename() {
 
 	ConsumedDate := alive
 	if !idea.IsConsumed {
-		ConsumedDate = idea.Consumed.Format(layout)
+		ConsumedDate = "c" + idea.Consumed.Format(layout)
 	}
 
 	strList := []string{
 		strconv.Itoa(int(idea.Id)),
 		"c" + strconv.Itoa(int(idea.ConsumesId)),
 		idea.Created.Format(layout),
-		idea.Edited.Format(layout),
+		"e" + idea.Edited.Format(layout),
 		ConsumedDate}
 	strList = append(strList, idea.Tags...)
 
@@ -119,6 +121,7 @@ func (idea Idea) HasTags(tags []string) bool {
 		hasTag := false
 		for _, ideaTag := range idea.Tags {
 			if tag == ideaTag {
+				hasTag = true
 				continue
 			}
 		}

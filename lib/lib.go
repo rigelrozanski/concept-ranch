@@ -8,23 +8,15 @@ import (
 	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	cmn "github.com/rigelrozanski/common"
 )
 
 // directory name where boards are stored in repo
 var QiDir, IdeasDir, ConsumedDir, QiFile, LogFile, ConfigFile, WorkingFile string
-var zeroDate time.Time
 
 // load config and set global file directories
-func Init() {
-
-	zd, err := time.Parse(layout, "0")
-	if err != nil {
-		log.Fatal(err)
-	}
-	zeroDate = zd
+func init() {
 
 	rootConfigPath := os.ExpandEnv("$HOME/.qi_config.txt")
 	lines, err := cmn.ReadLines(rootConfigPath)
@@ -85,7 +77,7 @@ func GetNextID() uint32 {
 	if err != nil {
 		panic(fmt.Sprintf("error reading id_counter, error: %v", err))
 	}
-	return uint32(count)
+	return uint32(count + 1)
 }
 
 func IncrementID() {
@@ -122,19 +114,19 @@ func GetByID(id uint32) (content []byte, found bool) {
 	return content, true
 }
 
-func GetByTags(tags ...string) (content []byte, found bool) {
-	ideas := PathToIdeas(IdeasDir)
+func GetByTags(dir string, tags []string) (content []byte, found bool) {
+	ideas := PathToIdeas(dir)
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
 		return content, false
 	}
 	for _, idea := range subset {
-		ideaContent, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
+		ideaContent, err := ioutil.ReadFile(path.Join(dir, idea.Filename))
 		if err != nil {
 			log.Fatal(err)
 		}
 		content = append(content, ideaContent...)
 	}
-	return content, found
+	return content, true
 }

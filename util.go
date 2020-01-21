@@ -15,7 +15,7 @@ func QuickQuery(unsplitTags string) {
 	ViewByTags(splitTags)
 }
 
-func QuickEntry(entry, unsplitTags string) {
+func QuickEntry(unsplitTags, entry string) {
 	splitTags := strings.Split(unsplitTags, ",")
 	Entry(entry, splitTags)
 }
@@ -28,11 +28,11 @@ func ListAllTags() {
 }
 
 func ViewByTags(tags []string) {
-	content, found := lib.GetByTags(lib.IdeasDir)
+	content, found := lib.GetByTags(lib.IdeasDir, tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
-	fmt.Printf("%v\n", content)
+	fmt.Printf("%s\n", content)
 }
 
 func RemoveById(id uint32) error {
