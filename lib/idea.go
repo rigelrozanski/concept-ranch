@@ -181,8 +181,8 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	}
 
 	// get tag(s)
-	if ri == len(split)-1 {
-		log.Fatal("no tags")
+	if ri == len(split) {
+		log.Fatalf("no tags on file: %v", filename)
 	}
 	for ; ri < len(split); ri++ {
 		idea.Tags = append(idea.Tags, split[ri])

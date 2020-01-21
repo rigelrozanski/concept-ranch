@@ -18,6 +18,14 @@ func QuickQuery(unsplitTags string) {
 	ViewByTags(splitTags)
 }
 
+func NewEmptyEntry(unsplitTags string) {
+	splitTags := strings.Split(unsplitTags, ",")
+	idea := lib.NewNonConsumingTextIdea(splitTags)
+	writePath := path.Join(lib.IdeasDir, idea.Filename)
+	lib.IncrementID()
+	openText(writePath)
+}
+
 func QuickEntry(unsplitTags, entry string) {
 	splitTags := strings.Split(unsplitTags, ",")
 	Entry(entry, splitTags)

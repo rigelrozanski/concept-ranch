@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -50,7 +51,7 @@ qi cat [query] --------------------------> print idea(s) contents' to console
 qi scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qi transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
 qi transcribe-many [op_tags] ------------> transcribe many images one after another, optionally transcribe within a set of tags
-qi consume [id] [op_entry] --------------> consumes the given id into a 
+qi consume [id] [entry] -----------------> consumes the given id into a new entry
 qi consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
 qi new [tags] ---------------------------> create a new idea with the provided tags
 qi rm [id] ------------------------------> remove an idea by id
@@ -107,6 +108,8 @@ func main() {
 	case keyConsumes:
 
 	case keyNew:
+		EnsureLen(args, 2)
+		NewEmptyEntry(args[1])
 
 	case keyRm:
 
@@ -134,5 +137,11 @@ func main() {
 	}
 	if err != nil {
 		fmt.Println(err)
+	}
+}
+
+func EnsureLen(args []string, enLen int) {
+	if len(args) < enLen {
+		log.Fatalf("expected %v args", enLen)
 	}
 }
