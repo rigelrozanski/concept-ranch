@@ -11,29 +11,23 @@ import (
 )
 
 func QuickQuery(unsplitTags string) {
-	splitTags, err := strings.Split(unsplitTags, ",")
-	if err != nil {
-		log.Fatal(err)
-	}
+	splitTags := strings.Split(unsplitTags, ",")
 	ViewByTags(splitTags)
 }
 
 func QuickEntry(entry, unsplitTags string) {
-	splitTags, err := strings.Split(unsplitTags, ",")
-	if err != nil {
-		log.Fatal(err)
-	}
+	splitTags := strings.Split(unsplitTags, ",")
 	Entry(entry, splitTags)
 }
 
 //__________________
 
 func ListAllTags() {
-	ideas := lib.GetIdeas(lib.IdeasDir)
-	fmt.Println(ideas.GetUnique())
+	ideas := lib.PathToIdeas(lib.IdeasDir)
+	fmt.Println(ideas.UniqueTags())
 }
 
-func ViewByTags(tags ...string) {
+func ViewByTags(tags []string) {
 	content, found := lib.GetByTags(lib.IdeasDir)
 	if !found {
 		fmt.Println("nothing found with those tags")
@@ -42,6 +36,7 @@ func ViewByTags(tags ...string) {
 }
 
 func RemoveById(id uint32) error {
+	return nil
 }
 
 //func edit(name string) (err error) {
@@ -78,7 +73,7 @@ func RemoveById(id uint32) error {
 //return nil
 //}
 
-func Entry(entry string, tags ...string) {
+func Entry(entry string, tags []string) {
 
 	idea := lib.NewNonConsumingIdea(tags)
 	writePath := path.Join(lib.IdeasDir, idea.Filename)

@@ -3,8 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-
-	"github.com/rigelrozanski/qi/lib"
 )
 
 // filestructure:
@@ -87,10 +85,10 @@ func main() {
 
 	// for the master quick entry
 	if len(args) == 1 {
-		err = edit(defaultQI)
-	}
-	if err != nil {
-		fmt.Println(err)
+		//err := edit(defaultQI)
+		//if err != nil {
+		//fmt.Println(err)
+		//}
 	}
 
 	var err error
@@ -126,7 +124,7 @@ func main() {
 	case keyDestroyTag:
 
 	case keyLs:
-		lib.ListAllTags()
+		ListAllTags()
 
 	case keyLog:
 

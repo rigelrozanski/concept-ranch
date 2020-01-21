@@ -8,15 +8,23 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	cmn "github.com/rigelrozanski/common"
 )
 
 // directory name where boards are stored in repo
 var QiDir, IdeasDir, ConsumedDir, QiFile, LogFile, ConfigFile, WorkingFile string
+var zeroDate time.Time
 
 // load config and set global file directories
 func Init() {
+
+	zd, err := time.Parse(layout, "0")
+	if err != nil {
+		log.Fatal(err)
+	}
+	zeroDate = zd
 
 	rootConfigPath := os.ExpandEnv("$HOME/.qi_config.txt")
 	lines, err := cmn.ReadLines(rootConfigPath)
@@ -69,14 +77,15 @@ func EnsureBasics() {
 }
 
 func GetNextID() uint32 {
-	lines, err = cmn.ReadLines(ConfigFile)
+	lines, err := cmn.ReadLines(ConfigFile)
 	if err != nil {
 		panic(fmt.Sprintf("error reading config, error: %v", err))
 	}
-	IdCounter, err = uint32(strconv.Atoi(lines[0]))
+	count, err := strconv.Atoi(lines[0])
 	if err != nil {
 		panic(fmt.Sprintf("error reading id_counter, error: %v", err))
 	}
+	return uint32(count)
 }
 
 func IncrementID() {
@@ -93,10 +102,10 @@ func GetByID(id uint32) (content []byte, found bool) {
 	}
 
 	fileName := ""
-	idStr := strconv.Itoa(id)
+	idStr := strconv.Itoa(int(id))
 	for _, file := range files {
 		fn := file.Name()
-		if strings.HasPrefix(idStr) {
+		if strings.HasPrefix(fn, idStr) {
 			fileName = fn
 			break
 		}
@@ -105,7 +114,7 @@ func GetByID(id uint32) (content []byte, found bool) {
 		return content, false
 	}
 
-	content, err = ioutil.ReadFile(path.Join(IdeasDir, fn))
+	content, err = ioutil.ReadFile(path.Join(IdeasDir, fileName))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -115,17 +124,17 @@ func GetByID(id uint32) (content []byte, found bool) {
 
 func GetByTags(tags ...string) (content []byte, found bool) {
 	ideas := PathToIdeas(IdeasDir)
-	subset := idea.WithTags(tags)
+	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
 		return content, false
 	}
 	for _, idea := range subset {
-		ideaContent, err = ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
+		ideaContent, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
 		if err != nil {
 			log.Fatal(err)
 		}
-		content += ideaContent
+		content = append(content, ideaContent...)
 	}
 	return content, found
 }

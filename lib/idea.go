@@ -16,6 +16,8 @@ const (
 	kindText  = "text"
 )
 
+//_______________
+
 type Ideas []Idea
 
 func PathToIdeas(dir string) (ideas Ideas) {
@@ -29,8 +31,8 @@ func PathToIdeas(dir string) (ideas Ideas) {
 	return ideas
 }
 
-func (is Ideas) WithTags(tags ...string) (subset Ideas) {
-	for _, idea := range is {
+func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
+	for _, idea := range ideas {
 		if idea.HasTags(tags) {
 			subset = append(subset, idea)
 		}
@@ -38,9 +40,9 @@ func (is Ideas) WithTags(tags ...string) (subset Ideas) {
 	return subset
 }
 
-func (is Ideas) UniqueTags() []string {
+func (ideas Ideas) UniqueTags() []string {
 	tags := make(map[string]string)
-	for _, idea := range is {
+	for _, idea := range ideas {
 		for _, tag := range idea.Tags {
 			tags[tag] = ""
 		}
@@ -54,8 +56,8 @@ func (is Ideas) UniqueTags() []string {
 
 type Idea struct {
 	Filename   string
-	Id         uint64
-	ConsumesId uint64 // Id of idea which this idea consumes
+	Id         uint32
+	ConsumesId uint32 // Id of idea which this idea consumes
 	Kind       string // kind of information
 	IsConsumed bool
 	Created    time.Time
@@ -65,22 +67,22 @@ type Idea struct {
 }
 
 // creates the filename based on idea information
-func (i *Idea) CreateFilename() {
+func (idea *Idea) CreateFilename() {
 
 	ConsumedDate := alive
-	if !IsConsumed {
-		ConsumedDate = Consumed.Format(layout)
+	if !idea.IsConsumed {
+		ConsumedDate = idea.Consumed.Format(layout)
 	}
 
 	strList := []string{
-		strconv.Itoa(int(i.Id)),
-		"c" + strconv.Itoa(int(i.ConsumesId)),
-		Created.Format(layout),
-		Edited.Format(layout),
+		strconv.Itoa(int(idea.Id)),
+		"c" + strconv.Itoa(int(idea.ConsumesId)),
+		idea.Created.Format(layout),
+		idea.Edited.Format(layout),
 		ConsumedDate}
-	strList = append(strList, tags...)
+	strList = append(strList, idea.Tags...)
 
-	i.Filename = strings.Join(strList, ",")
+	idea.Filename = strings.Join(strList, ",")
 }
 
 func NewNonConsumingIdea(tags []string) Idea {
@@ -88,16 +90,21 @@ func NewNonConsumingIdea(tags []string) Idea {
 }
 
 // NewIdea creates a new Idea object
-func NewAliveIdea(consumesId uint64, tags []string) Idea {
+func NewAliveIdea(consumesId uint32, tags []string) Idea {
+
+	todayDate, err := time.Parse(layout, time.Now().Format(layout))
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	idea := Idea{
 		Id:         GetNextID(),
 		ConsumesId: consumesId,
 		Kind:       kindText,
 		IsConsumed: false,
-		Created:    created,
-		Edited:     created,
-		Consumed:   alive,
+		Created:    todayDate,
+		Edited:     todayDate,
+		Consumed:   zeroDate,
 		Tags:       tags,
 	}
 
@@ -107,10 +114,10 @@ func NewAliveIdea(consumesId uint64, tags []string) Idea {
 }
 
 // returns true if the idea contains all the input tags
-func (i Idea) HasTags(tags ...string) bool {
+func (idea Idea) HasTags(tags []string) bool {
 	for _, tag := range tags {
 		hasTag := false
-		for _, ideaTag := range Idea.Tags {
+		for _, ideaTag := range idea.Tags {
 			if tag == ideaTag {
 				continue
 			}
@@ -140,13 +147,21 @@ func FilenameToIdea(filename string) (idea Idea) {
 	}
 
 	// Get id
-	idea.Id = uint64(strconv.Atoi(split[0]))
+	id, err := strconv.Atoi(split[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	idea.Id = uint32(id)
 
 	// Get consumes id
 	if !strings.HasPrefix(split[1], "c") {
 		log.Fatalf("bad consumes-id file format at %v", filename)
 	}
-	idea.ConsumesId = uint64(strconv.Atoi(strings.TrimPrefix(split[1], "c")))
+	id, err = strconv.Atoi(strings.TrimPrefix(split[1], "c"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	idea.ConsumesId = uint32(id)
 
 	// Get Creation Date
 	created, err := time.Parse(layout, split[2])
@@ -159,11 +174,11 @@ func FilenameToIdea(filename string) (idea Idea) {
 	if !strings.HasPrefix(split[3], "e") {
 		log.Fatalf("bad edit date file format at %v", filename)
 	}
-	created, err := time.Parse(layout, strings.TrimPrefix(split[3], "e"))
+	edited, err := time.Parse(layout, strings.TrimPrefix(split[3], "e"))
 	if err != nil {
 		log.Fatalf("bad created date file format at %v: %v", filename, err)
 	}
-	idea.Edited = created
+	idea.Edited = edited
 
 	// Get Consumed Date
 	if split[4] == alive {
@@ -173,15 +188,17 @@ func FilenameToIdea(filename string) (idea Idea) {
 		if !strings.HasPrefix(split[4], "c") {
 			log.Fatalf("bad consumed date file format at %v", filename)
 		}
-		created, err := time.Parse(layout, strings.TrimPrefix(split[4], "c"))
+		consumed, err := time.Parse(layout, strings.TrimPrefix(split[4], "c"))
 		if err != nil {
 			log.Fatalf("bad consumed date file format at %v: %v", filename, err)
 		}
-		idea.Consumed = created
+		idea.Consumed = consumed
 	}
 
 	// Get Tags
 	for i := 5; i < len(split); i++ {
 		idea.Tags = append(idea.Tags, split[i])
 	}
+
+	return idea
 }
