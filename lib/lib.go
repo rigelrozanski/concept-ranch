@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	pathL "path"
+	"path"
 	"strconv"
 	"strings"
 
@@ -13,8 +13,7 @@ import (
 )
 
 // directory name where boards are stored in repo
-var QiDir, IdeasDir, ConsumedDir, QiFile, LogFile, ConfigFile string
-var IdCounter uint32
+var QiDir, IdeasDir, ConsumedDir, QiFile, LogFile, ConfigFile, WorkingFile string
 
 // load config and set global file directories
 func Init() {
@@ -26,20 +25,64 @@ func Init() {
 	}
 
 	QiDir = lines[0]
-	IdeasDir = pathL.Join(QiDir, "ideas")
-	ConsumedDir = pathL.Join(QiDir, "consumed")
-	QiFile = pathL.Join(QiDir, "qi.txt")
-	LogFile = pathL.Join(QiDir, "log.txt")
-	ConfigFile = pathL.Join(QiDir, "config")
+	IdeasDir = path.Join(QiDir, "ideas")
+	ConsumedDir = path.Join(QiDir, "consumed")
+	QiFile = path.Join(QiDir, "qi")
+	LogFile = path.Join(QiDir, "log")
+	ConfigFile = path.Join(QiDir, "config")
+	WorkingFile = path.Join(QiDir, "working")
 
-	qiConfigPath := os.ExpandEnv(pathL.Join(QiDir, "config"))
-	lines, err = cmn.ReadLines(configPath)
+	EnsureBasics()
+}
+
+func EnsureBasics() {
+	if !cmn.FileExists(QiDir) {
+		panic("directory specified in ~/.qi_config.txt does not exist")
+	}
+	_ = os.Mkdir(IdeasDir, os.ModePerm)
+	_ = os.Mkdir(ConsumedDir, os.ModePerm)
+	if !cmn.FileExists(QiFile) {
+		err := cmn.CreateEmptyFile(QiFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if !cmn.FileExists(LogFile) {
+		err := cmn.CreateEmptyFile(LogFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if !cmn.FileExists(WorkingFile) {
+		err := cmn.CreateEmptyFile(LogFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if !cmn.FileExists(ConfigFile) {
+		err := cmn.WriteLines([]string{"000001"}, ConfigFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+}
+
+func GetNextID() uint32 {
+	lines, err = cmn.ReadLines(ConfigFile)
 	if err != nil {
 		panic(fmt.Sprintf("error reading config, error: %v", err))
 	}
 	IdCounter, err = uint32(strconv.Atoi(lines[0]))
 	if err != nil {
 		panic(fmt.Sprintf("error reading id_counter, error: %v", err))
+	}
+}
+
+func IncrementID() {
+	err := cmn.WriteLines([]string{strconv.Itoa(int(GetNextID()))}, ConfigFile)
+	if err != nil {
+		panic(err)
 	}
 }
 
@@ -62,10 +105,27 @@ func GetByID(id uint32) (content []byte, found bool) {
 		return content, false
 	}
 
-	content, err = ioutil.ReadFile(path)
+	content, err = ioutil.ReadFile(path.Join(IdeasDir, fn))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	return content, true
+}
+
+func GetByTags(tags ...string) (content []byte, found bool) {
+	ideas := PathToIdeas(IdeasDir)
+	subset := idea.WithTags(tags)
+
+	if len(subset) == 0 {
+		return content, false
+	}
+	for _, idea := range subset {
+		ideaContent, err = ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
+		if err != nil {
+			log.Fatal(err)
+		}
+		content += ideaContent
+	}
+	return content, found
 }

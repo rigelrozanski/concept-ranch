@@ -3,16 +3,19 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/rigelrozanski/qi/lib"
 )
 
-// filestructure: ./ideas/123456_c234567_YYYYMMDD_eYYYYMMDD_tag_tag_tag_tag...
-//                ./consumed/123456_c234567_YYYYMMDD_eYYYYMMDD_cYYYYMMDD_tag_tag_tag_tag...
+// filestructure:
+//                ./ideas/123456,c234567,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,tag1,tag2,tag3...
+//                ./consumed/123456,c234567,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,tag1,tag2,tag3...
 //                ./qi
 //                ./log
 //                ./config
 //                ./working
 // 123456 = id
-// c123456 = consumed-id
+// c123456 = consumes-id
 // YYYYMMDD = creation date
 // eYYYYMMDD = last edited date
 // cYYYYMMDD = consumed date
@@ -123,14 +126,19 @@ func main() {
 	case keyDestroyTag:
 
 	case keyLs:
+		lib.ListAllTags()
 
 	case keyLog:
 
 	default:
 		if len(args) == 2 { // quick query
-
-		} else if len(args == 3) { // quick entry
-
+			QuickQuery(args[1])
+		} else if len(args) >= 3 { // quick entry
+			var entry string
+			for i := 2; i < len(args); i++ {
+				entry += " " + args[i]
+			}
+			QuickEntry(args[1], entry)
 		}
 	}
 	if err != nil {
