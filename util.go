@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
+	"os/exec"
 	"path"
+	"strconv"
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
@@ -20,6 +23,11 @@ func QuickEntry(unsplitTags, entry string) {
 	Entry(entry, splitTags)
 }
 
+func MultiOpen(unsplitTags string) {
+	splitTags := strings.Split(unsplitTags, ",")
+	MultiOpenByTags(splitTags)
+}
+
 //__________________
 
 func ListAllTags() {
@@ -28,58 +36,60 @@ func ListAllTags() {
 }
 
 func ViewByTags(tags []string) {
-	content, found := lib.GetByTags(lib.IdeasDir, tags)
+	content, found := lib.ConcatAllContentFromTags(lib.IdeasDir, tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
 	fmt.Printf("%s\n", content)
 }
 
+func MultiOpenByTags(tags []string) {
+	found, maxFNLen := lib.WriteWorkingContentAndFilenamesFromTags(lib.IdeasDir, tags)
+	if !found {
+		fmt.Println("nothing found with those tags")
+		return
+	}
+	openTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
+}
+
 func RemoveById(id uint32) error {
 	return nil
 }
 
-//func edit(name string) (err error) {
-
-//origWbBz, found := lib.GetWBRaw(name)
-//if !found {
-//name, err = getNameFromShortcut(name)
-//if err != nil {
-//return err
-//}
-//}
-
-//wbPath, err := lib.GetWbPath(name)
-//if err != nil {
-//return err
-//}
-
-//cmd := exec.Command("vim", "-c", "+normal 1G1|", wbPath) //start in the upper left corner nomatter
-//cmd.Stdin = os.Stdin
-//cmd.Stdout = os.Stdout
-//err = cmd.Run()
-//if err != nil {
-//return err
-//}
-
-//// log if there was a modification
-//newWbBz, found := lib.GetWBRaw(name)
-//if !found {
-//panic("wuz found now isn't")
-//}
-//if bytes.Compare(origWbBz, newWbBz) != 0 {
-//log("modified wb", name)
-//}
-//return nil
-//}
-
 func Entry(entry string, tags []string) {
 
-	idea := lib.NewNonConsumingIdea(tags)
+	idea := lib.NewNonConsumingTextIdea(tags)
 	writePath := path.Join(lib.IdeasDir, idea.Filename)
 	err := cmn.WriteLines([]string{entry}, writePath)
 	if err != nil {
 		log.Fatalf("error writing new file: %v", err)
 	}
 	lib.IncrementID()
+}
+
+//_______________________________________________________________________________________________________
+
+func openText(pathToOpen string) {
+
+	cmd := exec.Command("vim", "-c", "+normal 1G1|", pathToOpen) //start in the upper left corner nomatter
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func openTextSplit(pathToOpenLeft, pathToOpenRight string, maxFNLen int) {
+
+	cmd := exec.Command("vim",
+		"-c", "vertical resize "+strconv.Itoa(maxFNLen+4)+" | execute \"normal \\<C-w>\\<C-l>\"",
+		"-O", pathToOpenLeft, pathToOpenRight)
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }

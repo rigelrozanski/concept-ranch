@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,7 +14,7 @@ import (
 )
 
 // directory name where boards are stored in repo
-var QiDir, IdeasDir, ConsumedDir, QiFile, LogFile, ConfigFile, WorkingFile string
+var QiDir, IdeasDir, QiFile, LogFile, ConfigFile, WorkingFnsFile, WorkingContentFile, LastIdFile string
 
 // load config and set global file directories
 func init() {
@@ -26,11 +27,12 @@ func init() {
 
 	QiDir = lines[0]
 	IdeasDir = path.Join(QiDir, "ideas")
-	ConsumedDir = path.Join(QiDir, "consumed")
 	QiFile = path.Join(QiDir, "qi")
 	LogFile = path.Join(QiDir, "log")
 	ConfigFile = path.Join(QiDir, "config")
-	WorkingFile = path.Join(QiDir, "working")
+	WorkingFnsFile = path.Join(QiDir, "working_files")
+	WorkingContentFile = path.Join(QiDir, "working_content")
+	LastIdFile = path.Join(QiDir, "last")
 
 	EnsureBasics()
 }
@@ -40,7 +42,6 @@ func EnsureBasics() {
 		panic("directory specified in ~/.qi_config.txt does not exist")
 	}
 	_ = os.Mkdir(IdeasDir, os.ModePerm)
-	_ = os.Mkdir(ConsumedDir, os.ModePerm)
 	if !cmn.FileExists(QiFile) {
 		err := cmn.CreateEmptyFile(QiFile)
 		if err != nil {
@@ -53,8 +54,14 @@ func EnsureBasics() {
 			panic(err)
 		}
 	}
-	if !cmn.FileExists(WorkingFile) {
-		err := cmn.CreateEmptyFile(LogFile)
+	if !cmn.FileExists(WorkingFnsFile) {
+		err := cmn.CreateEmptyFile(WorkingFnsFile)
+		if err != nil {
+			panic(err)
+		}
+	}
+	if !cmn.FileExists(WorkingContentFile) {
+		err := cmn.CreateEmptyFile(WorkingContentFile)
 		if err != nil {
 			panic(err)
 		}
@@ -65,7 +72,12 @@ func EnsureBasics() {
 			panic(err)
 		}
 	}
-
+	if !cmn.FileExists(LastIdFile) {
+		err := cmn.WriteLines([]string{"000000"}, LastIdFile)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 func GetNextID() uint32 {
@@ -114,7 +126,7 @@ func GetByID(id uint32) (content []byte, found bool) {
 	return content, true
 }
 
-func GetByTags(dir string, tags []string) (content []byte, found bool) {
+func ConcatAllContentFromTags(dir string, tags []string) (content []byte, found bool) {
 	ideas := PathToIdeas(dir)
 	subset := ideas.WithTags(tags)
 
@@ -129,4 +141,39 @@ func GetByTags(dir string, tags []string) (content []byte, found bool) {
 		content = append(content, ideaContent...)
 	}
 	return content, true
+}
+
+func WriteWorkingContentAndFilenamesFromTags(dir string, tags []string) (found bool, maxFNLen int) {
+	ideas := PathToIdeas(dir)
+	subset := ideas.WithTags(tags)
+
+	if len(subset) == 0 {
+		return false, 0
+	}
+
+	var contentBz, fnBz []byte
+	for _, idea := range subset {
+		icontentBz, err := ioutil.ReadFile(path.Join(dir, idea.Filename))
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		noLines := bytes.Count(icontentBz, []byte{'\n'})
+
+		if len(idea.Filename)+2 > maxFNLen {
+			maxFNLen = len(idea.Filename) + 2
+		}
+		fnBz = append(fnBz, []byte("["+idea.Filename+"]"+strings.Repeat("\n", noLines))...)
+		contentBz = append(contentBz, icontentBz...)
+	}
+
+	err := ioutil.WriteFile(WorkingFnsFile, fnBz, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(WorkingContentFile, contentBz, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return true, maxFNLen
 }

@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/rigelrozanski/qi/lib"
 )
 
 // filestructure:
-//                ./ideas/123456,c234567,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,tag1,tag2,tag3...
-//                ./consumed/123456,c234567,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,tag1,tag2,tag3...
+//                ./ideas/a,123456,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,c432978,c543098...,tag1,tag2,tag3...
 //                ./qi
 //                ./log
 //                ./config
@@ -83,12 +84,10 @@ Explanation of some terms:
 func main() {
 	args := os.Args[1:]
 
-	// for the master quick entry
-	if len(args) == 1 {
-		//err := edit(defaultQI)
-		//if err != nil {
-		//fmt.Println(err)
-		//}
+	// for the master qi file for quick entry
+	if len(args) == 0 {
+		openText(lib.QiFile)
+		return
 	}
 
 	var err error
@@ -96,7 +95,7 @@ func main() {
 	case keyHelp1, keyHelp2:
 		fmt.Println(help)
 	case keyCat:
-		QuickEntry(args[1], strings.Join(args[2:], " "))
+		QuickQuery(args[1])
 	case keyScan:
 
 	case keyTranscribe:
@@ -128,7 +127,7 @@ func main() {
 
 	default:
 		if len(args) == 1 { // quick query
-			QuickQuery(args[0])
+			MultiOpen(args[0])
 		} else if len(args) >= 2 { // quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
