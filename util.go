@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -25,8 +27,11 @@ func QuickQuery(unsplitTagsOrID string) {
 
 func NewEmptyEntry(unsplitTags string) {
 	splitTags := strings.Split(unsplitTags, ",")
+	fmt.Printf("debug splitTags: %v\n", splitTags)
 	idea := lib.NewNonConsumingTextIdea(splitTags)
+	fmt.Printf("debug idea: %v\n", idea)
 	writePath := path.Join(lib.IdeasDir, idea.Filename)
+	fmt.Printf("debug writePath: %v\n", writePath)
 	lib.IncrementID()
 	openText(writePath)
 }
@@ -36,8 +41,14 @@ func QuickEntry(unsplitTags, entry string) {
 	Entry(entry, splitTags)
 }
 
-func MultiOpen(unsplitTags string) {
-	splitTags := strings.Split(unsplitTags, ",")
+func MultiOpen(unsplitTagsOrID string) {
+	id, err := strconv.Atoi(unsplitTagsOrID)
+	if err == nil {
+		filePath := lib.GetFilepathByID(uint32(id))
+		openText(filePath)
+		return
+	}
+	splitTags := strings.Split(unsplitTagsOrID, ",")
 	MultiOpenByTags(splitTags)
 }
 
@@ -78,7 +89,7 @@ func ListAllFiles() {
 func ViewByID(id uint32) {
 	content, found := lib.GetContentByID(id)
 	if !found {
-		fmt.Println("nothing found with those tags")
+		fmt.Println("nothing found with that id")
 	}
 	fmt.Printf("%s\n", content)
 }
@@ -92,12 +103,18 @@ func ViewByTags(tags []string) {
 }
 
 func MultiOpenByTags(tags []string) {
-	found, maxFNLen := lib.WriteWorkingContentAndFilenamesFromTags(tags)
+	found, maxFNLen, singleReturn := lib.WriteWorkingContentAndFilenamesFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
 	}
+	// if only a single entry is found then open only it!
+	if singleReturn != "" {
+		openText(singleReturn)
+		return
+	}
 	openTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
+	lib.SaveFromWorkingFiles()
 }
 
 func RemoveById(id uint32) error {
@@ -119,12 +136,23 @@ func Entry(entry string, tags []string) {
 
 func openText(pathToOpen string) {
 
+	// ignore error, allow for no file to be present
+	origBz, _ := ioutil.ReadFile(pathToOpen)
+
 	cmd := exec.Command("vim", "-c", "+normal 1G1|", pathToOpen) //start in the upper left corner nomatter
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	finalBz, err := ioutil.ReadFile(pathToOpen)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if bytes.Compare(origBz, finalBz) != 0 {
+		lib.UpdateEditedDateNow(pathToOpen)
 	}
 }
 

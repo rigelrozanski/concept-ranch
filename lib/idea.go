@@ -79,13 +79,18 @@ func NewNonConsumingTextIdea(tags []string) Idea {
 	return NewTextIdea([]uint32{}, tags)
 }
 
-// NewAliveIdea creates a new idea object
-func NewTextIdea(consumesIds []uint32, tags []string) Idea {
-
+func TodayDate() time.Time {
 	todayDate, err := time.Parse(layout, time.Now().Format(layout))
 	if err != nil {
 		log.Fatal(err)
 	}
+	return todayDate
+}
+
+// NewAliveIdea creates a new idea object
+func NewTextIdea(consumesIds []uint32, tags []string) Idea {
+
+	todayDate := TodayDate()
 
 	idea := Idea{
 		IsConsumed:  false,
@@ -125,7 +130,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	}
 
 	// get consumption prefix
-	if split[1] == "a" {
+	if split[0] == "a" {
 		idea.IsConsumed = false
 	} else {
 		idea.IsConsumed = true
