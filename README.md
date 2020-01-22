@@ -18,6 +18,34 @@ The intention behind this program is to provide a space for quickly:
 [1]: https://golang.org/doc/install
 [2]: https://github.com/tendermint/tendermint/wiki/Setting-GOPATH 
 
+### File Structure
+
+filestructure:
+               ./ideas/a,123456,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,c432978,c543098...,tag1,tag2,tag3...
+               ./qi
+               ./log
+               ./config
+               ./working_files
+               ./working_content
+123456 = id
+c123456 = consumes-id
+YYYYMMDD = creation date
+eYYYYMMDD = last edited date
+cYYYYMMDD = consumed date
+
+### TODO 
+ - multi-edit saves
+ - tag commands
+ - consume commands
+ - image commands 
+ - audio commands
+ - scan commands
+ - transcribe
+ - special queries for dates
+ - special queries for consumed 
+ - special tags during input for consumption
+ - special entry for non-text files
+
 ### License
 
-whiteboard is released under the Apache 2.0 license.
+Quick Ideas is released under the Apache 2.0 license.

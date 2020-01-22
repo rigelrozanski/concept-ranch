@@ -14,7 +14,8 @@ import (
 //                ./qi
 //                ./log
 //                ./config
-//                ./working
+//                ./working_files
+//                ./working_content
 // 123456 = id
 // c123456 = consumes-id
 // YYYYMMDD = creation date
@@ -29,6 +30,7 @@ const (
 	keyTranscribe      = "transcribe"
 	keyTranscribeMany  = "transcribe-many"
 	keyConsume         = "consume"
+	keyZombie          = "zombie"
 	keyConsumes        = "consumes"
 	keyNew             = "new"
 	keyRm              = "rm"
@@ -46,15 +48,16 @@ const (
 	help = `
 /|||||\ |-o-o-~|
 qi --------------------------------------> edit the tagless master quick ideas board in vim
-qi [tag1,tag2...] [entry] ---------------> quick entry to a new idea
+qi [tags...] [entry] --------------------> quick entry to a new idea
 qi [query] ------------------------------> open a vim tab with the contents of the query 
 qi cat [query] --------------------------> print idea(s) contents' to console
 qi scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qi transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
-qi transcribe-many [op_tags] ------------> transcribe many images one after another, optionally transcribe within a set of tags
-qi consume [id] [entry] -----------------> consumes the given id into a new entry
+qi transcribe-many [op_tags...] ---------> transcribe many images one after another, optionally transcribe within a set of tags
+qi consume [id] [entry] -----------------> quick consumes the given id into a new entry
 qi consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
-qi new [tags] ---------------------------> create a new idea with the provided tags
+qi zombie [id] --------------------------> "unconsume" an idea based on id
+qi new [tags...] ------------------------> create a new idea with the provided tags
 qi rm [id] ------------------------------> remove an idea by id
 qi cp [id] ------------------------------> duplicate an idea at the provided id
 qi tags [id] ----------------------------> list the tags for a given id
@@ -79,8 +82,10 @@ Explanation of some terms:
                         consumed_afterYYYYMMDD 
                         consumed_beforeYYYYMMDD 
 [tag] ---------- A catagory to query or organize your ideas with
-[tags] --------- A list of tags seperated by commas (such as "tag1,tag2,tag3")
-[entry] -------- Either raw input text or for untranscribed input a directory to an image
+[tags...] ------ A list of tags seperated by commas (such as "tag1,tag2,tag3")
+                     Additionally special tags can be used:
+					    consumesXXXXXX (where XXXXXX is the id of the idea being consumed)
+[entry] -------- Either raw input text or for untranscribed input a directory to an image/audio sample 
 `
 )
 
@@ -108,6 +113,8 @@ func main() {
 	case keyConsume:
 
 	case keyConsumes:
+
+	case keyZombie:
 
 	case keyNew:
 		EnsureLen(args, 2)
