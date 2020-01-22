@@ -131,14 +131,15 @@ func main() {
 	case keyKillTag:
 		EnsureLen(args, 3)
 		KillTagByID(args[1], args[2])
-	case keyRenameTag:
-		EnsureLen(args, 3)
-		RenameTags(args[1], args[2])
 	case keyAddTag:
 		EnsureLen(args, 3)
 		AddTagByID(args[1], args[2])
+	case keyRenameTag:
+		EnsureLen(args, 3)
+		RenameTag(args[1], args[2])
 	case keyDestroyTag:
-
+		EnsureLen(args, 2)
+		DestroyTag(args[1])
 	case keyLs:
 		ListAllTags()
 	case keyLsFiles:
