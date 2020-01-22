@@ -137,6 +137,12 @@ func GetFilenameByID(id uint32) (filepath string) {
 	return fileName
 }
 
+func GetIdeaByID(id uint32) Idea {
+	fn := GetFilenameByID(id)
+	return NewIdeaFromFilename(fn)
+
+}
+
 func GetIdByFilename(filename string) (id uint32) {
 	split := strings.SplitN(filename, ",", 3)
 	if len(split) != 3 {
@@ -282,11 +288,10 @@ func SaveFromWorkingFiles() {
 }
 
 func UpdateEditedDateNow(updatePath string) {
-	fmt.Printf("debug EDITING DATE FOR updatePath: %v\n", updatePath)
 	origFilename := path.Base(updatePath)
 	idea := NewIdeaFromFilename(origFilename)
 	idea.Edited = TodayDate()
-	(&idea).CreateFilename()
+	(&idea).UpdateFilename()
 	origPath := path.Join(IdeasDir, origFilename)
 	newPath := path.Join(IdeasDir, idea.Filename)
 	err := os.Rename(origPath, newPath)

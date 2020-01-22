@@ -103,7 +103,7 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 		Tags:        tags,
 	}
 
-	(&idea).CreateFilename()
+	(&idea).UpdateFilename()
 
 	return idea
 }
@@ -197,7 +197,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 }
 
 // creates the filename based on idea information
-func (idea *Idea) CreateFilename() {
+func (idea *Idea) UpdateFilename() {
 
 	prefix := "a"
 	if idea.IsConsumed {
@@ -216,6 +216,16 @@ func (idea *Idea) CreateFilename() {
 	strList = append(strList, idea.Tags...)
 
 	idea.Filename = strings.Join(strList, ",")
+}
+
+// rename the tag on this idea
+func (idea *Idea) RenameTag(from, to string) {
+	for i, tag := range idea.Tags {
+		if tag == from {
+			idea.Tags[i] = to
+			break
+		}
+	}
 }
 
 func itoa(in []uint32) []string {

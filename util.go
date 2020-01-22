@@ -52,24 +52,87 @@ func MultiOpen(unsplitTagsOrID string) {
 	MultiOpenByTags(splitTags)
 }
 
-func RemoveByID(idStr string) {
+func parseIdStr(idStr string) uint32 {
 	idI, err := strconv.Atoi(idStr)
 	if err != nil {
 		log.Fatalf("error parsing id, error: %v", err)
 	}
-	id := uint32(idI)
+	return uint32(idI)
+}
 
+func RemoveByID(idStr string) {
+	id := parseIdStr(idStr)
 	lib.RemoveByID(id)
 }
 
 func CopyByID(idStr string) {
-	idI, err := strconv.Atoi(idStr)
-	if err != nil {
-		log.Fatalf("error parsing id, error: %v", err)
-	}
-	id := uint32(idI)
-
+	id := parseIdStr(idStr)
 	openText(lib.CopyByID(id))
+}
+
+func ListTagsByID(idStr string) {
+	id := parseIdStr(idStr)
+	idea := lib.GetIdeaByID(id)
+	fmt.Println(idea.Tags)
+}
+
+func KillTagByID(idStr, tagTokill string) {
+	id := parseIdStr(idStr)
+	idea := lib.GetIdeaByID(id)
+	origFilename := idea.Filename
+	for i, tag := range idea.Tags {
+		if tag == tagTokill {
+			idea.Tags = append(idea.Tags[:i], idea.Tags[i+1:]...)
+			break
+		}
+	}
+	(&idea).UpdateFilename()
+
+	origPath := path.Join(lib.IdeasDir, origFilename)
+	newPath := path.Join(lib.IdeasDir, idea.Filename)
+	err := os.Rename(origPath, newPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func AddTagByID(idStr, tagToAdd string) {
+	id := parseIdStr(idStr)
+	idea := lib.GetIdeaByID(id)
+	origFilename := idea.Filename
+	idea.Tags = append(idea.Tags, tagToAdd)
+	(&idea).UpdateFilename()
+
+	origPath := path.Join(lib.IdeasDir, origFilename)
+	newPath := path.Join(lib.IdeasDir, idea.Filename)
+	err := os.Rename(origPath, newPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func RenameTags(from, to string) {
+	files, err := ioutil.ReadDir(lib.IdeasDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		origFn := file.Name()
+		if !strings.Contains(origFn, from) {
+			continue
+		}
+		idea := lib.NewIdeaFromFilename(origFn)
+		(&idea).RenameTag(from, to)
+		(&idea).UpdateFilename()
+
+		// perform the file rename
+		origPath := path.Join(lib.IdeasDir, origFn)
+		newPath := path.Join(lib.IdeasDir, idea.Filename)
+		err := os.Rename(origPath, newPath)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 }
 
 //__________________

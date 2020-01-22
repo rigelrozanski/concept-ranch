@@ -61,10 +61,10 @@ qi new [tags...] ------------------------> create a new idea with the provided t
 qi rm [id] ------------------------------> remove an idea by id
 qi cp [id] ------------------------------> duplicate an idea at the provided id
 qi tags [id] ----------------------------> list the tags for a given id
-qi kill-tag [id] ------------------------> remove a tag from an idea by id
-qi rename-tag [id] ----------------------> rename all instances of a tag for all ideas
-qi add-tag [id] -------------------------> add a tag from an idea by id
-qi destroy-tag --------------------------> remove all instances of a tag for all ideas
+qi kill-tag [id] [tag] ------------------> remove a tag from an idea by id
+qi add-tag [id] [tag] -------------------> add a tag from an idea by id
+qi rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
+qi destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
 qi ls -----------------------------------> list all tags used
 qi ls-files -----------------------------> list all files
 qi pdf-backup ---------------------------> backup best ideas to a printable pdf
@@ -119,29 +119,30 @@ func main() {
 	case keyNew:
 		EnsureLen(args, 2)
 		NewEmptyEntry(args[1])
-
 	case keyRm:
+		EnsureLen(args, 2)
 		RemoveByID(args[1])
-
 	case keyCp:
+		EnsureLen(args, 2)
 		CopyByID(args[1])
-
 	case keyTags:
-
+		EnsureLen(args, 2)
+		ListTagsByID(args[1])
 	case keyKillTag:
-
+		EnsureLen(args, 3)
+		KillTagByID(args[1], args[2])
 	case keyRenameTag:
-
+		EnsureLen(args, 3)
+		RenameTags(args[1], args[2])
 	case keyAddTag:
-
+		EnsureLen(args, 3)
+		AddTagByID(args[1], args[2])
 	case keyDestroyTag:
 
 	case keyLs:
 		ListAllTags()
-
 	case keyLsFiles:
 		ListAllFiles()
-
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0])
