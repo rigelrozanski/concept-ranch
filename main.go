@@ -112,6 +112,7 @@ func main() {
 		NewEmptyEntry(args[1])
 
 	case keyRm:
+		RemoveByID(args[1])
 
 	case keyCp:
 

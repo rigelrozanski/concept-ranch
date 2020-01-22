@@ -36,6 +36,16 @@ func MultiOpen(unsplitTags string) {
 	MultiOpenByTags(splitTags)
 }
 
+func RemoveByID(idStr string) {
+	idI, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Fatalf("error parsing id, error: %v", err)
+	}
+	id := uint32(idI)
+
+	lib.RemoveByID(id)
+}
+
 //__________________
 
 func ListAllTags() {

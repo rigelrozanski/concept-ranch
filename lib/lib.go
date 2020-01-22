@@ -99,7 +99,7 @@ func IncrementID() {
 	}
 }
 
-func GetByID(id uint32) (content []byte, found bool) {
+func GetFilepathByID(id uint32) (filepath string) {
 	files, err := ioutil.ReadDir(IdeasDir)
 	if err != nil {
 		log.Fatal(err)
@@ -109,21 +109,24 @@ func GetByID(id uint32) (content []byte, found bool) {
 	idStr := strconv.Itoa(int(id))
 	for _, file := range files {
 		fn := file.Name()
-		if strings.HasPrefix(fn, idStr) {
+		if strings.HasPrefix(fn[2:], idStr) {
 			fileName = fn
 			break
 		}
 	}
 	if fileName == "" {
-		return content, false
+		return ""
 	}
+	return path.Join(IdeasDir, fileName)
+}
 
-	content, err = ioutil.ReadFile(path.Join(IdeasDir, fileName))
+func RemoveByID(id uint32) {
+	fp := GetFilepathByID(id)
+	fmt.Printf("debug fp: %v\n", fp)
+	err := os.Remove(fp)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	return content, true
 }
 
 func ConcatAllContentFromTags(dir string, tags []string) (content []byte, found bool) {
