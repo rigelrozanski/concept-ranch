@@ -99,7 +99,27 @@ func IncrementID() {
 	}
 }
 
+func GetContentByID(id uint32) (content []byte, found bool) {
+	filepath := GetFilepathByID(id)
+	if filepath == "" {
+		return content, false
+	}
+	content, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return content, true
+}
+
 func GetFilepathByID(id uint32) (filepath string) {
+	filename := GetFilenameByID(id)
+	if filename == "" {
+		return ""
+	}
+	return path.Join(IdeasDir, filename)
+}
+
+func GetFilenameByID(id uint32) (filepath string) {
 	files, err := ioutil.ReadDir(IdeasDir)
 	if err != nil {
 		log.Fatal(err)
@@ -114,30 +134,45 @@ func GetFilepathByID(id uint32) (filepath string) {
 			break
 		}
 	}
-	if fileName == "" {
-		return ""
-	}
-	return path.Join(IdeasDir, fileName)
+	return fileName
 }
 
 func RemoveByID(id uint32) {
 	fp := GetFilepathByID(id)
-	fmt.Printf("debug fp: %v\n", fp)
 	err := os.Remove(fp)
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func ConcatAllContentFromTags(dir string, tags []string) (content []byte, found bool) {
-	ideas := PathToIdeas(dir)
+func CopyByID(id uint32) (newFilepath string) {
+	fn := GetFilenameByID(id)
+
+	// remove the id, add in a new id
+	newID := GetNextID()
+	split := strings.SplitN(fn, ",", 3)
+
+	newFilename := strings.Join([]string{
+		split[0], strconv.Itoa(int(newID)), split[2]}, ",")
+	IncrementID()
+
+	// actually perform the copy
+	srcPath := path.Join(IdeasDir, fn)
+	writePath := path.Join(IdeasDir, newFilename)
+	cmn.Copy(srcPath, writePath)
+
+	return writePath
+}
+
+func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
+	ideas := PathToIdeas(IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
 		return content, false
 	}
 	for _, idea := range subset {
-		ideaContent, err := ioutil.ReadFile(path.Join(dir, idea.Filename))
+		ideaContent, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -146,8 +181,8 @@ func ConcatAllContentFromTags(dir string, tags []string) (content []byte, found 
 	return content, true
 }
 
-func WriteWorkingContentAndFilenamesFromTags(dir string, tags []string) (found bool, maxFNLen int) {
-	ideas := PathToIdeas(dir)
+func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int) {
+	ideas := PathToIdeas(IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
@@ -156,7 +191,7 @@ func WriteWorkingContentAndFilenamesFromTags(dir string, tags []string) (found b
 
 	var contentBz, fnBz []byte
 	for _, idea := range subset {
-		icontentBz, err := ioutil.ReadFile(path.Join(dir, idea.Filename))
+		icontentBz, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
 		if err != nil {
 			log.Fatal(err)
 		}

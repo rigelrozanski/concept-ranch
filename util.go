@@ -13,8 +13,13 @@ import (
 	"github.com/rigelrozanski/qi/lib"
 )
 
-func QuickQuery(unsplitTags string) {
-	splitTags := strings.Split(unsplitTags, ",")
+func QuickQuery(unsplitTagsOrID string) {
+	id, err := strconv.Atoi(unsplitTagsOrID)
+	if err == nil {
+		ViewByID(uint32(id))
+		return
+	}
+	splitTags := strings.Split(unsplitTagsOrID, ",")
 	ViewByTags(splitTags)
 }
 
@@ -46,6 +51,16 @@ func RemoveByID(idStr string) {
 	lib.RemoveByID(id)
 }
 
+func CopyByID(idStr string) {
+	idI, err := strconv.Atoi(idStr)
+	if err != nil {
+		log.Fatalf("error parsing id, error: %v", err)
+	}
+	id := uint32(idI)
+
+	openText(lib.CopyByID(id))
+}
+
 //__________________
 
 func ListAllTags() {
@@ -53,8 +68,23 @@ func ListAllTags() {
 	fmt.Println(ideas.UniqueTags())
 }
 
+func ListAllFiles() {
+	ideas := lib.PathToIdeas(lib.IdeasDir)
+	for _, idea := range ideas {
+		fmt.Println(idea.Filename)
+	}
+}
+
+func ViewByID(id uint32) {
+	content, found := lib.GetContentByID(id)
+	if !found {
+		fmt.Println("nothing found with those tags")
+	}
+	fmt.Printf("%s\n", content)
+}
+
 func ViewByTags(tags []string) {
-	content, found := lib.ConcatAllContentFromTags(lib.IdeasDir, tags)
+	content, found := lib.ConcatAllContentFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
@@ -62,7 +92,7 @@ func ViewByTags(tags []string) {
 }
 
 func MultiOpenByTags(tags []string) {
-	found, maxFNLen := lib.WriteWorkingContentAndFilenamesFromTags(lib.IdeasDir, tags)
+	found, maxFNLen := lib.WriteWorkingContentAndFilenamesFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return

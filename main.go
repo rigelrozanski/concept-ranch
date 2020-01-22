@@ -39,6 +39,7 @@ const (
 	keyAddTag          = "add-tag"
 	keyDestroyTag      = "destroy-tag"
 	keyLs              = "ls"
+	keyLsFiles         = "ls-files"
 	keyLog             = "log"
 	keyPdfBackup       = "pdf-backup"
 
@@ -62,6 +63,7 @@ qi rename-tag [id] ----------------------> rename all instances of a tag for all
 qi add-tag [id] -------------------------> add a tag from an idea by id
 qi destroy-tag --------------------------> remove all instances of a tag for all ideas
 qi ls -----------------------------------> list all tags used
+qi ls-files -----------------------------> list all files
 qi pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -115,6 +117,7 @@ func main() {
 		RemoveByID(args[1])
 
 	case keyCp:
+		CopyByID(args[1])
 
 	case keyTags:
 
@@ -128,6 +131,9 @@ func main() {
 
 	case keyLs:
 		ListAllTags()
+
+	case keyLsFiles:
+		ListAllFiles()
 
 	default:
 		if len(args) == 1 { // quick query
