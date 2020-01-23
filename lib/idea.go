@@ -105,7 +105,33 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 	}
 
 	(&idea).UpdateFilename()
+	return idea
+}
 
+// NewAliveIdea creates a new idea object
+func NewConsumingIdea(consumesIdea Idea) Idea {
+
+	todayDate := TodayDate()
+
+	consumesIdCp := make([]uint32, len(consumesIdea.ConsumesIds))
+	consumesTagCp := make([]string, len(consumesIdea.Tags))
+	copy(consumesIdCp, consumesIdea.ConsumesIds)
+	copy(consumesTagCp, consumesIdea.Tags)
+	fmt.Printf("debug consumesIdea.Tags: %v\n", consumesIdea.Tags)
+	fmt.Printf("debug consumesTagCp: %v\n", consumesTagCp)
+
+	idea := Idea{
+		IsConsumed:  false,
+		Id:          GetNextID(),
+		ConsumesIds: append(consumesIdCp, consumesIdea.Id),
+		Kind:        kindText,
+		Created:     todayDate,
+		Edited:      todayDate,
+		Consumed:    zeroDate,
+		Tags:        consumesTagCp,
+	}
+
+	(&idea).UpdateFilename()
 	return idea
 }
 
@@ -247,7 +273,7 @@ func (idea *Idea) RemoveTag(tagToKill string) {
 func itoa(in []uint32) []string {
 	out := make([]string, len(in))
 	for i, el := range in {
-		out[i] = strconv.Itoa(int(el))
+		out[i] = "c" + strconv.Itoa(int(el))
 	}
 	return out[:]
 }

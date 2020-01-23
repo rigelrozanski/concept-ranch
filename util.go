@@ -15,6 +15,17 @@ import (
 	"github.com/rigelrozanski/qi/lib"
 )
 
+func Consume(consumedID, optionalEntry string) {
+	consumed, err := strconv.Atoi(consumedID)
+	if err != nil {
+		log.Fatalf("bad id %v", consumedID)
+	}
+	consumerFilepath := lib.Consume(uint32(consumed), optionalEntry)
+	if optionalEntry == "" {
+		openText(consumerFilepath)
+	}
+}
+
 func QuickQuery(unsplitTagsOrID string) {
 	id, err := strconv.Atoi(unsplitTagsOrID)
 	if err == nil {

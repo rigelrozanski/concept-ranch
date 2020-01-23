@@ -54,9 +54,10 @@ qi cat [query] --------------------------> print idea(s) contents' to console
 qi scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qi transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
 qi transcribe-many [op_tags...] ---------> transcribe many images one after another, optionally transcribe within a set of tags
-qi consume [id] [entry] -----------------> quick consumes the given id into a new entry
+qi consume [id] [op_entry] --------------> quick consumes the given id into a new entry
 qi consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
 qi zombie [id] --------------------------> "unconsume" an idea based on id
+qi lineage [id] -------------------------> show the consumtion lineage  
 qi new [tags...] ------------------------> create a new idea with the provided tags
 qi rm [id] ------------------------------> remove an idea by id
 qi cp [id] ------------------------------> duplicate an idea at the provided id
@@ -111,7 +112,8 @@ func main() {
 	case keyTranscribeMany:
 
 	case keyConsume:
-
+		EnsureLen(args, 3)
+		Consume(args[1], args[2])
 	case keyConsumes:
 
 	case keyZombie:

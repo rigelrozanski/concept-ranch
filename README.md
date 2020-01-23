@@ -34,8 +34,6 @@ eYYYYMMDD = last edited date
 cYYYYMMDD = consumed date
 
 ### TODO 
- - multi-edit saves
- - tag commands
  - consume commands
  - image commands 
  - audio commands
@@ -45,6 +43,7 @@ cYYYYMMDD = consumed date
  - special queries for consumed 
  - special tags during input for consumption
  - special entry for non-text files
+ - special entry to read an entire directory
 
 ### License
 

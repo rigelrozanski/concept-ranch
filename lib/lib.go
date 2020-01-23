@@ -155,6 +155,15 @@ func GetIdByFilename(filename string) (id uint32) {
 	return uint32(idI)
 }
 
+// create an empty file in the ideas Dir based on the filename
+func WriteIdea(filename, entry string) {
+	filepath := path.Join(IdeasDir, filename)
+	err := ioutil.WriteFile(filepath, []byte(entry), os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func RemoveByID(id uint32) {
 	fp := GetFilepathByID(id)
 	err := os.Remove(fp)
@@ -163,6 +172,7 @@ func RemoveByID(id uint32) {
 	}
 }
 
+// copy an idea by the id
 func CopyByID(id uint32) (newFilepath string) {
 	fn := GetFilenameByID(id)
 
@@ -180,6 +190,29 @@ func CopyByID(id uint32) (newFilepath string) {
 	cmn.Copy(srcPath, writePath)
 
 	return writePath
+}
+
+// copy an idea by the id
+func Consume(consumedId uint32, entry string) (consumerFilepath string) {
+	consumedIdea := GetIdeaByID(consumedId)
+
+	// consumer: remove the id, add in a new id, add the consumes id
+	consumerIdea := NewConsumingIdea(consumedIdea)
+	IncrementID()
+	WriteIdea(consumerIdea.Filename, entry)
+
+	// consumed: ensure that the filename contains consumed
+	newConsumedFilename := "c" + consumedIdea.Filename[1:]
+
+	// copy the consumed file with the new name
+	srcPath := path.Join(IdeasDir, consumedIdea.Filename)
+	writePath := path.Join(IdeasDir, newConsumedFilename)
+	err := os.Rename(srcPath, writePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return path.Join(IdeasDir, consumerIdea.Filename)
 }
 
 func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
