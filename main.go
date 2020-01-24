@@ -128,7 +128,8 @@ func main() {
 		EnsureLen(args, 2)
 		Zombie(args[1])
 	case keyLineage:
-
+		EnsureLen(args, 2)
+		Lineage(args[1])
 	case keyNew:
 		EnsureLen(args, 2)
 		NewEmptyEntry(args[1])

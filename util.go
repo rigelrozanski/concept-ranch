@@ -26,14 +26,6 @@ func Consume(consumedID, optionalEntry string) {
 	}
 }
 
-func Zombie(zombieID string) {
-	zombie, err := strconv.Atoi(zombieID)
-	if err != nil {
-		log.Fatalf("bad id %v", zombieID)
-	}
-	lib.Zombie(uint32(zombie))
-}
-
 func Consumes(consumedID, consumesID string) {
 	consumed, err := strconv.Atoi(consumedID)
 	if err != nil {
@@ -44,6 +36,23 @@ func Consumes(consumedID, consumesID string) {
 		log.Fatalf("bad id %v", consumesID)
 	}
 	lib.Consumes(uint32(consumed), uint32(consumes))
+}
+
+func Zombie(zombieID string) {
+	zombie, err := strconv.Atoi(zombieID)
+	if err != nil {
+		log.Fatalf("bad id %v", zombieID)
+	}
+	lib.Zombie(uint32(zombie))
+}
+
+func Lineage(idStr string) {
+	id, err := strconv.Atoi(idStr)
+	fmt.Printf("debug id: %v\n", id)
+	if err != nil {
+		log.Fatalf("bad id %v", idStr)
+	}
+	fmt.Print(lib.Lineage(uint32(id)))
 }
 
 func QuickQuery(unsplitTagsOrID string) {

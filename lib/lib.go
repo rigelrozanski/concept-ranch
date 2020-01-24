@@ -198,6 +198,23 @@ func Zombie(zombieId uint32) {
 	consumedIdea.SetZombie()
 }
 
+// display the lineage of the
+func Lineage(id uint32) (compiled string) {
+	lineageIdea := GetIdeaByID(id)
+	fmt.Printf("debug lineageIdea: %v\n", lineageIdea)
+	fmt.Printf("debug ConsumesIds: %v\n", lineageIdea.ConsumesIds)
+	for _, consume := range lineageIdea.ConsumesIds {
+		fmt.Printf("debug consume: %v\n", consume)
+		fn := GetFilenameByID(consume)
+		content, found := GetContentByID(consume)
+		if !found {
+			log.Fatalf("child not found: %v", consume)
+		}
+		compiled = fmt.Sprintf("%v\n%v\n%s", compiled, fn, content)
+	}
+	return compiled
+}
+
 // copy an idea by the id
 func Consume(consumedId uint32, entry string) (consumerFilepath string) {
 	consumedIdea := GetIdeaByID(consumedId)
