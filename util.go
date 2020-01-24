@@ -275,7 +275,7 @@ func open(pathToOpen string) {
 	case lib.KindImage:
 		viewImage(pathToOpen)
 	case lib.KindAudio:
-		fmt.Println("Sry, do not yet support opening audio!")
+		listenAudio(pathToOpen)
 	}
 }
 
@@ -283,6 +283,18 @@ func viewImage(pathToOpen string) {
 
 	fmt.Println(path.Base(pathToOpen))
 	cmd := exec.Command("imgcat", pathToOpen)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func listenAudio(pathToOpen string) {
+
+	fmt.Println(path.Base(pathToOpen))
+	cmd := exec.Command("afplay", pathToOpen)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()

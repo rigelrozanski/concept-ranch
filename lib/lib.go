@@ -243,7 +243,7 @@ func Consumes(consumedId, consumesId uint32) {
 }
 
 func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
-	ideas := PathToIdeas(IdeasDir)
+	ideas := PathToNonConsumingIdeas(IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
@@ -260,7 +260,7 @@ func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
 }
 
 func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int, singleReturn string) {
-	ideas := PathToIdeas(IdeasDir)
+	ideas := PathToNonConsumingIdeas(IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	switch len(subset) {
