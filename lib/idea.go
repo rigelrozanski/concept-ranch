@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"regexp"
 	"strconv"
@@ -14,9 +15,13 @@ import (
 const (
 	layout = "2006-01-02" // time parse layout for YYYYMMDD
 
-	kindAudio  = "audio"
-	kindVisual = "visual"
-	kindText   = "text"
+	CycleAlive = iota
+	CycleConsumed
+	CycleZombie
+
+	KindText = iota
+	KindImage
+	KindAudio
 )
 
 var (
@@ -66,10 +71,10 @@ func (ideas Ideas) UniqueTags() []string {
 
 type Idea struct {
 	Filename    string
-	IsConsumed  bool
+	Cycle       int // alive/consumed/zombie
 	Id          uint32
 	ConsumesIds []uint32 // Id of idea which this idea consumes
-	Kind        string   // kind of information
+	Kind        int      // kind of information
 	Created     time.Time
 	Edited      time.Time
 	Consumed    time.Time
@@ -94,10 +99,10 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 	todayDate := TodayDate()
 
 	idea := Idea{
-		IsConsumed:  false,
+		Cycle:       CycleAlive,
 		Id:          GetNextID(),
 		ConsumesIds: consumesIds,
-		Kind:        kindText,
+		Kind:        KindText,
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
@@ -121,10 +126,10 @@ func NewConsumingIdea(consumesIdea Idea) Idea {
 	fmt.Printf("debug consumesTagCp: %v\n", consumesTagCp)
 
 	idea := Idea{
-		IsConsumed:  false,
+		Cycle:       CycleAlive,
 		Id:          GetNextID(),
 		ConsumesIds: append(consumesIdCp, consumesIdea.Id),
-		Kind:        kindText,
+		Kind:        KindText,
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
@@ -141,11 +146,11 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	ext := path.Ext(filename)
 	switch ext {
 	case ".mp3", ".wav":
-		idea.Kind = kindAudio
+		idea.Kind = KindAudio
 	case ".jpg", ".jpeg", ".tiff", ".png":
-		idea.Kind = kindVisual
+		idea.Kind = KindImage
 	case "", ".txt":
-		idea.Kind = kindText
+		idea.Kind = KindText
 	default:
 		log.Fatalf("unknown filetype: %v", ext)
 	}
@@ -158,9 +163,9 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 
 	// get consumption prefix
 	if split[0] == "a" {
-		idea.IsConsumed = false
+		idea.Cycle = CycleAlive
 	} else {
-		idea.IsConsumed = true
+		idea.Cycle = CycleConsumed
 	}
 
 	// Get id
@@ -223,20 +228,33 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	return idea
 }
 
+func (idea Idea) Path() string {
+	return path.Join(IdeasDir, idea.Filename)
+}
+
+func (idea Idea) Prefix() (prefix string) {
+	switch idea.Cycle {
+	case CycleAlive:
+		prefix = "a"
+	case CycleConsumed:
+		prefix = "c"
+	case CycleZombie:
+		prefix = "z"
+	}
+	return prefix
+}
+
 // creates the filename based on idea information
 func (idea *Idea) UpdateFilename() {
 
-	prefix := "a"
-	if idea.IsConsumed {
-		prefix = "c"
-	}
+	prefix := idea.Prefix()
 
 	strList := []string{
 		prefix,
 		strconv.Itoa(int(idea.Id)),
 		idea.Created.Format(layout),
 		"e" + idea.Edited.Format(layout)}
-	if idea.IsConsumed {
+	if idea.Cycle == CycleConsumed {
 		strList = append(strList, "c"+idea.Consumed.Format(layout))
 	}
 	strList = append(strList, itoa(idea.ConsumesIds)...)
@@ -257,8 +275,6 @@ func (idea *Idea) RenameTag(from, to string) {
 
 // rename the tag on this idea
 func (idea *Idea) RemoveTag(tagToKill string) {
-	fmt.Printf("debug tagToKill: %v\n", tagToKill)
-	fmt.Printf("debug idea: %v\n", idea)
 	if len(idea.Tags) == 1 && idea.Tags[0] == tagToKill {
 		log.Fatalf("cannot remove the final tag of %v, aborting", idea.Filename)
 	}
@@ -267,6 +283,35 @@ func (idea *Idea) RemoveTag(tagToKill string) {
 			idea.Tags = append(idea.Tags[:i], idea.Tags[i+1:]...)
 			break
 		}
+	}
+}
+
+// rename the tag on this idea
+func (idea *Idea) SetConsumed() {
+	origFilename := idea.Filename
+	idea.Cycle = CycleConsumed
+	idea.Consumed = TodayDate()
+	idea.UpdateFilename()
+
+	srcPath := path.Join(IdeasDir, origFilename)
+	writePath := path.Join(IdeasDir, idea.Filename)
+	err := os.Rename(srcPath, writePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+// rename the tag on this idea
+func (idea *Idea) SetZombie() {
+	origFilename := idea.Filename
+	idea.Cycle = CycleZombie
+	idea.UpdateFilename()
+
+	srcPath := path.Join(IdeasDir, origFilename)
+	writePath := path.Join(IdeasDir, idea.Filename)
+	err := os.Rename(srcPath, writePath)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

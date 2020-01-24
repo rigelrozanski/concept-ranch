@@ -30,8 +30,9 @@ const (
 	keyTranscribe      = "transcribe"
 	keyTranscribeMany  = "transcribe-many"
 	keyConsume         = "consume"
-	keyZombie          = "zombie"
 	keyConsumes        = "consumes"
+	keyZombie          = "zombie"
+	keyLineage         = "lineage"
 	keyNew             = "new"
 	keyRm              = "rm"
 	keyCp              = "cp"
@@ -112,11 +113,21 @@ func main() {
 	case keyTranscribeMany:
 
 	case keyConsume:
-		EnsureLen(args, 3)
-		Consume(args[1], args[2])
+		switch len(args) {
+		case 2:
+			Consume(args[1], "")
+		case 3:
+			Consume(args[1], args[2])
+		default:
+			EnsureLen(args, 2)
+		}
 	case keyConsumes:
-
+		EnsureLen(args, 3)
+		Consumes(args[1], args[2])
 	case keyZombie:
+		EnsureLen(args, 2)
+		Zombie(args[1])
+	case keyLineage:
 
 	case keyNew:
 		EnsureLen(args, 2)
@@ -160,6 +171,6 @@ func main() {
 
 func EnsureLen(args []string, enLen int) {
 	if len(args) < enLen {
-		log.Fatalf("expected %v args", enLen)
+		log.Fatalf("expected at least %v args", enLen)
 	}
 }

@@ -26,6 +26,26 @@ func Consume(consumedID, optionalEntry string) {
 	}
 }
 
+func Zombie(zombieID string) {
+	zombie, err := strconv.Atoi(zombieID)
+	if err != nil {
+		log.Fatalf("bad id %v", zombieID)
+	}
+	lib.Zombie(uint32(zombie))
+}
+
+func Consumes(consumedID, consumesID string) {
+	consumed, err := strconv.Atoi(consumedID)
+	if err != nil {
+		log.Fatalf("bad id %v", consumedID)
+	}
+	consumes, err := strconv.Atoi(consumesID)
+	if err != nil {
+		log.Fatalf("bad id %v", consumesID)
+	}
+	lib.Consumes(uint32(consumed), uint32(consumes))
+}
+
 func QuickQuery(unsplitTagsOrID string) {
 	id, err := strconv.Atoi(unsplitTagsOrID)
 	if err == nil {
