@@ -75,6 +75,7 @@ type Idea struct {
 	Id          uint32
 	ConsumesIds []uint32 // Id of idea which this idea consumes
 	Kind        int      // kind of information
+	Ext         string   // file extension, blank is assumed to be text
 	Created     time.Time
 	Edited      time.Time
 	Consumed    time.Time
@@ -103,6 +104,28 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 		Id:          GetNextID(),
 		ConsumesIds: consumesIds,
 		Kind:        KindText,
+		Ext:         "",
+		Created:     todayDate,
+		Edited:      todayDate,
+		Consumed:    zeroDate,
+		Tags:        tags,
+	}
+
+	(&idea).UpdateFilename()
+	return idea
+}
+
+func NewIdeaFromFile(tags []string, filepath string) Idea {
+	todayDate := TodayDate()
+
+	ext := path.Ext(filepath)
+
+	idea := Idea{
+		Cycle:       CycleAlive,
+		Id:          GetNextID(),
+		ConsumesIds: []uint32{},
+		Kind:        GetKind(ext),
+		Ext:         ext,
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
@@ -114,7 +137,7 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 }
 
 // NewAliveIdea creates a new idea object
-func NewConsumingIdea(consumesIdea Idea) Idea {
+func NewConsumingTextIdea(consumesIdea Idea) Idea {
 
 	todayDate := TodayDate()
 
@@ -138,20 +161,26 @@ func NewConsumingIdea(consumesIdea Idea) Idea {
 	return idea
 }
 
+func GetKind(ext string) int {
+	switch ext {
+	case ".mp3", ".wav":
+		return KindAudio
+	case ".jpg", ".jpeg", ".tiff", ".png":
+		return KindImage
+	case "", ".txt":
+		return KindText
+	default:
+		log.Fatalf("unknown filetype: %v", ext)
+	}
+	return 0
+}
+
 func NewIdeaFromFilename(filename string) (idea Idea) {
 	idea.Filename = filename
 
 	ext := path.Ext(filename)
-	switch ext {
-	case ".mp3", ".wav":
-		idea.Kind = KindAudio
-	case ".jpg", ".jpeg", ".tiff", ".png":
-		idea.Kind = KindImage
-	case "", ".txt":
-		idea.Kind = KindText
-	default:
-		log.Fatalf("unknown filetype: %v", ext)
-	}
+	idea.Ext = ext
+	idea.Kind = GetKind(ext)
 
 	base := strings.TrimSuffix(filename, path.Ext(filename))
 	split := strings.Split(base, ",")
@@ -252,13 +281,15 @@ func (idea *Idea) UpdateFilename() {
 		idStr(idea.Id),
 		idea.Created.Format(layout),
 		"e" + idea.Edited.Format(layout)}
-	if idea.Cycle == CycleConsumed {
+	if idea.Cycle != CycleAlive {
 		strList = append(strList, "c"+idea.Consumed.Format(layout))
 	}
 	strList = append(strList, itoa(idea.ConsumesIds)...)
 	strList = append(strList, idea.Tags...)
 
-	idea.Filename = strings.Join(strList, ",")
+	joined := strings.Join(strList, ",")
+	joined += idea.Ext
+	idea.Filename = joined
 }
 
 // rename the tag on this idea

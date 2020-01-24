@@ -217,7 +217,7 @@ func Consume(consumedId uint32, entry string) (consumerFilepath string) {
 	consumedIdea := GetIdeaByID(consumedId)
 
 	// consumer: remove the id, add in a new id, add the consumes id
-	consumerIdea := NewConsumingIdea(consumedIdea)
+	consumerIdea := NewConsumingTextIdea(consumedIdea)
 	IncrementID()
 	WriteIdea(consumerIdea.Filename, entry)
 
@@ -268,11 +268,14 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLe
 		return false, 0, ""
 	case 1:
 		// if only one found, return its path
-		return true, 1, path.Join(QiDir, subset[0].Filename)
+		return true, 1, subset[0].Path()
 	default:
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte
 		for _, idea := range subset {
+			if idea.Kind != KindText {
+				continue
+			}
 			icontentBz, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
 			if err != nil {
 				log.Fatal(err)

@@ -48,7 +48,6 @@ func Zombie(zombieID string) {
 
 func Lineage(idStr string) {
 	id, err := strconv.Atoi(idStr)
-	fmt.Printf("debug id: %v\n", id)
 	if err != nil {
 		log.Fatalf("bad id %v", idStr)
 	}
@@ -67,11 +66,8 @@ func QuickQuery(unsplitTagsOrID string) {
 
 func NewEmptyEntry(unsplitTags string) {
 	splitTags := strings.Split(unsplitTags, ",")
-	fmt.Printf("debug splitTags: %v\n", splitTags)
 	idea := lib.NewNonConsumingTextIdea(splitTags)
-	fmt.Printf("debug idea: %v\n", idea)
 	writePath := path.Join(lib.IdeasDir, idea.Filename)
-	fmt.Printf("debug writePath: %v\n", writePath)
 	lib.IncrementID()
 	openText(writePath)
 }
@@ -85,7 +81,7 @@ func MultiOpen(unsplitTagsOrID string) {
 	id, err := strconv.Atoi(unsplitTagsOrID)
 	if err == nil {
 		filePath := lib.GetFilepathByID(uint32(id))
-		openText(filePath)
+		open(filePath)
 		return
 	}
 	splitTags := strings.Split(unsplitTagsOrID, ",")
@@ -107,7 +103,7 @@ func RemoveByID(idStr string) {
 
 func CopyByID(idStr string) {
 	id := parseIdStr(idStr)
-	openText(lib.CopyByID(id))
+	open(lib.CopyByID(id))
 }
 
 func ListTagsByID(idStr string) {
@@ -232,7 +228,7 @@ func MultiOpenByTags(tags []string) {
 	}
 	// if only a single entry is found then open only it!
 	if singleReturn != "" {
-		openText(singleReturn)
+		open(singleReturn)
 		return
 	}
 	openTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
@@ -243,11 +239,24 @@ func RemoveById(id uint32) error {
 	return nil
 }
 
-func Entry(entry string, tags []string) {
+// create an entry
+func Entry(entryOrPath string, tags []string) {
+
+	if cmn.FileExists(entryOrPath) { // is a path
+
+		idea := lib.NewIdeaFromFile(tags, entryOrPath)
+
+		err := cmn.Copy(entryOrPath, idea.Path())
+		if err != nil {
+			log.Fatal(err)
+		}
+		lib.IncrementID()
+
+		return
+	}
 
 	idea := lib.NewNonConsumingTextIdea(tags)
-	writePath := path.Join(lib.IdeasDir, idea.Filename)
-	err := cmn.WriteLines([]string{entry}, writePath)
+	err := cmn.WriteLines([]string{entryOrPath}, idea.Path())
 	if err != nil {
 		log.Fatalf("error writing new file: %v", err)
 	}
@@ -255,6 +264,32 @@ func Entry(entry string, tags []string) {
 }
 
 //_______________________________________________________________________________________________________
+
+// open supported files
+func open(pathToOpen string) {
+	ext := path.Ext(pathToOpen)
+
+	switch lib.GetKind(ext) {
+	case lib.KindText:
+		openText(pathToOpen)
+	case lib.KindImage:
+		viewImage(pathToOpen)
+	case lib.KindAudio:
+		fmt.Println("Sry, do not yet support opening audio!")
+	}
+}
+
+func viewImage(pathToOpen string) {
+
+	fmt.Println(path.Base(pathToOpen))
+	cmd := exec.Command("imgcat", pathToOpen)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func openText(pathToOpen string) {
 
