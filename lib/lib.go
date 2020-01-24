@@ -93,7 +93,7 @@ func GetNextID() uint32 {
 }
 
 func IncrementID() {
-	err := cmn.WriteLines([]string{strconv.Itoa(int(GetNextID()))}, ConfigFile)
+	err := cmn.WriteLines([]string{idStr(GetNextID())}, ConfigFile)
 	if err != nil {
 		panic(err)
 	}
@@ -126,7 +126,7 @@ func GetFilenameByID(id uint32) (filepath string) {
 	}
 
 	fileName := ""
-	idStr := strconv.Itoa(int(id))
+	idStr := idStr(id)
 	for _, file := range files {
 		fn := file.Name()
 		if strings.HasPrefix(fn[2:], idStr) {
@@ -181,7 +181,7 @@ func CopyByID(id uint32) (newFilepath string) {
 	split := strings.SplitN(fn, ",", 3)
 
 	newFilename := strings.Join([]string{
-		split[0], strconv.Itoa(int(newID)), split[2]}, ",")
+		split[0], idStr(newID), split[2]}, ",")
 	IncrementID()
 
 	// actually perform the copy
@@ -201,10 +201,7 @@ func Zombie(zombieId uint32) {
 // display the lineage of the
 func Lineage(id uint32) (compiled string) {
 	lineageIdea := GetIdeaByID(id)
-	fmt.Printf("debug lineageIdea: %v\n", lineageIdea)
-	fmt.Printf("debug ConsumesIds: %v\n", lineageIdea.ConsumesIds)
 	for _, consume := range lineageIdea.ConsumesIds {
-		fmt.Printf("debug consume: %v\n", consume)
 		fn := GetFilenameByID(consume)
 		content, found := GetContentByID(consume)
 		if !found {

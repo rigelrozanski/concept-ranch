@@ -122,8 +122,6 @@ func NewConsumingIdea(consumesIdea Idea) Idea {
 	consumesTagCp := make([]string, len(consumesIdea.Tags))
 	copy(consumesIdCp, consumesIdea.ConsumesIds)
 	copy(consumesTagCp, consumesIdea.Tags)
-	fmt.Printf("debug consumesIdea.Tags: %v\n", consumesIdea.Tags)
-	fmt.Printf("debug consumesTagCp: %v\n", consumesTagCp)
 
 	idea := Idea{
 		Cycle:       CycleAlive,
@@ -251,7 +249,7 @@ func (idea *Idea) UpdateFilename() {
 
 	strList := []string{
 		prefix,
-		strconv.Itoa(int(idea.Id)),
+		idStr(idea.Id),
 		idea.Created.Format(layout),
 		"e" + idea.Edited.Format(layout)}
 	if idea.Cycle == CycleConsumed {
@@ -318,9 +316,13 @@ func (idea *Idea) SetZombie() {
 func itoa(in []uint32) []string {
 	out := make([]string, len(in))
 	for i, el := range in {
-		out[i] = "c" + strconv.Itoa(int(el))
+		out[i] = "c" + idStr(el)
 	}
 	return out[:]
+}
+
+func idStr(id uint32) string {
+	return fmt.Sprintf("%06d", id)
 }
 
 // returns true if the idea contains all the input tags
