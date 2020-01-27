@@ -33,18 +33,6 @@ YYYYMMDD = creation date
 eYYYYMMDD = last edited date
 cYYYYMMDD = consumed date
 
-### TODO 
- - consume commands
- - image commands 
- - audio commands
- - scan commands
- - transcribe
- - special queries for dates
- - special queries for consumed 
- - special tags during input for consumption
- - special entry for non-text files
- - special entry to read an entire directory
-
 ### License
 
 Quick Ideas is released under the Apache 2.0 license.
