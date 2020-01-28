@@ -197,19 +197,19 @@ func DestroyTag(tag string) {
 //__________________
 
 func ListAllTags() {
-	ideas := lib.GetAllIdeas(lib.IdeasDir)
+	ideas := lib.GetAllIdeas()
 	fmt.Println(ideas.UniqueTags())
 }
 
 func ListAllFiles() {
-	ideas := lib.GetAllIdeas(lib.IdeasDir)
+	ideas := lib.GetAllIdeas()
 	for _, idea := range ideas {
 		fmt.Println(idea.Filename)
 	}
 }
 
 func ListAllFilesWithTags(tagsGrouped string) {
-	ideas := lib.GetAllIdeas(lib.IdeasDir)
+	ideas := lib.GetAllIdeas()
 	subset := ideas.WithTags(parseTags(tagsGrouped))
 	for _, idea := range subset {
 		fmt.Println(idea.Filename)

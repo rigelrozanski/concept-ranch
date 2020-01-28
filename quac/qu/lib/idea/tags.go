@@ -9,7 +9,7 @@ import (
 //_______________________________________________________
 
 func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
-	ideas := GetAllIdeasNonConsuming(IdeasDir)
+	ideas := GetAllIdeasNonConsuming()
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {

@@ -13,7 +13,7 @@ import (
 )
 
 func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int, singleReturn string) {
-	ideas := idea.GetAllIdeasNonConsuming(idea.IdeasDir)
+	ideas := idea.GetAllIdeasNonConsuming()
 	subset := ideas.WithTags(tags)
 
 	switch len(subset) {

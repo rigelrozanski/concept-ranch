@@ -2,6 +2,7 @@ package idea
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"path"
 	"regexp"
@@ -54,6 +55,14 @@ func (idea Idea) Path() string {
 	return path.Join(IdeasDir, idea.Filename)
 }
 
+func (idea Idea) GetContent() []byte {
+	content, err := ioutil.ReadFile(idea.Path())
+	if err != nil {
+		log.Fatal(err)
+	}
+	return content
+}
+
 func (idea Idea) Prefix() (prefix string) {
 	switch idea.Cycle {
 	case CycleAlive:
@@ -68,6 +77,14 @@ func (idea Idea) Prefix() (prefix string) {
 
 func (idea Idea) IsText() bool {
 	return (idea.Kind == KindText)
+}
+
+func (idea Idea) IsImage() bool {
+	return (idea.Kind == KindImage)
+}
+
+func (idea Idea) IsAudio() bool {
+	return (idea.Kind == KindAudio)
 }
 
 // creates the filename based on idea information

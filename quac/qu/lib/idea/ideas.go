@@ -8,8 +8,8 @@ import (
 
 type Ideas []Idea
 
-func GetAllIdeasNonConsuming(dir string) (ideas Ideas) {
-	files, err := ioutil.ReadDir(dir)
+func GetAllIdeasNonConsuming() (ideas Ideas) {
+	files, err := ioutil.ReadDir(IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -22,8 +22,8 @@ func GetAllIdeasNonConsuming(dir string) (ideas Ideas) {
 	return ideas
 }
 
-func GetAllIdeas(dir string) (ideas Ideas) {
-	files, err := ioutil.ReadDir(dir)
+func GetAllIdeas() (ideas Ideas) {
+	files, err := ioutil.ReadDir(IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -36,6 +36,24 @@ func GetAllIdeas(dir string) (ideas Ideas) {
 func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.HasTags(tags) {
+			subset = append(subset, idea)
+		}
+	}
+	return subset
+}
+
+func (ideas Ideas) WithText() (subset Ideas) {
+	for _, idea := range ideas {
+		if idea.IsText() {
+			subset = append(subset, idea)
+		}
+	}
+	return subset
+}
+
+func (ideas Ideas) WithImage() (subset Ideas) {
+	for _, idea := range ideas {
+		if idea.IsImage() {
 			subset = append(subset, idea)
 		}
 	}

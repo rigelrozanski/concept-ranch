@@ -43,8 +43,7 @@ const (
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
-	keyLog             = "log"
-	keyPdfBackup       = "pdf-backup"
+	keyPDFBackup       = "pdf-backup"
 
 	help = `
 /|||||\ |-o-o-~|
@@ -163,6 +162,8 @@ func main() {
 		} else {
 			ListAllFilesWithTags(args[1])
 		}
+	case keyPDFBackup:
+		lib.ExportToPDF()
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0])
