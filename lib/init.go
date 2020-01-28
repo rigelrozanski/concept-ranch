@@ -31,6 +31,10 @@ func init() {
 	idea.LastIdFile = path.Join(QiDir, "last")
 
 	EnsureBasics()
+
+	IdeasDir = idea.IdeasDir
+	ConfigFile = idea.ConfigFile
+	LastIdFile = idea.LastIdFile
 }
 
 func EnsureBasics() {
