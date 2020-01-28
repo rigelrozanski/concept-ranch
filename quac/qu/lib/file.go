@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/rigelrozanski/qi/lib/idea"
+	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
 )
 
 // create an empty file in the ideas Dir based on the filename

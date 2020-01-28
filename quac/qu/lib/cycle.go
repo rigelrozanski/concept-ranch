@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/rigelrozanski/qi/lib/idea"
+	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
 )
 
 // Display the immediate lineage of ideas

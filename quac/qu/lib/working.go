@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/qi/lib/idea"
+	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
 )
 
 func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int, singleReturn string) {

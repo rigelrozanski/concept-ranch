@@ -6,29 +6,28 @@ import (
 	"path"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/qi/lib/idea"
+	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
 )
 
 // directory name where boards are stored in repo
-var QiDir, QiFile, LogFile, WorkingFnsFile, WorkingContentFile string
+var QuDir, QuFile, LogFile, WorkingFnsFile, WorkingContentFile string
 
 // load config and set global file directories
-func init() {
+func Initialize(wranchConfigPath string) {
 
-	rootConfigPath := os.ExpandEnv("$HOME/.qi_config.txt")
-	lines, err := cmn.ReadLines(rootConfigPath)
+	lines, err := cmn.ReadLines(wranchConfigPath)
 	if err != nil {
-		panic(fmt.Sprintf("error reading ~/.qi_config.txt, error: %v", err))
+		panic(fmt.Sprintf("error reading %v, error: %v", wranchConfigPath, err))
 	}
 
-	QiDir = lines[0]
-	idea.IdeasDir = path.Join(QiDir, "ideas")
-	QiFile = path.Join(QiDir, "qi")
-	LogFile = path.Join(QiDir, "log")
-	idea.ConfigFile = path.Join(QiDir, "config")
-	WorkingFnsFile = path.Join(QiDir, "working_files")
-	WorkingContentFile = path.Join(QiDir, "working_content")
-	idea.LastIdFile = path.Join(QiDir, "last")
+	QuDir = lines[0]
+	idea.IdeasDir = path.Join(QuDir, "ideas")
+	QuFile = path.Join(QuDir, "qu")
+	LogFile = path.Join(QuDir, "log")
+	idea.ConfigFile = path.Join(QuDir, "config")
+	WorkingFnsFile = path.Join(QuDir, "working_files")
+	WorkingContentFile = path.Join(QuDir, "working_content")
+	idea.LastIdFile = path.Join(QuDir, "last")
 
 	EnsureBasics()
 
@@ -38,12 +37,12 @@ func init() {
 }
 
 func EnsureBasics() {
-	if !cmn.FileExists(QiDir) {
-		panic("directory specified in ~/.qi_config.txt does not exist")
+	if !cmn.FileExists(QuDir) {
+		panic("directory specified in wranch config does not exist")
 	}
 	_ = os.Mkdir(idea.IdeasDir, os.ModePerm)
-	if !cmn.FileExists(QiFile) {
-		err := cmn.CreateEmptyFile(QiFile)
+	if !cmn.FileExists(QuFile) {
+		err := cmn.CreateEmptyFile(QuFile)
 		if err != nil {
 			panic(err)
 		}

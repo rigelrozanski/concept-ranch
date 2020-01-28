@@ -1,4 +1,4 @@
-module github.com/rigelrozanski/qi
+module github.com/rigelrozanski/wranch
 
 go 1.12
 

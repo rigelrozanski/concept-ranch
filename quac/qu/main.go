@@ -6,12 +6,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rigelrozanski/qi/lib"
+	"github.com/rigelrozanski/wranch/quac/qu/lib"
 )
 
 // filestructure:
 //                ./ideas/a,123456,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,c432978,c543098...,tag1,tag2,tag3...
-//                ./qi
+//                ./qu
 //                ./log
 //                ./config
 //                ./working_files
@@ -22,7 +22,7 @@ import (
 // eYYYYMMDD = last edited date
 // cYYYYMMDD = consumed date
 
-//keywords used throughout qi
+//keywords used throughout qu
 const (
 	keyHelp1, keyHelp2 = "--help", "-h"
 	keyCat             = "cat"
@@ -48,28 +48,28 @@ const (
 
 	help = `
 /|||||\ |-o-o-~|
-qi --------------------------------------> edit the tagless master quick ideas board in vim
-qi [tags...] [entry] --------------------> quick entry to a new idea
-qi [query] ------------------------------> open a vim tab with the contents of the query 
-qi cat [query] --------------------------> print idea(s) contents' to console
-qi scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
-qi transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
-qi transcribe-many [op_tags...] ---------> transcribe many images one after another, optionally transcribe within a set of tags
-qi consume [id] [op_entry] --------------> quick consumes the given id into a new entry
-qi consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
-qi zombie [id] --------------------------> "unconsume" an idea based on id
-qi lineage [id] -------------------------> show the consumtion lineage  
-qi new [tags...] ------------------------> create a new idea with the provided tags
-qi rm [id] ------------------------------> remove an idea by id
-qi cp [id] ------------------------------> duplicate an idea at the provided id
-qi tags [id] ----------------------------> list the tags for a given id
-qi kill-tag [id] [tag] ------------------> remove a tag from an idea by id
-qi add-tag [id] [tag] -------------------> add a tag from an idea by id
-qi rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
-qi destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
-qi lst ----------------------------------> list all tags used
-qi lsf [op_tags] ------------------------> list all files, optionally which contain provided tags
-qi pdf-backup ---------------------------> backup best ideas to a printable pdf
+qu --------------------------------------> edit the tagless master quick ideas board in vim
+qu [tags...] [entry] --------------------> quick entry to a new idea
+qu [query] ------------------------------> open a vim tab with the contents of the query 
+qu cat [query] --------------------------> print idea(s) contents' to console
+qu scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
+qu transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
+qu transcribe-many [op_tags...] ---------> transcribe many images one after another, optionally transcribe within a set of tags
+qu consume [id] [op_entry] --------------> quick consumes the given id into a new entry
+qu consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
+qu zombie [id] --------------------------> "unconsume" an idea based on id
+qu lineage [id] -------------------------> show the consumtion lineage  
+qu new [tags...] ------------------------> create a new idea with the provided tags
+qu rm [id] ------------------------------> remove an idea by id
+qu cp [id] ------------------------------> duplicate an idea at the provided id
+qu tags [id] ----------------------------> list the tags for a given id
+qu kill-tag [id] [tag] ------------------> remove a tag from an idea by id
+qu add-tag [id] [tag] -------------------> add a tag from an idea by id
+qu rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
+qu destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
+qu lst ----------------------------------> list all tags used
+qu lsf [op_tags] ------------------------> list all files, optionally which contain provided tags
+qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
 [op_ ----------- An optional input 
@@ -92,11 +92,12 @@ Explanation of some terms:
 )
 
 func main() {
+	lib.Initialize(os.ExpandEnv("$HOME/.wranch_config.txt"))
 	args := os.Args[1:]
 
-	// for the master qi file for quick entry
+	// for the master qu file for quick entry
 	if len(args) == 0 {
-		openText(lib.QiFile)
+		openText(lib.QuFile)
 		return
 	}
 
