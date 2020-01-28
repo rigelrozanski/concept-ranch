@@ -20,7 +20,7 @@ func Consume(consumedID, optionalEntry string) {
 	if err != nil {
 		log.Fatalf("bad id %v", consumedID)
 	}
-	consumerFilepath := lib.Consume(uint32(consumed), optionalEntry)
+	consumerFilepath := lib.SetConsume(uint32(consumed), optionalEntry)
 	if optionalEntry == "" {
 		openText(consumerFilepath)
 	}
@@ -35,7 +35,7 @@ func Consumes(consumedID, consumesID string) {
 	if err != nil {
 		log.Fatalf("bad id %v", consumesID)
 	}
-	lib.Consumes(uint32(consumed), uint32(consumes))
+	lib.SetConsumes(uint32(consumed), uint32(consumes))
 }
 
 func Zombie(zombieID string) {
@@ -43,7 +43,7 @@ func Zombie(zombieID string) {
 	if err != nil {
 		log.Fatalf("bad id %v", zombieID)
 	}
-	lib.Zombie(uint32(zombie))
+	lib.SetZombie(uint32(zombie))
 }
 
 func Lineage(idStr string) {
@@ -51,7 +51,7 @@ func Lineage(idStr string) {
 	if err != nil {
 		log.Fatalf("bad id %v", idStr)
 	}
-	fmt.Print(lib.Lineage(uint32(id)))
+	fmt.Print(lib.GetLineage(uint32(id)))
 }
 
 func QuickQuery(unsplitTagsOrID string) {
@@ -66,8 +66,8 @@ func QuickQuery(unsplitTagsOrID string) {
 
 func NewEmptyEntry(unsplitTags string) {
 	splitTags := strings.Split(unsplitTags, ",")
-	idea := lib.NewNonConsumingTextIdea(splitTags)
-	writePath := path.Join(lib.IdeasDir, idea.Filename)
+	idear := lib.NewNonConsumingTextIdea(splitTags)
+	writePath := path.Join(lib.IdeasDir, idear.Filename)
 	lib.IncrementID()
 	openText(writePath)
 }
@@ -193,12 +193,12 @@ func DestroyTag(tag string) {
 //__________________
 
 func ListAllTags() {
-	ideas := lib.PathToIdeas(lib.IdeasDir)
+	ideas := lib.GetAllIdeas(lib.IdeasDir)
 	fmt.Println(ideas.UniqueTags())
 }
 
 func ListAllFiles() {
-	ideas := lib.PathToIdeas(lib.IdeasDir)
+	ideas := lib.GetAllIdeas(lib.IdeasDir)
 	for _, idea := range ideas {
 		fmt.Println(idea.Filename)
 	}

@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"path"
+
+	"github.com/rigelrozanski/qi/lib/idea"
 )
 
 // Display the immediate lineage of ideas
@@ -26,8 +28,8 @@ func SetConsume(consumedId uint32, entry string) (consumerFilepath string) {
 	consumedIdea := GetIdeaByID(consumedId)
 
 	// consumer: remove the id, add in a new id, add the consumes id
-	consumerIdea := NewConsumingTextIdea(consumedIdea)
-	IncrementID()
+	consumerIdea := idea.NewConsumingTextIdea(consumedIdea)
+	idea.IncrementID()
 	WriteIdea(consumerIdea.Filename, entry)
 
 	consumedIdea.SetConsumed()
@@ -43,7 +45,7 @@ func SetConsumes(consumedId, consumesId uint32) {
 	consumesIdea.ConsumesIds = append(consumesIdea.ConsumesIds, consumedId)
 	srcPath := consumesIdea.Path()
 	(&consumesIdea).UpdateFilename()
-	writePath := path.Join(IdeasDir, consumesIdea.Filename)
+	writePath := path.Join(idea.IdeasDir, consumesIdea.Filename)
 	err := os.Rename(srcPath, writePath)
 	if err != nil {
 		log.Fatal(err)

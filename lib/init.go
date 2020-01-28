@@ -63,7 +63,7 @@ func EnsureBasics() {
 		}
 	}
 	if !cmn.FileExists(idea.ConfigFile) {
-		err := cmn.WriteLines([]string{"000001"}, ConfigFile)
+		err := cmn.WriteLines([]string{"000001"}, idea.ConfigFile)
 		if err != nil {
 			panic(err)
 		}

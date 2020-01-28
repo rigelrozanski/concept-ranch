@@ -9,7 +9,7 @@ import (
 //_______________________________________________________
 
 func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
-	ideas := PathToNonConsumingIdeas(IdeasDir)
+	ideas := GetAllIdeasNonConsuming(IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	if len(subset) == 0 {
@@ -65,27 +65,4 @@ func (idea *Idea) RemoveTag(tagToKill string) {
 			break
 		}
 	}
-}
-
-func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
-	for _, idea := range ideas {
-		if idea.HasTags(tags) {
-			subset = append(subset, idea)
-		}
-	}
-	return subset
-}
-
-func (ideas Ideas) UniqueTags() []string {
-	tags := make(map[string]string)
-	for _, idea := range ideas {
-		for _, tag := range idea.Tags {
-			tags[tag] = ""
-		}
-	}
-	var out []string
-	for tag, _ := range tags {
-		out = append(out, tag)
-	}
-	return out
 }

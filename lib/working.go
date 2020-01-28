@@ -9,10 +9,11 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
+	"github.com/rigelrozanski/qi/lib/idea"
 )
 
 func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int, singleReturn string) {
-	ideas := PathToNonConsumingIdeas(IdeasDir)
+	ideas := idea.GetAllIdeasNonConsuming(idea.IdeasDir)
 	subset := ideas.WithTags(tags)
 
 	switch len(subset) {
@@ -24,21 +25,21 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLe
 	default:
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte
-		for _, idea := range subset {
-			if idea.Kind != KindText {
+		for _, idear := range subset {
+			if idear.IsText() {
 				continue
 			}
-			icontentBz, err := ioutil.ReadFile(path.Join(IdeasDir, idea.Filename))
+			icontentBz, err := ioutil.ReadFile(path.Join(idea.IdeasDir, idear.Filename))
 			if err != nil {
 				log.Fatal(err)
 			}
 
 			noLines := bytes.Count(icontentBz, []byte{'\n'})
 
-			if len(idea.Filename)+2 > maxFNLen {
-				maxFNLen = len(idea.Filename) + 2
+			if len(idear.Filename)+2 > maxFNLen {
+				maxFNLen = len(idear.Filename) + 2
 			}
-			fnBz = append(fnBz, []byte(idea.Filename+strings.Repeat("\n", noLines))...)
+			fnBz = append(fnBz, []byte(idear.Filename+strings.Repeat("\n", noLines))...)
 			contentBz = append(contentBz, icontentBz...)
 		}
 
@@ -85,7 +86,7 @@ func SaveFromWorkingFiles() {
 		RemoveByID(id)
 
 		// create the new file
-		filepath := path.Join(IdeasDir, fnLine)
+		filepath := path.Join(idea.IdeasDir, fnLine)
 		err := cmn.WriteLines(contentLines[start:end], filepath)
 		if err != nil {
 			log.Fatal(err)

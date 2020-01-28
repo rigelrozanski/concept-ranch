@@ -29,11 +29,11 @@ func GetFilepathByID(id uint32) (filepath string) {
 	if filename == "" {
 		return ""
 	}
-	return path.Join(IdeasDir, filename)
+	return path.Join(idea.IdeasDir, filename)
 }
 
 func GetFilenameByID(id uint32) (filepath string) {
-	files, err := ioutil.ReadDir(IdeasDir)
+	files, err := ioutil.ReadDir(idea.IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func GetFilenameByID(id uint32) (filepath string) {
 
 func GetIdeaByID(id uint32) idea.Idea {
 	fn := GetFilenameByID(id)
-	return NewIdeaFromFilename(fn)
+	return idea.NewIdeaFromFilename(fn)
 
 }
 
@@ -81,16 +81,16 @@ func CopyByID(id uint32) (newFilepath string) {
 	fn := GetFilenameByID(id)
 
 	// remove the id, add in a new id
-	newID := GetNextID()
+	newID := idea.GetNextID()
 	split := strings.SplitN(fn, ",", 3)
 
 	newFilename := strings.Join([]string{
 		split[0], idea.IdStr(newID), split[2]}, ",")
-	IncrementID()
+	idea.IncrementID()
 
 	// actually perform the copy
-	srcPath := path.Join(IdeasDir, fn)
-	writePath := path.Join(IdeasDir, newFilename)
+	srcPath := path.Join(idea.IdeasDir, fn)
+	writePath := path.Join(idea.IdeasDir, newFilename)
 	cmn.Copy(srcPath, writePath)
 
 	return writePath

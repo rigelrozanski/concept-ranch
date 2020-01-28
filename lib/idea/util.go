@@ -65,6 +65,10 @@ func (idea Idea) Prefix() (prefix string) {
 	return prefix
 }
 
+func (idea Idea) IsText() bool {
+	return idea.Kind == KindText
+}
+
 // creates the filename based on idea information
 func (idea *Idea) UpdateFilename() {
 
