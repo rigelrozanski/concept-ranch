@@ -79,19 +79,25 @@ func RemoveByID(id uint32) {
 // copy an idea by the id
 func CopyByID(id uint32) (newFilepath string) {
 	fn := GetFilenameByID(id)
+	newFilename := ReserveCopyFilename(fn)
 
-	// remove the id, add in a new id
-	newID := idea.GetNextID()
-	split := strings.SplitN(fn, ",", 3)
-
-	newFilename := strings.Join([]string{
-		split[0], idea.IdStr(newID), split[2]}, ",")
-	idea.IncrementID()
-
-	// actually perform the copy
+	// perform the copy
 	srcPath := path.Join(idea.IdeasDir, fn)
 	writePath := path.Join(idea.IdeasDir, newFilename)
 	cmn.Copy(srcPath, writePath)
 
 	return writePath
+}
+
+func ReserveCopyFilename(oldFilename string) (newFilename string) {
+
+	// remove the id, add in a new id
+	newID := idea.GetNextID()
+	split := strings.SplitN(oldFilename, ",", 3)
+
+	newFilename = strings.Join([]string{
+		split[0], idea.IdStr(newID), split[2]}, ",")
+	idea.IncrementID()
+
+	return newFilename
 }

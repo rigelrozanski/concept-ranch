@@ -65,29 +65,54 @@ func SaveFromWorkingFiles() {
 		log.Fatal(err)
 	}
 
-	for start, fnLine := range fnLines {
+	var mostRecentCompleteName string
+	for startRange, fnLine := range fnLines {
 		if fnLine == "" {
 			continue
 		}
-		end := start + 1
+		splitFile := false
+		if fnLine == "SPLIT" {
+			splitFile = true
+		} else {
+			mostRecentCompleteName = fnLine
+		}
+
+		endRange := startRange + 1
 		// keep adding to end unless the next line is not empty
 		// or is not a part of the array!
-		for ; !(end >= len(fnLines) || fnLines[end] != ""); end++ {
+		for ; !(endRange >= len(fnLines) || fnLines[endRange] != ""); endRange++ {
 		}
 
-		// get id and orig bytes
-		id := GetIdByFilename(fnLine)
-		origBz, found := GetContentByID(id)
-		if !found {
-			log.Fatal("not found when should be")
+		var origBz []byte
+		var filepath string
+
+		if splitFile {
+			if mostRecentCompleteName == "" {
+				log.Fatal("cannot split from nonexistent file")
+			}
+			filename := ReserveCopyFilename(mostRecentCompleteName)
+
+			// create the split filepath but change the id
+			filepath = path.Join(idea.IdeasDir, filename)
+
+		} else {
+			// get the orig bytes (non existant if a split)
+			id := GetIdByFilename(fnLine)
+			found := false
+			origBz, found = GetContentByID(id)
+			if !found {
+				log.Fatal("not found when should be")
+			}
+
+			// remove the old file by id (may have been renamed)
+			RemoveByID(id)
+
+			// create the new file
+			filepath = path.Join(idea.IdeasDir, fnLine)
 		}
 
-		// remove the old file by id (may have been renamed)
-		RemoveByID(id)
-
-		// create the new file
-		filepath := path.Join(idea.IdeasDir, fnLine)
-		err := cmn.WriteLines(contentLines[start:end], filepath)
+		// write the file
+		err := cmn.WriteLines(contentLines[startRange:endRange], filepath)
 		if err != nil {
 			log.Fatal(err)
 		}
