@@ -41,8 +41,8 @@ const (
 	keyRenameTag       = "rename-tag"
 	keyAddTag          = "add-tag"
 	keyDestroyTag      = "destroy-tag"
-	keyLs              = "ls"
-	keyLsFiles         = "ls-files"
+	keyLsTags          = "lst"
+	keyLsFiles         = "lsf"
 	keyLog             = "log"
 	keyPdfBackup       = "pdf-backup"
 
@@ -67,8 +67,8 @@ qi kill-tag [id] [tag] ------------------> remove a tag from an idea by id
 qi add-tag [id] [tag] -------------------> add a tag from an idea by id
 qi rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
 qi destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
-qi ls -----------------------------------> list all tags used
-qi ls-files -----------------------------> list all files
+qi lst ----------------------------------> list all tags used
+qi lsf [op_tags] ------------------------> list all files, optionally which contain provided tags
 qi pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -154,10 +154,14 @@ func main() {
 	case keyDestroyTag:
 		EnsureLen(args, 2)
 		DestroyTag(args[1])
-	case keyLs:
+	case keyLsTags:
 		ListAllTags()
 	case keyLsFiles:
-		ListAllFiles()
+		if len(args) == 1 {
+			ListAllFiles()
+		} else {
+			ListAllFilesWithTags(args[1])
+		}
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0])

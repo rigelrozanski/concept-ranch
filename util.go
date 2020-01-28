@@ -60,12 +60,12 @@ func QuickQuery(unsplitTagsOrID string) {
 		ViewByID(uint32(id))
 		return
 	}
-	splitTags := strings.Split(unsplitTagsOrID, ",")
+	splitTags := parseTags(unsplitTagsOrID)
 	ViewByTags(splitTags)
 }
 
 func NewEmptyEntry(unsplitTags string) {
-	splitTags := strings.Split(unsplitTags, ",")
+	splitTags := parseTags(unsplitTags)
 	idear := lib.NewNonConsumingTextIdea(splitTags)
 	writePath := path.Join(lib.IdeasDir, idear.Filename)
 	lib.IncrementID()
@@ -73,7 +73,7 @@ func NewEmptyEntry(unsplitTags string) {
 }
 
 func QuickEntry(unsplitTags, entry string) {
-	splitTags := strings.Split(unsplitTags, ",")
+	splitTags := parseTags(unsplitTags)
 	Entry(entry, splitTags)
 }
 
@@ -84,7 +84,7 @@ func MultiOpen(unsplitTagsOrID string) {
 		open(filePath)
 		return
 	}
-	splitTags := strings.Split(unsplitTagsOrID, ",")
+	splitTags := parseTags(unsplitTagsOrID)
 	MultiOpenByTags(splitTags)
 }
 
@@ -94,6 +94,10 @@ func parseIdStr(idStr string) uint32 {
 		log.Fatalf("error parsing id, error: %v", err)
 	}
 	return uint32(idI)
+}
+
+func parseTags(tagsGrouped string) []string {
+	return strings.Split(tagsGrouped, ",")
 }
 
 func RemoveByID(idStr string) {
@@ -200,6 +204,14 @@ func ListAllTags() {
 func ListAllFiles() {
 	ideas := lib.GetAllIdeas(lib.IdeasDir)
 	for _, idea := range ideas {
+		fmt.Println(idea.Filename)
+	}
+}
+
+func ListAllFilesWithTags(tagsGrouped string) {
+	ideas := lib.GetAllIdeas(lib.IdeasDir)
+	subset := ideas.WithTags(parseTags(tagsGrouped))
+	for _, idea := range subset {
 		fmt.Println(idea.Filename)
 	}
 }
