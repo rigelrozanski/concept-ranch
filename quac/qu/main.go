@@ -107,6 +107,7 @@ func main() {
 	case keyCat:
 		QuickQuery(args[1])
 	case keyScan:
+		lib.Scan(args[1])
 
 	case keyTranscribe:
 
