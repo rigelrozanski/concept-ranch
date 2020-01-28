@@ -66,7 +66,7 @@ qu kill-tag [id] [tag] ------------------> remove a tag from an idea by id
 qu add-tag [id] [tag] -------------------> add a tag from an idea by id
 qu rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
 qu destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
-qu lst ----------------------------------> list all tags used
+qu lst [op_tags] ------------------------> list all tags used, optionally which share a set of common tags
 qu lsf [op_tags] ------------------------> list all files, optionally which contain provided tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
@@ -155,7 +155,11 @@ func main() {
 		EnsureLen(args, 2)
 		DestroyTag(args[1])
 	case keyLsTags:
-		ListAllTags()
+		if len(args) == 1 {
+			ListAllTags()
+		} else {
+			ListAllTagsWithTags(args[1])
+		}
 	case keyLsFiles:
 		if len(args) == 1 {
 			ListAllFiles()

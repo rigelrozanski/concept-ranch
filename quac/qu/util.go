@@ -201,6 +201,31 @@ func ListAllTags() {
 	fmt.Println(ideas.UniqueTags())
 }
 
+func ListAllTagsWithTags(tagsGrouped string) {
+	ideas := lib.GetAllIdeas()
+	queryTags := parseTags(tagsGrouped)
+	subset := ideas.WithTags(queryTags)
+	uniqueTags := subset.UniqueTags()
+	outTags := make([]string, len(uniqueTags))
+
+	// remove the query tags from this list
+	i := 0
+	for _, uTag := range uniqueTags {
+		isQTag := false
+		for _, qTag := range queryTags {
+			if uTag == qTag {
+				isQTag = true
+			}
+		}
+		if !isQTag {
+			outTags[i] = uTag
+			i++
+		}
+	}
+
+	fmt.Println(outTags)
+}
+
 func ListAllFiles() {
 	ideas := lib.GetAllIdeas()
 	for _, idea := range ideas {
