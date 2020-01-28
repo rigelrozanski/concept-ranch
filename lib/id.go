@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path"
-	"strconv"
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
@@ -61,7 +60,7 @@ func GetIdByFilename(filename string) (id uint32) {
 	if len(split) != 3 {
 		log.Fatal("bad split")
 	}
-	idI, err := strconv.Atoi(split[1])
+	idI, err := ParseID(split[1])
 	if err != nil {
 		log.Fatal(err)
 	}

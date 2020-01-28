@@ -113,11 +113,11 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	}
 
 	// Get id
-	id, err := strconv.Atoi(split[1])
+	id, err := ParseID(split[1])
 	if err != nil {
 		log.Fatal(err)
 	}
-	idea.Id = uint32(id)
+	idea.Id = id
 
 	// get creation date
 	created, err := time.Parse(layout, split[2])
@@ -154,7 +154,8 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 		if !rxConsumedId.MatchString(split[ri]) {
 			break
 		}
-		id, err = strconv.Atoi(strings.TrimPrefix(split[ri], "c"))
+		// special case to not log so don't use ParseID
+		id, err := strconv.Atoi(strings.TrimPrefix(split[ri], "c"))
 		if err != nil {
 			log.Fatal(err)
 		}

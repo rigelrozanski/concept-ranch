@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	Last          = idea.Last
 	CycleAlive    = idea.CycleAlive
 	CycleConsumed = idea.CycleConsumed
 	CycleZombie   = idea.CycleZombie
@@ -21,6 +22,9 @@ var (
 	// functions aliases
 	GetNextID                = idea.GetNextID
 	IncrementID              = idea.IncrementID
+	ParseID                  = idea.ParseID
+	ParseIDNoLogLast         = idea.ParseIDNoLogLast
+	ParseIDOp                = idea.ParseIDOp
 	NewNonConsumingTextIdea  = idea.NewNonConsumingTextIdea
 	NewTextIdea              = idea.NewTextIdea
 	NewIdeaFromFile          = idea.NewIdeaFromFile
@@ -36,6 +40,7 @@ var (
 	// variable aliases
 	IdeasDir   = idea.IdeasDir
 	ConfigFile = idea.ConfigFile
+	LastIdFile = idea.LastIdFile
 )
 
 type (

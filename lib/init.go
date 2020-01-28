@@ -10,7 +10,7 @@ import (
 )
 
 // directory name where boards are stored in repo
-var QiDir, QiFile, LogFile, WorkingFnsFile, WorkingContentFile, LastIdFile string
+var QiDir, QiFile, LogFile, WorkingFnsFile, WorkingContentFile string
 
 // load config and set global file directories
 func init() {
@@ -28,7 +28,7 @@ func init() {
 	idea.ConfigFile = path.Join(QiDir, "config")
 	WorkingFnsFile = path.Join(QiDir, "working_files")
 	WorkingContentFile = path.Join(QiDir, "working_content")
-	LastIdFile = path.Join(QiDir, "last")
+	idea.LastIdFile = path.Join(QiDir, "last")
 
 	EnsureBasics()
 }
@@ -68,8 +68,8 @@ func EnsureBasics() {
 			panic(err)
 		}
 	}
-	if !cmn.FileExists(LastIdFile) {
-		err := cmn.WriteLines([]string{"000000"}, LastIdFile)
+	if !cmn.FileExists(idea.LastIdFile) {
+		err := cmn.WriteLines([]string{"000000"}, idea.LastIdFile)
 		if err != nil {
 			panic(err)
 		}

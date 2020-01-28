@@ -16,7 +16,7 @@ import (
 )
 
 func Consume(consumedID, optionalEntry string) {
-	consumed, err := strconv.Atoi(consumedID)
+	consumed, err := lib.ParseID(consumedID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumedID)
 	}
@@ -27,11 +27,11 @@ func Consume(consumedID, optionalEntry string) {
 }
 
 func Consumes(consumedID, consumesID string) {
-	consumed, err := strconv.Atoi(consumedID)
+	consumed, err := lib.ParseID(consumedID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumedID)
 	}
-	consumes, err := strconv.Atoi(consumesID)
+	consumes, err := lib.ParseID(consumesID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumesID)
 	}
@@ -39,7 +39,7 @@ func Consumes(consumedID, consumesID string) {
 }
 
 func Zombie(zombieID string) {
-	zombie, err := strconv.Atoi(zombieID)
+	zombie, err := lib.ParseID(zombieID)
 	if err != nil {
 		log.Fatalf("bad id %v", zombieID)
 	}
@@ -47,7 +47,7 @@ func Zombie(zombieID string) {
 }
 
 func Lineage(idStr string) {
-	id, err := strconv.Atoi(idStr)
+	id, err := lib.ParseID(idStr)
 	if err != nil {
 		log.Fatalf("bad id %v", idStr)
 	}
@@ -55,7 +55,7 @@ func Lineage(idStr string) {
 }
 
 func QuickQuery(unsplitTagsOrID string) {
-	id, err := strconv.Atoi(unsplitTagsOrID)
+	id, err := lib.ParseID(unsplitTagsOrID)
 	if err == nil {
 		ViewByID(uint32(id))
 		return
@@ -78,7 +78,7 @@ func QuickEntry(unsplitTags, entry string) {
 }
 
 func MultiOpen(unsplitTagsOrID string) {
-	id, err := strconv.Atoi(unsplitTagsOrID)
+	id, err := lib.ParseID(unsplitTagsOrID)
 	if err == nil {
 		filePath := lib.GetFilepathByID(uint32(id))
 		open(filePath)
@@ -89,7 +89,7 @@ func MultiOpen(unsplitTagsOrID string) {
 }
 
 func parseIdStr(idStr string) uint32 {
-	idI, err := strconv.Atoi(idStr)
+	idI, err := lib.ParseID(idStr)
 	if err != nil {
 		log.Fatalf("error parsing id, error: %v", err)
 	}

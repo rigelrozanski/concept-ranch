@@ -11,6 +11,7 @@ import (
 
 const (
 	layout = "2006-01-02" // time parse layout for YYYYMMDD
+	Last   = "last"       // last id keyword
 
 	CycleAlive = iota
 	CycleConsumed
@@ -22,9 +23,9 @@ const (
 )
 
 var (
-	IdeasDir, ConfigFile string
-	zeroDate             time.Time
-	rxConsumedId         = regexp.MustCompile(`[c]\d{6,6}`)
+	IdeasDir, ConfigFile, LastIdFile string
+	zeroDate                         time.Time
+	rxConsumedId                     = regexp.MustCompile(`[c]\d{6,6}`)
 )
 
 func TodayDate() time.Time {
