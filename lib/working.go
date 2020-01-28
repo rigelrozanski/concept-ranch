@@ -26,10 +26,10 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLe
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte
 		for _, idear := range subset {
-			if idear.IsText() {
+			if !idear.IsText() {
 				continue
 			}
-			icontentBz, err := ioutil.ReadFile(path.Join(idea.IdeasDir, idear.Filename))
+			icontentBz, err := ioutil.ReadFile(idear.Path())
 			if err != nil {
 				log.Fatal(err)
 			}
