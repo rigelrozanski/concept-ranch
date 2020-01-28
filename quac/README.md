@@ -1,4 +1,4 @@
-# Quick Ideas
+# QUickly Amalgamate Concepts 
 
 ---
 
