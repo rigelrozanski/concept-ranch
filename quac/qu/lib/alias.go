@@ -16,6 +16,7 @@ const (
 	KindText      = idea.KindText
 	KindImage     = idea.KindImage
 	KindAudio     = idea.KindAudio
+	KindEnText    = idea.KindEnText // encrypted text
 )
 
 var (

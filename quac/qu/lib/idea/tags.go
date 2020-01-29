@@ -10,7 +10,7 @@ import (
 
 func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
 	ideas := GetAllIdeasNonConsuming()
-	subset := ideas.WithTags(tags)
+	subset := ideas.WithTags(tags).WithText()
 
 	if len(subset) == 0 {
 		return content, false

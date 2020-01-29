@@ -21,6 +21,7 @@ const (
 	KindText = iota
 	KindImage
 	KindAudio
+	KindEnText
 )
 
 var (
@@ -45,6 +46,8 @@ func GetKind(ext string) int {
 		return KindImage
 	case "", ".txt":
 		return KindText
+	case ".en":
+		return KindEnText
 	default:
 		log.Fatalf("unknown filetype: %v", ext)
 	}

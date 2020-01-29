@@ -126,6 +126,15 @@ func NewEmptyEntry(unsplitTags string) {
 	lib.OpenText(writePath)
 }
 
+func SetEncryption(idStr string) {
+	id, err := lib.ParseID(idStr)
+	if err != nil {
+		log.Fatalf("error parsing id, error: %v", err)
+	}
+
+	lib.SetEncryptionById(id)
+}
+
 func QuickEntry(unsplitTags, entry string) {
 	splitTags := parseTags(unsplitTags)
 	Entry(entry, splitTags)

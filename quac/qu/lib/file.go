@@ -30,3 +30,11 @@ func UpdateEditedDateNow(updatePath string) {
 		log.Fatal(err)
 	}
 }
+
+func UpdateFilepathToEncrypted(Path string) string {
+	err := os.Rename(Path, Path+".en")
+	if err != nil {
+		log.Fatal(err)
+	}
+	return Path + ".en"
+}

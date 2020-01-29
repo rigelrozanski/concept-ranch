@@ -18,6 +18,8 @@ func Open(pathToOpen string) {
 	switch GetKind(ext) {
 	case KindText:
 		OpenText(pathToOpen)
+	case KindEnText:
+		OpenText(pathToOpen)
 	case KindImage:
 		ViewImage(pathToOpen)
 	case KindAudio:
@@ -71,6 +73,21 @@ func OpenText(pathToOpen string) {
 	}
 	if bytes.Compare(origBz, finalBz) != 0 {
 		UpdateEditedDateNow(pathToOpen)
+	}
+}
+
+func SetEncryptionById(id uint32) {
+
+	pathToOpen := GetFilepathByID(id)
+	enPath := UpdateFilepathToEncrypted(pathToOpen)
+
+	// ignore error, allow for no file to be present
+	cmd := exec.Command("vim", "-c", "X", enPath) //start in the upper left corner nomatter
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	err := cmd.Run()
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 
