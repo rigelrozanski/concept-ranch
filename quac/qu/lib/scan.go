@@ -1,6 +1,7 @@
 package lib
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"image/jpeg"
@@ -11,18 +12,19 @@ import (
 	"github.com/gookit/color"
 )
 
+// calibration area is 1/2 squared top left corner
+
 const (
-	calibrationMinX  = 10
-	calibrationMaxX  = 120
-	calibrationMinY  = 10
-	calibrationMaxY  = 30
-	calibrationThick = 5         // pixels down and across to check for calibration
-	thick            = 7         // thickness down and across while parsing
-	whiteMinRGBSum   = 600 * 257 // minimum sum of RGB values to be considered white
+	caliSetStartX  = 30        // calibration set-x start
+	caliSetEndX    = 35        // calibration set-x end
+	caliSearchMinY = 2         // calibration search y start
+	caliSearchMaxY = 100       // calibration search y max
+	thick          = 3         // pixels down and across to check for calibration and parsing
+	whiteMinRGBSum = 600 * 257 // minimum sum of RGB values to be considered white
 
 	// Allowable variance per R,G,or B, up or down from the
 	// calibration variance to be considered that colour
-	variance = 15 * 257
+	variance = 20 * 257
 )
 
 // Pixel struct example
@@ -59,7 +61,17 @@ func LoadColoursDown(x, y, down int, img image.Image) Colours {
 	return cs
 }
 
-func AvgColour(x1, y1, x2, y2 int, img image.Image) Colour {
+func LoadColours(x1, x2, y1, y2 int, img image.Image) Colours {
+	var cs Colours
+	for x := x1; x <= x2; x++ {
+		for y := y1; y <= y2; y++ {
+			cs = append(cs, RGBAtoColour(img.At(x, y).RGBA()))
+		}
+	}
+	return cs
+}
+
+func AvgColour(x1, x2, y1, y2 int, img image.Image) Colour {
 	var R, G, B, i uint32 = 0, 0, 0, 0
 	for x := x1; x <= x2; x++ {
 		for y := y1; y <= y2; y++ {
@@ -78,13 +90,13 @@ func (c Colour) IsWhite() bool {
 }
 
 func (c Colour) String() string {
-	return fmt.Sprintf("Red: %v\t, Green: %v\t, Blue: %v\t", c.R/257, c.G/257, c.B/257)
+	return fmt.Sprintf("R: %v,\tG: %v,\tB: %v", c.R/257, c.G/257, c.B/257)
 }
 
-func (c Colour) PrintColour() {
+func (c Colour) PrintColour(rightHandText string) {
 	clib := color.RGB(uint8(c.R/257), uint8(c.G/257), uint8(c.B/257), true) // bg color
 	clib.Print("  ")
-	fmt.Print(" ")
+	fmt.Printf(" %v", rightHandText)
 }
 
 func (c Colour) WithinVariance(target Colour) bool {
@@ -176,86 +188,90 @@ func Scan(pathToImage string) {
 	//width, height := bounds.Max.X, bounds.Max.Y
 
 	// determine calibration
-	caliUp, caliDown, caliLeft, caliRight := getCalibrationColours(img)
+	caliNN, caliQP, caliHP, caliQT := getCalibrationColours(img)
 
-	fmt.Println("\nCalibration Colours:\nU, D, L, R")
-	caliUp.PrintColour()
-	caliDown.PrintColour()
-	caliLeft.PrintColour()
-	caliRight.PrintColour()
-	fmt.Println("")
+	fmt.Println("\nCalibration Colours:\n")
+	caliNN.PrintColour(fmt.Sprintf("Noon \t\t%v\n", caliNN.String()))
+	caliQP.PrintColour(fmt.Sprintf("Quarter-Past \t%v\n", caliQP.String()))
+	caliHP.PrintColour(fmt.Sprintf("Half-Past \t\t%v\n", caliHP.String()))
+	caliQT.PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", caliQT.String()))
 
-}
-
-func getCalibrationColours(img image.Image) (up, down, left, right Colour) {
-
-	// first input is up
-	caliX, caliY := getCalibrationCoordinates(img)
-	up, caliX = getCalibrationColour(caliX, caliY, img)
-	down, caliX = getCalibrationColour(caliX, caliY, img)
-	left, caliX = getCalibrationColour(caliX, caliY, img)
-	right, caliX = getCalibrationColour(caliX, caliY, img)
-	if !(NewColours(up, down, left, right).AreUnique()) {
-		fmt.Printf("caliUp: %v\n, caliDown: %v\n, caliLeft: %v\n, caliRight: %v\n",
-			up, down, left, right)
+	if !(NewColours(caliNN, caliQP, caliHP, caliQT).AreUnique()) {
 		log.Fatal("non-unique colours")
 	}
-
-	return up, down, left, right
 }
 
-func getCalibrationCoordinates(img image.Image) (caliStartX, caliStartY int) {
+func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo Colour) {
 
-	// first determine the set y
-	for x := calibrationMinX; x <= calibrationMaxX; x++ {
-		for y := calibrationMinY; y <= calibrationMaxY-4; y++ {
-			cs := LoadColoursDown(x, y, calibrationThick, img)
-			//fmt.Printf("debug cs: %v\n", cs)
-			if cs.AnyWhite() {
-				continue
-			}
-			if cs.AllWithinVariance(cs.AvgColour()) {
-				return x, y
-			}
-		}
+	noon, outsideY, err := getCalibrationColour(caliSetStartX, caliSetEndX, caliSearchMinY, img)
+	if err != nil {
+		log.Fatalf("Error during calibration of noon: %v", err)
+	}
+	quarterPast, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
+	if err != nil {
+		log.Fatalf("Error during calibration of quarterPast: %v", err)
+	}
+	halfPast, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
+	if err != nil {
+		log.Fatalf("Error during calibration of halfPast: %v", err)
+	}
+	quarterTo, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
+	if err != nil {
+		log.Fatalf("Error during calibration of quarterTo: %v", err)
 	}
 
-	log.Fatal("could not determine calibration start coordinates")
-	return 0, 0
+	return noon, quarterPast, halfPast, quarterTo
 }
+
+//func getCalibrationCoordinates(img image.Image) (caliStartX, caliStartY int) {
+
+//// first determine the set y
+//for x := calibrationMinX; x <= calibrationMaxX; x++ {
+//for y := calibrationMinY; y <= calibrationMaxY-4; y++ {
+//cs := LoadColoursDown(x, y, calibrationThick, img)
+////fmt.Printf("debug cs: %v\n", cs)
+//if cs.AnyWhite() {
+//continue
+//}
+//if cs.AllWithinVariance(cs.AvgColour()) {
+//return x, y
+//}
+//}
+//}
+
+//log.Fatal("could not determine calibration start coordinates")
+//return 0, 0
+//}
 
 // outsideX represents the first x coordinate outside the colour
-func getCalibrationColour(startX, setY int, img image.Image) (caliColour Colour, outsideX int) {
+func getCalibrationColour(setStartX, setEndX, searchStartY int, img image.Image) (caliColour Colour, outsideY int, err error) {
 
-	caliStartX := 0
-	for trial := 0; trial < 10; trial++ {
-		caliStartX, outsideX = 0, 0
+	caliStartY, caliEndY := 0, 0
 
-		// first determine the set y
-		for x := startX + trial; x <= calibrationMaxX; x++ {
-			cs := LoadColoursDown(x, setY, 5, img)
-			if cs.AnyWhite() {
-				continue
-			}
-			awv := cs.AllWithinVariance(cs.AvgColour())
-			if awv && caliStartX == 0 {
-				caliStartX = x
-				continue
-			}
-
-			if !awv && caliStartX != 0 {
-				outsideX = x
-				break
-			}
+	for y := searchStartY; y <= caliSearchMaxY-thick; y++ {
+		var cs Colours
+		if caliStartY == 0 {
+			cs = LoadColours(setStartX, setEndX, y, y+thick, img)
+		} else {
+			cs = LoadColours(setStartX, setEndX, caliStartY, y+thick, img)
 		}
-		if outsideX-caliStartX >= calibrationThick {
-			break
+
+		if cs.AnyWhite() {
+			continue
 		}
-		if trial == 9 {
-			log.Fatal("could not get the calibration colour")
+		awv := cs.AllWithinVariance(cs.AvgColour())
+		switch {
+		case awv && caliStartY == 0:
+			caliStartY = y
+			caliEndY = y + thick
+		case awv && caliStartY != 0:
+			caliEndY = y + thick
+		case !awv && caliStartY != 0:
+			caliEndY = y + thick - 1 // one less must have been the real end then
+			caliColour = AvgColour(caliSetStartX, caliSetEndX, caliStartY, caliEndY, img)
+			return caliColour, caliEndY + 1, nil
 		}
 	}
 
-	caliColour = AvgColour(caliStartX, setY, outsideX-1, setY+calibrationThick-1, img)
-	return caliColour, outsideX
+	return caliColour, 0, errors.New("could not determine calibration colour")
 }
