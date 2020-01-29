@@ -2,12 +2,14 @@ package lib
 
 import (
 	"bufio"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
 	"image/png"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -41,6 +43,8 @@ const (
 
 	brightnessVariance = 30 * 257
 )
+
+var LastScanCalibrationFile string
 
 // Pixel struct example
 type Colour struct {
@@ -117,7 +121,7 @@ func (c Colour) GetRGBA() color.RGBA {
 }
 
 func (c Colour) String() string {
-	return fmt.Sprintf("R: %v,\tG: %v,\tB: %v", c.R, c.G, c.B)
+	return fmt.Sprintf("R: %v,\tG: %v,\tB: %v", c.R/257, c.G/257, c.B/257)
 }
 
 func (c Colour) PrintColour(rightHandText string) {
@@ -221,6 +225,17 @@ func (cs Colours) NearestColourTo(in Colour) (index int, nearest Colour, withinV
 	return 0, nearest, false
 }
 
+func PrintCaliColours(in Colours) {
+	if len(in) != 4 {
+		panic("bad number of colours to print")
+	}
+	fmt.Println("\nCalibration Colours:")
+	in[0].PrintColour(fmt.Sprintf("Noon \t\t%v\n", in[0].String()))
+	in[1].PrintColour(fmt.Sprintf("Quarter-Past \t%v\n", in[1].String()))
+	in[2].PrintColour(fmt.Sprintf("Half-Past \t\t%v\n", in[2].String()))
+	in[3].PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", in[3].String()))
+}
+
 func Scan(pathToImage, opTag string) {
 
 	// You can register another format here
@@ -238,21 +253,47 @@ func Scan(pathToImage, opTag string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	//bounds := img.Bounds()
-	//width, height := bounds.Max.X, bounds.Max.Y
 
 	// determine calibration
-	caliNN, caliQP, caliHP, caliQT := getCalibrationColours(img)
-
-	fmt.Println("\nCalibration Colours:")
-	caliNN.PrintColour(fmt.Sprintf("Noon \t\t%v\n", caliNN.String()))
-	caliQP.PrintColour(fmt.Sprintf("Quarter-Past \t%v\n", caliQP.String()))
-	caliHP.PrintColour(fmt.Sprintf("Half-Past \t\t%v\n", caliHP.String()))
-	caliQT.PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", caliQT.String()))
-
+	caliNN, caliQP, caliHP, caliQT, err := getCalibrationColours(img)
 	caliColours := NewColours(caliNN, caliQP, caliHP, caliQT)
-	if !(caliColours.AreUnique()) {
-		log.Fatal("non-unique calibration colours")
+	if err == nil {
+		PrintCaliColours(caliColours)
+	}
+
+	if err == nil && !(caliColours.AreUnique()) {
+		err = errors.New("non-unique calibration colours")
+	}
+
+	LastScanCalibrationFile = path.Join(QuDir, "last_scan_calibration.json")
+	if err != nil {
+		fmt.Printf("error while creating calibration: %v\n", err)
+
+		if cmn.FileExists(LastScanCalibrationFile) {
+			bz, err := ioutil.ReadFile(LastScanCalibrationFile)
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = json.Unmarshal(bz, &caliColours)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			fmt.Printf("Loading last used calibration %v\n", err)
+			PrintCaliColours(caliColours)
+
+		} else {
+			os.Exit(1)
+		}
+	} else {
+		bz, err := json.Marshal(caliColours)
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = ioutil.WriteFile(LastScanCalibrationFile, bz, os.ModePerm)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	fmt.Println("confirm calibration colours (Y/N)")
@@ -334,26 +375,30 @@ func Scan(pathToImage, opTag string) {
 
 }
 
-func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo Colour) {
+func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo Colour, err error) {
 
 	noon, outsideY, err := getCalibrationColour(caliSetStartX, caliSetEndX, caliSearchMinY, img)
 	if err != nil {
-		log.Fatalf("Error during calibration of noon: %v", err)
+		err := errors.New(fmt.Sprintf("Error during calibration of noon: %v", err))
+		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	quarterPast, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
 	if err != nil {
-		log.Fatalf("Error during calibration of quarterPast: %v", err)
+		err = errors.New(fmt.Sprintf("Error during calibration of quarterPast: %v", err))
+		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	halfPast, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
 	if err != nil {
-		log.Fatalf("Error during calibration of halfPast: %v", err)
+		err = errors.New(fmt.Sprintf("Error during calibration of halfPast: %v", err))
+		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	quarterTo, outsideY, err = getCalibrationColour(caliSetStartX, caliSetEndX, outsideY, img)
 	if err != nil {
-		log.Fatalf("Error during calibration of quarterTo: %v", err)
+		err = errors.New(fmt.Sprintf("Error during calibration of quarterTo: %v", err))
+		return noon, quarterPast, halfPast, quarterTo, err
 	}
 
-	return noon, quarterPast, halfPast, quarterTo
+	return noon, quarterPast, halfPast, quarterTo, nil
 }
 
 // outsideY represents the first y coordinate outside the colour
@@ -516,7 +561,7 @@ func extractSubsetImgs(img image.Image, caliGrid [][]uint8, target uint8) []imag
 				boundsMinY = append(boundsMinY, y)
 				boundsMaxY = append(boundsMaxY, y)
 
-				propegate(x, y, maxXInc, maxYInc, areaI, (&areas),
+				propagate(x, y, maxXInc, maxYInc, areaI, (&areas),
 					&(boundsMinX[areaI]), &(boundsMaxX[areaI]),
 					&(boundsMinY[areaI]), &(boundsMaxY[areaI]),
 					caliGrid, target)
@@ -541,7 +586,7 @@ func extractSubsetImgs(img image.Image, caliGrid [][]uint8, target uint8) []imag
 	return results
 }
 
-func propegate(x, y, maxXInc, maxYInc int, areaI uint8, areas *[][]uint8,
+func propagate(x, y, maxXInc, maxYInc int, areaI uint8, areas *[][]uint8,
 	boundsMinX, boundsMaxX, boundsMinY, boundsMaxY *int,
 	caliImg [][]uint8, target uint8) {
 
@@ -572,35 +617,35 @@ func propegate(x, y, maxXInc, maxYInc int, areaI uint8, areas *[][]uint8,
 	upOk := y-1 >= 0
 	downOk := y+1 <= maxYInc
 	if leftOk {
-		propegate(x-1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x-1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if leftOk && downOk {
-		propegate(x-1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x-1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if leftOk && upOk {
-		propegate(x-1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x-1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if rightOk {
-		propegate(x+1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x+1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if rightOk && downOk {
-		propegate(x+1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x+1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if rightOk && upOk {
-		propegate(x+1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x+1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if downOk {
-		propegate(x, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 	if upOk {
-		propegate(x, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+		propagate(x, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
 			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
 	}
 }
