@@ -131,7 +131,7 @@ func QuickEntry(unsplitTags, entry string) {
 	Entry(entry, splitTags)
 }
 
-func MultiOpen(unsplitTagsOrID string) {
+func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 	id, err := lib.ParseID(unsplitTagsOrID)
 	if err == nil {
 		filePath := lib.GetFilepathByID(uint32(id))
@@ -139,7 +139,7 @@ func MultiOpen(unsplitTagsOrID string) {
 		return
 	}
 	splitTags := parseTags(unsplitTagsOrID)
-	MultiOpenByTags(splitTags)
+	MultiOpenByTags(splitTags, forceSplitView)
 }
 
 func parseIdStr(idStr string) uint32 {
@@ -311,14 +311,14 @@ func ViewByTags(tags []string) {
 	fmt.Printf("%s\n", content)
 }
 
-func MultiOpenByTags(tags []string) {
+func MultiOpenByTags(tags []string, forceSplitView bool) {
 	found, maxFNLen, singleReturn := lib.WriteWorkingContentAndFilenamesFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
 	}
 	// if only a single entry is found then lib.Open only it!
-	if singleReturn != "" {
+	if singleReturn != "" && !forceSplitView {
 		lib.Open(singleReturn)
 		return
 	}

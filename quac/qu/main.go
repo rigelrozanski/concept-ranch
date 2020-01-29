@@ -50,7 +50,7 @@ const (
 
 qu --------------------------------------> edit the tagless master quick ideas board in vim
 qu [tags...] [entry] --------------------> quick entry to a new idea
-qu [query] ------------------------------> open a vim tab with the contents of the query 
+qu [op_forcesplit] [query] --------------> open a vim tab with the contents of the query 
 qu cat [query] --------------------------> print idea(s) contents' to console
 qu scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qu transcribe [op_query] ----------------> transcribe a random untranscribed image or specific image(s) by query
@@ -77,6 +77,7 @@ Explanation of some terms:
 [tag] ---------- A catagory to query or organize your ideas with
 [tags...] ------ A list of tags seperated by commas (such as "tag1,tag2,tag3")
 [entry] -------- Either raw input text or for untranscribed input a directory to an image/audio sample 
+[forcesplit] --- if the text "force-split" is included, split view will be used even if only one entry is found 
 `
 )
 
@@ -172,8 +173,13 @@ func main() {
 		lib.ExportToPDF()
 	default:
 		if len(args) == 1 { // quick query
-			MultiOpen(args[0])
-		} else if len(args) >= 2 { // quick entry
+			MultiOpen(args[0], false)
+		} else if len(args) >= 2 {
+			// quick entry force split view
+			if args[0] == "force-split" {
+				MultiOpen(args[1], true)
+			}
+			// quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}
