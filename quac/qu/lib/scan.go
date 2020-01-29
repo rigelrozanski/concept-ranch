@@ -1,30 +1,45 @@
 package lib
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
 	"image"
+	"image/color"
 	"image/jpeg"
 	"image/png"
 	"log"
 	"os"
+	"path"
+	"strconv"
+	"strings"
 
-	"github.com/gookit/color"
+	"github.com/disintegration/imaging"
+	gcolor "github.com/gookit/color"
+	cmn "github.com/rigelrozanski/common"
 )
 
 // calibration area is 1/2 squared top left corner
 
+// at 200DPI a sharpie line is about 13 pixels wide
+// Test 7px & 7px Down a specific colour
+// start colour calibration read 20 pixels down
+
 const (
 	caliSetStartX  = 30        // calibration set-x start
 	caliSetEndX    = 35        // calibration set-x end
-	caliSearchMinY = 2         // calibration search y start
+	caliSearchMinY = 5         // calibration search y start
 	caliSearchMaxY = 100       // calibration search y max
 	thick          = 3         // pixels down and across to check for calibration and parsing
 	whiteMinRGBSum = 600 * 257 // minimum sum of RGB values to be considered white
 
+	minIdeaDimention = 50 // must be 50 pixels in each direction to be considered an object
+
 	// Allowable variance per R,G,or B, up or down from the
 	// calibration variance to be considered that colour
 	variance = 20 * 257
+
+	brightnessVariance = 30 * 257
 )
 
 // Pixel struct example
@@ -51,6 +66,10 @@ func NewColours(cs ...Colour) Colours {
 
 func RGBAtoColour(r, g, b, a uint32) Colour {
 	return Colour{r, g, b}
+}
+
+func LoadColour(x, y int, img image.Image) Colour {
+	return RGBAtoColour(img.At(x, y).RGBA())
 }
 
 func LoadColoursDown(x, y, down int, img image.Image) Colours {
@@ -89,24 +108,59 @@ func (c Colour) IsWhite() bool {
 	return c.R+c.B+c.G >= whiteMinRGBSum
 }
 
+func (c Colour) Equals(c2 Colour) bool {
+	return c.R == c2.R && c.G == c2.G && c.B == c2.B
+}
+
+func (c Colour) GetRGBA() color.RGBA {
+	return color.RGBA{uint8(c.R / 257), uint8(c.G / 257), uint8(c.B / 257), ^uint8(0)}
+}
+
 func (c Colour) String() string {
-	return fmt.Sprintf("R: %v,\tG: %v,\tB: %v", c.R/257, c.G/257, c.B/257)
+	return fmt.Sprintf("R: %v,\tG: %v,\tB: %v", c.R, c.G, c.B)
 }
 
 func (c Colour) PrintColour(rightHandText string) {
-	clib := color.RGB(uint8(c.R/257), uint8(c.G/257), uint8(c.B/257), true) // bg color
+	clib := gcolor.RGB(uint8(c.R/257), uint8(c.G/257), uint8(c.B/257), true) // bg color
 	clib.Print("  ")
 	fmt.Printf(" %v", rightHandText)
 }
 
-func (c Colour) WithinVariance(target Colour) bool {
-	if !(c.R+variance >= target.R && c.R-variance <= target.R) {
+func (c Colour) WithinVarianceAcrossBrightness(target Colour) bool {
+	for i := uint32(0); i <= brightnessVariance; i += 30 {
+		if c.WithinVarianceAddBrightness(target, i) == true {
+			return true
+		}
+	}
+	for i := uint32(1); i <= brightnessVariance; i += 30 {
+		if c.WithinVarianceSubBrightness(target, i) == true {
+			return true
+		}
+	}
+	return false
+}
+
+func (c Colour) WithinVarianceAddBrightness(target Colour, brightness uint32) bool {
+	if !(c.R+variance+brightness >= target.R && c.R-variance+brightness <= target.R) {
 		return false
 	}
-	if !(c.G+variance >= target.G && c.G-variance <= target.G) {
+	if !(c.G+variance+brightness >= target.G && c.G-variance+brightness <= target.G) {
 		return false
 	}
-	if !(c.B+variance >= target.B && c.B-variance <= target.B) {
+	if !(c.B+variance+brightness >= target.B && c.B-variance+brightness <= target.B) {
+		return false
+	}
+	return true
+}
+
+func (c Colour) WithinVarianceSubBrightness(target Colour, brightness uint32) bool {
+	if !(c.R+variance-brightness >= target.R && c.R-variance-brightness <= target.R) {
+		return false
+	}
+	if !(c.G+variance-brightness >= target.G && c.G-variance-brightness <= target.G) {
+		return false
+	}
+	if !(c.B+variance-brightness >= target.B && c.B-variance-brightness <= target.B) {
 		return false
 	}
 	return true
@@ -134,7 +188,7 @@ func (cs Colours) AvgColour() Colour {
 
 func (cs Colours) AllWithinVariance(target Colour) bool {
 	for _, c := range cs {
-		if !c.WithinVariance(target) {
+		if !c.WithinVarianceAddBrightness(target, 0) {
 			return false
 		}
 	}
@@ -149,7 +203,7 @@ func (cs Colours) AreUnique() bool {
 			if i == j {
 				continue
 			}
-			if c.WithinVariance(c2) {
+			if c.WithinVarianceAddBrightness(c2, 0) {
 				return false
 			}
 		}
@@ -157,15 +211,15 @@ func (cs Colours) AreUnique() bool {
 	return true
 }
 
-// at 200DPI a sharpie line is about 13 pixels wide
-// Test 7px & 7px Down a specific colour
-// start colour calibration read 20 pixels down
-
-// Standard Order
-// Red - Upright
-// Green - Upside-down
-// Blue - Read from the Left
-// Purple - Read from Right
+// Nearest colour within "cs" to "in" Colour
+func (cs Colours) NearestColourTo(in Colour) (index int, nearest Colour, withinVariance bool) {
+	for i, c := range cs {
+		if c.WithinVarianceAcrossBrightness(in) {
+			return i, c, true
+		}
+	}
+	return 0, nearest, false
+}
 
 func Scan(pathToImage string) {
 
@@ -190,15 +244,85 @@ func Scan(pathToImage string) {
 	// determine calibration
 	caliNN, caliQP, caliHP, caliQT := getCalibrationColours(img)
 
-	fmt.Println("\nCalibration Colours:\n")
+	fmt.Println("\nCalibration Colours:")
 	caliNN.PrintColour(fmt.Sprintf("Noon \t\t%v\n", caliNN.String()))
 	caliQP.PrintColour(fmt.Sprintf("Quarter-Past \t%v\n", caliQP.String()))
 	caliHP.PrintColour(fmt.Sprintf("Half-Past \t\t%v\n", caliHP.String()))
 	caliQT.PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", caliQT.String()))
 
-	if !(NewColours(caliNN, caliQP, caliHP, caliQT).AreUnique()) {
-		log.Fatal("non-unique colours")
+	caliColours := NewColours(caliNN, caliQP, caliHP, caliQT)
+	if !(caliColours.AreUnique()) {
+		log.Fatal("non-unique calibration colours")
 	}
+
+	fmt.Println("confirm calibration colours (Y/N)")
+	consoleScanner := bufio.NewScanner(os.Stdin)
+	_ = consoleScanner.Scan()
+	in := consoleScanner.Text()
+	if in != "Y" {
+		fmt.Println("okay! exiting")
+		os.Exit(1)
+	}
+
+	fmt.Println("creating calibration grid...")
+	// get the calibration img
+	// 1 == noon
+	// 2 == quarterPast
+	// 3 == halfPast
+	// 4 == quarterTo
+	caliGrid := createCalibrationGrid(img, caliColours)
+
+	fmt.Println("removing image marks...")
+	// remove all the marks from the image
+	imgRM := removeMarks(img, caliGrid)
+
+	fmt.Println("extracting subimages...")
+	noonResults := extractSubsetImgs(imgRM, caliGrid, 1)
+	quarterPastResults := Rotate90(extractSubsetImgs(imgRM, caliGrid, 2))
+	halfPastResults := Rotate180(extractSubsetImgs(imgRM, caliGrid, 3))
+	quarterToResults := Rotate270(extractSubsetImgs(imgRM, caliGrid, 4))
+
+	// concat
+	var results []image.Image
+	results = append(results, noonResults...)
+	results = append(results, quarterPastResults...)
+	results = append(results, halfPastResults...)
+	results = append(results, quarterToResults...)
+
+	// ensure scan dir
+	scanDir := path.Join(QuDir, "working_scan")
+	_ = os.Mkdir(scanDir, os.ModePerm)
+
+	fmt.Println("saving files...")
+	var imgPaths []string
+	for i, result := range results {
+		caliImgPath := path.Join(scanDir, strconv.Itoa(i)+".png")
+		imgPaths = append(imgPaths, caliImgPath)
+		f, _ := os.Create(caliImgPath)
+		png.Encode(f, result)
+	}
+
+	for _, imgPath := range imgPaths {
+		ViewImageNoFilename(imgPath)
+		fmt.Println("please enter tags seperated by spaces then press enter:")
+		consoleScanner := bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		tags := strings.Fields(consoleScanner.Text())
+
+		// save the new idea
+		idea := NewIdeaFromFile(tags, imgPath)
+		err := cmn.Copy(imgPath, idea.Path())
+		if err != nil {
+			log.Fatal(err)
+		}
+		IncrementID()
+	}
+
+	err = os.RemoveAll(scanDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 }
 
 func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo Colour) {
@@ -223,27 +347,7 @@ func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarte
 	return noon, quarterPast, halfPast, quarterTo
 }
 
-//func getCalibrationCoordinates(img image.Image) (caliStartX, caliStartY int) {
-
-//// first determine the set y
-//for x := calibrationMinX; x <= calibrationMaxX; x++ {
-//for y := calibrationMinY; y <= calibrationMaxY-4; y++ {
-//cs := LoadColoursDown(x, y, calibrationThick, img)
-////fmt.Printf("debug cs: %v\n", cs)
-//if cs.AnyWhite() {
-//continue
-//}
-//if cs.AllWithinVariance(cs.AvgColour()) {
-//return x, y
-//}
-//}
-//}
-
-//log.Fatal("could not determine calibration start coordinates")
-//return 0, 0
-//}
-
-// outsideX represents the first x coordinate outside the colour
+// outsideY represents the first y coordinate outside the colour
 func getCalibrationColour(setStartX, setEndX, searchStartY int, img image.Image) (caliColour Colour, outsideY int, err error) {
 
 	caliStartY, caliEndY := 0, 0
@@ -274,4 +378,244 @@ func getCalibrationColour(setStartX, setEndX, searchStartY int, img image.Image)
 	}
 
 	return caliColour, 0, errors.New("could not determine calibration colour")
+}
+
+func createCalibrationGrid(img image.Image, Cali Colours) [][]uint8 {
+
+	bounds := img.Bounds()
+	maxXInc, maxYInc := bounds.Max.X, bounds.Max.Y
+
+	caliGrid := make([][]uint8, maxXInc+1)
+	for i := 0; i < bounds.Max.X+1; i++ {
+		caliGrid[i] = make([]uint8, maxYInc+1)
+	}
+
+	for y := 0; y <= maxYInc; y++ {
+		for x := 0; x <= maxXInc; x++ {
+
+			c := LoadColour(x, y, img)
+			i, _, withinVariance := Cali.NearestColourTo(c)
+			if !withinVariance {
+				continue
+			}
+			caliGrid[x][y] = uint8(i + 1) // so doesn't conflict with zero default values
+		}
+	}
+
+	// filter out lone pixels
+	for y := 0; y <= maxYInc; y++ {
+		for x := 0; x <= maxXInc; x++ {
+			if caliGrid[x][y] != 0 {
+				leftOk := x-1 >= 0
+				rightOk := x+1 <= maxXInc
+				upOk := y-1 >= 0
+				downOk := y+1 <= maxYInc
+				if (leftOk && caliGrid[x-1][y] != 0) ||
+					(rightOk && caliGrid[x+1][y] != 0) ||
+					(upOk && caliGrid[x][y-1] != 0) ||
+					(downOk && caliGrid[x][y+1] != 0) ||
+					(leftOk && upOk && caliGrid[x-1][y-1] != 0) ||
+					(leftOk && downOk && caliGrid[x-1][y+1] != 0) ||
+					(rightOk && upOk && caliGrid[x+1][y-1] != 0) ||
+					(rightOk && downOk && caliGrid[x+1][y+1] != 0) {
+					continue
+				}
+				caliGrid[x][y] = 0
+			}
+		}
+	}
+
+	return caliGrid
+}
+
+// turns all the pixels white in img where a value in caliGrid is present
+func removeMarks(img image.Image, caliGrid [][]uint8) image.Image {
+
+	bounds := img.Bounds()
+	maxXInc, maxYInc := bounds.Max.X, bounds.Max.Y
+
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{maxXInc, maxYInc}
+
+	imgOut := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+
+	// expand caliGrid by some pixels
+	exPix := 5
+	caliGridExp := make([][]uint8, bounds.Max.X+1)
+	for i := 0; i < bounds.Max.X+1; i++ {
+		caliGridExp[i] = make([]uint8, bounds.Max.Y+1)
+	}
+	for shiftX := -exPix; shiftX <= exPix; shiftX++ {
+		for shiftY := -exPix; shiftY <= exPix; shiftY++ {
+			for y := 0; y <= maxYInc; y++ {
+				for x := 0; x <= maxXInc; x++ {
+					if x+shiftX < 0 || x+shiftX > maxXInc || y+shiftY < 0 || y+shiftY > maxYInc {
+						continue
+					}
+					if caliGrid[x+shiftX][y+shiftY] != 0 {
+						caliGridExp[x][y] = 1
+					}
+				}
+			}
+		}
+	}
+
+	for y := 0; y <= maxYInc; y++ {
+		for x := 0; x <= maxXInc; x++ {
+			if caliGridExp[x][y] == 0 {
+				imgOut.Set(x, y, img.At(x, y))
+			} else {
+				imgOut.Set(x, y, color.White)
+			}
+		}
+	}
+	return imgOut
+}
+
+func extractSubsetImgs(img image.Image, caliGrid [][]uint8, target uint8) []image.Image {
+
+	var results []image.Image
+
+	bounds := img.Bounds()
+	maxXInc, maxYInc := bounds.Max.X, bounds.Max.Y
+
+	// areas with the target image
+	// each new area is assigned a new integer
+	areas := make([][]uint8, bounds.Max.X+1)
+	for i := 0; i < bounds.Max.X+1; i++ {
+		areas[i] = make([]uint8, bounds.Max.Y+1)
+	}
+	areaI := uint8(0)
+
+	// bounds definition, index is the areaI, hence the first record is a dummy
+	boundsMinX := []int{0}
+	boundsMaxX := []int{0}
+	boundsMinY := []int{0}
+	boundsMaxY := []int{0}
+
+	// determine all individual areas
+	// keep track of the bounds while we're at it
+	for y := 0; y <= maxYInc; y++ {
+		for x := 0; x <= maxXInc; x++ {
+			if areas[x][y] != 0 {
+				continue
+			}
+			if caliGrid[x][y] == target {
+				areaI++
+				boundsMinX = append(boundsMinX, x)
+				boundsMaxX = append(boundsMaxX, x)
+				boundsMinY = append(boundsMinY, y)
+				boundsMaxY = append(boundsMaxY, y)
+
+				propegate(x, y, maxXInc, maxYInc, areaI, (&areas),
+					&(boundsMinX[areaI]), &(boundsMaxX[areaI]),
+					&(boundsMinY[areaI]), &(boundsMaxY[areaI]),
+					caliGrid, target)
+			}
+		}
+	}
+
+	// save the resulting images
+	for i := uint8(1); i <= areaI; i++ {
+
+		// skip if the dimentions are too small
+		if (boundsMaxX[i]-boundsMinX[i] < minIdeaDimention) ||
+			(boundsMaxY[i]-boundsMinY[i] < minIdeaDimention) {
+			continue
+		}
+
+		rect := image.Rect(boundsMinX[i], boundsMinY[i], boundsMaxX[i], boundsMaxY[i])
+		resImg := imaging.Crop(img, rect)
+		results = append(results, resImg)
+	}
+
+	return results
+}
+
+func propegate(x, y, maxXInc, maxYInc int, areaI uint8, areas *[][]uint8,
+	boundsMinX, boundsMaxX, boundsMinY, boundsMaxY *int,
+	caliImg [][]uint8, target uint8) {
+
+	if caliImg[x][y] != target {
+		return
+	}
+	if (*areas)[x][y] != 0 {
+		return
+	}
+	(*areas)[x][y] = areaI
+
+	// update bounds
+	if x < (*boundsMinX) {
+		(*boundsMinX) = x
+	}
+	if x > (*boundsMaxX) {
+		(*boundsMaxX) = x
+	}
+	if y < (*boundsMinY) {
+		(*boundsMinY) = y
+	}
+	if y > (*boundsMaxY) {
+		(*boundsMaxY) = y
+	}
+
+	leftOk := x-1 >= 0
+	rightOk := x+1 <= maxXInc
+	upOk := y-1 >= 0
+	downOk := y+1 <= maxYInc
+	if leftOk {
+		propegate(x-1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if leftOk && downOk {
+		propegate(x-1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if leftOk && upOk {
+		propegate(x-1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if rightOk {
+		propegate(x+1, y, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if rightOk && downOk {
+		propegate(x+1, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if rightOk && upOk {
+		propegate(x+1, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if downOk {
+		propegate(x, y+1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+	if upOk {
+		propegate(x, y-1, maxXInc, maxYInc, areaI, areas, boundsMinX,
+			boundsMaxX, boundsMinY, boundsMaxY, caliImg, target)
+	}
+}
+
+func Rotate90(imgs []image.Image) []image.Image {
+	var out []image.Image
+	for _, img := range imgs {
+		out = append(out, imaging.Rotate90(img))
+	}
+	return out
+}
+
+func Rotate180(imgs []image.Image) []image.Image {
+	var out []image.Image
+	for _, img := range imgs {
+		out = append(out, imaging.Rotate180(img))
+	}
+	return out
+}
+
+func Rotate270(imgs []image.Image) []image.Image {
+	var out []image.Image
+	for _, img := range imgs {
+		out = append(out, imaging.Rotate270(img))
+	}
+	return out
 }

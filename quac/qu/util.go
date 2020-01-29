@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"path"
-	"strconv"
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
@@ -22,7 +19,7 @@ func Consume(consumedID, optionalEntry string) {
 	}
 	consumerFilepath := lib.SetConsume(uint32(consumed), optionalEntry)
 	if optionalEntry == "" {
-		openText(consumerFilepath)
+		lib.OpenText(consumerFilepath)
 	}
 }
 
@@ -69,7 +66,7 @@ func NewEmptyEntry(unsplitTags string) {
 	idear := lib.NewNonConsumingTextIdea(splitTags)
 	writePath := path.Join(lib.IdeasDir, idear.Filename)
 	lib.IncrementID()
-	openText(writePath)
+	lib.OpenText(writePath)
 }
 
 func QuickEntry(unsplitTags, entry string) {
@@ -81,7 +78,7 @@ func MultiOpen(unsplitTagsOrID string) {
 	id, err := lib.ParseID(unsplitTagsOrID)
 	if err == nil {
 		filePath := lib.GetFilepathByID(uint32(id))
-		open(filePath)
+		lib.Open(filePath)
 		return
 	}
 	splitTags := parseTags(unsplitTagsOrID)
@@ -107,7 +104,7 @@ func RemoveByID(idStr string) {
 
 func CopyByID(idStr string) {
 	id := parseIdStr(idStr)
-	open(lib.CopyByID(id))
+	lib.Open(lib.CopyByID(id))
 }
 
 func ListTagsByID(idStr string) {
@@ -263,12 +260,12 @@ func MultiOpenByTags(tags []string) {
 		fmt.Println("nothing found with those tags")
 		return
 	}
-	// if only a single entry is found then open only it!
+	// if only a single entry is found then lib.Open only it!
 	if singleReturn != "" {
-		open(singleReturn)
+		lib.Open(singleReturn)
 		return
 	}
-	openTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
+	lib.OpenTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
 	lib.SaveFromWorkingFiles()
 }
 
@@ -298,80 +295,4 @@ func Entry(entryOrPath string, tags []string) {
 		log.Fatalf("error writing new file: %v", err)
 	}
 	lib.IncrementID()
-}
-
-//_______________________________________________________________________________________________________
-
-// open supported files
-func open(pathToOpen string) {
-	ext := path.Ext(pathToOpen)
-
-	switch lib.GetKind(ext) {
-	case lib.KindText:
-		openText(pathToOpen)
-	case lib.KindImage:
-		viewImage(pathToOpen)
-	case lib.KindAudio:
-		listenAudio(pathToOpen)
-	}
-}
-
-func viewImage(pathToOpen string) {
-
-	fmt.Println(path.Base(pathToOpen))
-	cmd := exec.Command("imgcat", pathToOpen)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func listenAudio(pathToOpen string) {
-
-	fmt.Println(path.Base(pathToOpen))
-	cmd := exec.Command("afplay", pathToOpen)
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-}
-
-func openText(pathToOpen string) {
-
-	// ignore error, allow for no file to be present
-	origBz, _ := ioutil.ReadFile(pathToOpen)
-
-	cmd := exec.Command("vim", "-c", "+normal 1G1|", pathToOpen) //start in the upper left corner nomatter
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	finalBz, err := ioutil.ReadFile(pathToOpen)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if bytes.Compare(origBz, finalBz) != 0 {
-		lib.UpdateEditedDateNow(pathToOpen)
-	}
-}
-
-func openTextSplit(pathToOpenLeft, pathToOpenRight string, maxFNLen int) {
-
-	cmd := exec.Command("vim",
-		"-c", "vertical resize "+strconv.Itoa(maxFNLen+4)+" | execute \"normal \\<C-w>\\<C-l>\"",
-		"-O", pathToOpenLeft, pathToOpenRight)
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	err := cmd.Run()
-	if err != nil {
-		log.Fatal(err)
-	}
 }

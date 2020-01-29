@@ -47,6 +47,8 @@ const (
 
 	help = `
 /|||||\ |-o-o-~|
+🦆 🦆 🦆 ✍️  🏁
+
 qu --------------------------------------> edit the tagless master quick ideas board in vim
 qu [tags...] [entry] --------------------> quick entry to a new idea
 qu [query] ------------------------------> open a vim tab with the contents of the query 
@@ -96,7 +98,7 @@ func main() {
 
 	// for the master qu file for quick entry
 	if len(args) == 0 {
-		openText(lib.QuFile)
+		lib.OpenText(lib.QuFile)
 		return
 	}
 
