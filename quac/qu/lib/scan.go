@@ -221,7 +221,7 @@ func (cs Colours) NearestColourTo(in Colour) (index int, nearest Colour, withinV
 	return 0, nearest, false
 }
 
-func Scan(pathToImage string) {
+func Scan(pathToImage, opTag string) {
 
 	// You can register another format here
 	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
@@ -302,12 +302,21 @@ func Scan(pathToImage string) {
 		png.Encode(f, result)
 	}
 
+	commonTag := false
+	if opTag != "" {
+		commonTag = true
+	}
+
 	for _, imgPath := range imgPaths {
 		ViewImageNoFilename(imgPath)
 		fmt.Println("please enter tags seperated by spaces then press enter:")
 		consoleScanner := bufio.NewScanner(os.Stdin)
 		_ = consoleScanner.Scan()
 		tags := strings.Fields(consoleScanner.Text())
+
+		if commonTag {
+			tags = append(tags, opTag)
+		}
 
 		// save the new idea
 		idea := NewIdeaFromFile(tags, imgPath)

@@ -109,8 +109,14 @@ func main() {
 	case keyCat:
 		QuickQuery(args[1])
 	case keyScan:
-		lib.Scan(args[1])
-
+		switch len(args) {
+		case 2:
+			lib.Scan(args[1], "")
+		case 3:
+			lib.Scan(args[1], args[2])
+		default:
+			EnsureLen(args, 2)
+		}
 	case keyTranscribe:
 
 	case keyTranscribeMany:
