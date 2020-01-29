@@ -93,6 +93,8 @@ func Transcribe(optionalQuery string) {
 
 	for _, idea := range subsetTagsImages {
 
+		lib.Open(idea.Path())
+
 		// read input from console
 		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
 		consoleScanner := bufio.NewScanner(os.Stdin)
