@@ -1,5 +1,4 @@
-# Thought Ranch
-# Think Ranch
+Thought/Think/Thonk Ranch
 # Thonk Ranch
 
 \#Thonk
