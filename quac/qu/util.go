@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -49,6 +50,60 @@ func Lineage(idStr string) {
 		log.Fatalf("bad id %v", idStr)
 	}
 	fmt.Print(lib.GetLineage(uint32(id)))
+}
+
+func Transcribe(optionalQuery string) {
+
+	if optionalQuery == "" {
+
+		// TODO
+		return
+	}
+
+	consumed, err := lib.ParseID(optionalQuery)
+	if err == nil {
+		idea := lib.GetIdeaByID(consumed)
+		if !(idea.IsImage() || idea.IsAudio()) {
+			fmt.Println("this idea is not an image or audio cannot be transcribed")
+			os.Exit(1)
+		}
+		lib.Open(idea.Path())
+
+		// read input from console
+		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
+		consoleScanner := bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		optionalEntry := consoleScanner.Text()
+
+		consumerFilepath := lib.SetConsume(uint32(consumed), optionalEntry)
+		if optionalEntry == "" {
+			lib.OpenText(consumerFilepath)
+		}
+		return
+	}
+
+	subsetTagsImages := lib.GetAllIdeasNonConsuming().
+		WithTags(parseTags(optionalQuery)).
+		WithImage()
+
+	if len(subsetTagsImages) == 0 {
+		fmt.Println("no active images to transcribe with those tags")
+		os.Exit(1)
+	}
+
+	for _, idea := range subsetTagsImages {
+
+		// read input from console
+		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
+		consoleScanner := bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		optionalEntry := consoleScanner.Text()
+
+		consumerFilepath := lib.SetConsume(idea.Id, optionalEntry)
+		if optionalEntry == "" {
+			lib.OpenText(consumerFilepath)
+		}
+	}
 }
 
 func QuickQuery(unsplitTagsOrID string) {

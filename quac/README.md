@@ -33,6 +33,20 @@ YYYYMMDD = creation date
 eYYYYMMDD = last edited date
 cYYYYMMDD = consumed date
 
+### Details on use of `qu scan`
+
+The scan functionality is provided to quickly scan in a sheet of 
+paper with notes written in multiple orientations. The user is expected
+to circle each orientation (noon, 3am, 6am, 9am) with different colour
+markers. Additionally the markers are to be using for calibration:
+
+ - The top-left 1/2 inch squared is reserved for the calibration
+   - Calibration markers should be drawn as four stacked horizontal lines representing:
+     - Noon
+     - Quarter-Past
+     - Half-Past
+     - Quarter-To
+
 ### License
 
 Quick Ideas is released under the Apache 2.0 license.

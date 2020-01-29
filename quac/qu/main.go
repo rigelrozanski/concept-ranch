@@ -28,7 +28,6 @@ const (
 	keyCat             = "cat"
 	keyScan            = "scan"
 	keyTranscribe      = "transcribe"
-	keyTranscribeMany  = "transcribe-many"
 	keyConsume         = "consume"
 	keyConsumes        = "consumes"
 	keyZombie          = "zombie"
@@ -54,8 +53,7 @@ qu [tags...] [entry] --------------------> quick entry to a new idea
 qu [query] ------------------------------> open a vim tab with the contents of the query 
 qu cat [query] --------------------------> print idea(s) contents' to console
 qu scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
-qu transcribe [id] ----------------------> transcribe a random untranscribed image or a specific image by id
-qu transcribe-many [op_tags...] ---------> transcribe many images one after another, optionally transcribe within a set of tags
+qu transcribe [op_query] ----------------> transcribe a random untranscribed image or specific image(s) by query
 qu consume [id] [op_entry] --------------> quick consumes the given id into a new entry
 qu consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
 qu zombie [id] --------------------------> "unconsume" an idea based on id
@@ -68,26 +66,16 @@ qu kill-tag [id] [tag] ------------------> remove a tag from an idea by id
 qu add-tag [id] [tag] -------------------> add a tag from an idea by id
 qu rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
 qu destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
-qu lst [op_tags] ------------------------> list all tags used, optionally which share a set of common tags
-qu lsf [op_tags] ------------------------> list all files, optionally which contain provided tags
+qu lst [op_tags...] ---------------------> list all tags used, optionally which share a set of common tags
+qu lsf [op_tags...] ---------------------> list all files, optionally which contain provided tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
 [op_ ----------- An optional input 
 [id] ----------- Either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
 [query] -------- Either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
-                     Additionally, the following special tags can be used:
-                        consumed
-                        created_afterYYYYMMDD (where YYYYMMDD is a date)
-                        created_beforeYYYYMMDD 
-                        edited_afterYYYYMMDD 
-                        edited_beforeYYYYMMDD 
-                        consumed_afterYYYYMMDD 
-                        consumed_beforeYYYYMMDD 
 [tag] ---------- A catagory to query or organize your ideas with
 [tags...] ------ A list of tags seperated by commas (such as "tag1,tag2,tag3")
-                     Additionally special tags can be used:
-					    consumesXXXXXX (where XXXXXX is the id of the idea being consumed)
 [entry] -------- Either raw input text or for untranscribed input a directory to an image/audio sample 
 `
 )
@@ -118,9 +106,14 @@ func main() {
 			EnsureLen(args, 2)
 		}
 	case keyTranscribe:
-
-	case keyTranscribeMany:
-
+		switch len(args) {
+		case 1:
+			Transcribe("")
+		case 2:
+			Transcribe(args[1])
+		default:
+			EnsureLen(args, 1)
+		}
 	case keyConsume:
 		switch len(args) {
 		case 2:
