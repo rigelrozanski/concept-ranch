@@ -236,14 +236,46 @@ func PrintCaliColours(in Colours) {
 	in[3].PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", in[3].String()))
 }
 
-func Scan(pathToImage, opTag string) {
+func Scan(pathToImageOrDir, opTag string) {
 
-	// You can register another format here
 	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
 	image.RegisterFormat("jpg", "jpg", jpeg.Decode, jpeg.DecodeConfig)
 	image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
 
-	file, err := os.Open(pathToImage)
+	fod, err := os.Stat(pathToImageOrDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	isDir := fod.Mode().IsDir()
+	calibrationFilePath := ""
+	var imgFiles []string
+
+	if isDir {
+		files, err := ioutil.ReadDir(pathToImageOrDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, file := range files {
+			if !file.IsDir() {
+				imgFiles = append(imgFiles, file.Name())
+			}
+		}
+		if len(imgFiles) == 0 {
+			log.Fatal("directory is empty")
+		}
+
+		// get the first file as the calibration file
+		calibrationFilePath = imgFiles[0]
+
+	} else {
+		calibrationFilePath = pathToImageOrDir
+		imgFiles = []string{pathToImageOrDir}
+	}
+
+	// TODO get files
+
+	file, err := os.Open(calibrationFilePath)
 	if err != nil {
 		log.Fatal("Error: Image could not be decoded")
 	}
@@ -305,72 +337,86 @@ func Scan(pathToImage, opTag string) {
 		os.Exit(1)
 	}
 
-	fmt.Println("creating calibration grid...")
-	// get the calibration img
-	// 1 == noon
-	// 2 == quarterPast
-	// 3 == halfPast
-	// 4 == quarterTo
-	caliGrid := createCalibrationGrid(img, caliColours)
+	for _, ifn := range imgFiles {
 
-	fmt.Println("removing image marks...")
-	// remove all the marks from the image
-	imgRM := removeMarks(img, caliGrid)
-
-	fmt.Println("extracting subimages...")
-	noonResults := extractSubsetImgs(imgRM, caliGrid, 1)
-	quarterPastResults := Rotate90(extractSubsetImgs(imgRM, caliGrid, 2))
-	halfPastResults := Rotate180(extractSubsetImgs(imgRM, caliGrid, 3))
-	quarterToResults := Rotate270(extractSubsetImgs(imgRM, caliGrid, 4))
-
-	// concat
-	var results []image.Image
-	results = append(results, noonResults...)
-	results = append(results, quarterPastResults...)
-	results = append(results, halfPastResults...)
-	results = append(results, quarterToResults...)
-
-	// ensure scan dir
-	scanDir := path.Join(QuDir, "working_scan")
-	_ = os.Mkdir(scanDir, os.ModePerm)
-
-	fmt.Println("saving files...")
-	var imgPaths []string
-	for i, result := range results {
-		caliImgPath := path.Join(scanDir, strconv.Itoa(i)+".png")
-		imgPaths = append(imgPaths, caliImgPath)
-		f, _ := os.Create(caliImgPath)
-		png.Encode(f, result)
-	}
-
-	commonTag := false
-	if opTag != "" {
-		commonTag = true
-	}
-
-	for _, imgPath := range imgPaths {
-		ViewImageNoFilename(imgPath)
-		fmt.Println("please enter tags seperated by spaces then press enter:")
-		consoleScanner := bufio.NewScanner(os.Stdin)
-		_ = consoleScanner.Scan()
-		tags := strings.Fields(consoleScanner.Text())
-
-		if commonTag {
-			tags = append(tags, opTag)
+		file, err := os.Open(ifn)
+		if err != nil {
+			log.Fatal("Error: Image could not be decoded")
 		}
+		defer file.Close()
 
-		// save the new idea
-		idea := NewIdeaFromFile(tags, imgPath)
-		err := cmn.Copy(imgPath, idea.Path())
+		img, _, err := image.Decode(file)
 		if err != nil {
 			log.Fatal(err)
 		}
-		IncrementID()
-	}
 
-	err = os.RemoveAll(scanDir)
-	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("creating calibration grid for %v...\n", file.Name())
+		// get the calibration img
+		// 1 == noon
+		// 2 == quarterPast
+		// 3 == halfPast
+		// 4 == quarterTo
+		caliGrid := createCalibrationGrid(img, caliColours)
+
+		fmt.Println("removing image marks...")
+		// remove all the marks from the image
+		imgRM := removeMarks(img, caliGrid)
+
+		fmt.Println("extracting subimages...")
+		noonResults := extractSubsetImgs(imgRM, caliGrid, 1)
+		quarterPastResults := Rotate90(extractSubsetImgs(imgRM, caliGrid, 2))
+		halfPastResults := Rotate180(extractSubsetImgs(imgRM, caliGrid, 3))
+		quarterToResults := Rotate270(extractSubsetImgs(imgRM, caliGrid, 4))
+
+		// concat
+		var results []image.Image
+		results = append(results, noonResults...)
+		results = append(results, quarterPastResults...)
+		results = append(results, halfPastResults...)
+		results = append(results, quarterToResults...)
+
+		// ensure scan dir
+		scanDir := path.Join(QuDir, "working_scan")
+		_ = os.Mkdir(scanDir, os.ModePerm)
+
+		fmt.Println("saving files...")
+		var imgPaths []string
+		for i, result := range results {
+			caliImgPath := path.Join(scanDir, strconv.Itoa(i)+".png")
+			imgPaths = append(imgPaths, caliImgPath)
+			f, _ := os.Create(caliImgPath)
+			png.Encode(f, result)
+		}
+
+		commonTag := false
+		if opTag != "" {
+			commonTag = true
+		}
+
+		for _, imgPath := range imgPaths {
+			ViewImageNoFilename(imgPath)
+			fmt.Println("please enter tags seperated by spaces then press enter:")
+			consoleScanner := bufio.NewScanner(os.Stdin)
+			_ = consoleScanner.Scan()
+			tags := strings.Fields(consoleScanner.Text())
+
+			if commonTag {
+				tags = append(tags, opTag)
+			}
+
+			// save the new idea
+			idea := NewIdeaFromFile(tags, imgPath)
+			err := cmn.Copy(imgPath, idea.Path())
+			if err != nil {
+				log.Fatal(err)
+			}
+			IncrementID()
+		}
+
+		err = os.RemoveAll(scanDir)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }

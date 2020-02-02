@@ -53,7 +53,7 @@ qu --------------------------------------> edit the tagless master quick ideas b
 qu [tags...] [entry] --------------------> quick entry to a new idea
 qu [op_forcesplit] [query] --------------> open a vim tab with the contents of the query 
 qu cat [query] --------------------------> print idea(s) contents' to console
-qu scan [image_loco] [op_tag] -----------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
+qu scan [dir/file] [op_tag] -------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qu transcribe [op_query] ----------------> transcribe a random untranscribed image or specific image(s) by query
 qu consume [id] [op_entry] --------------> quick consumes the given id into a new entry
 qu consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
@@ -73,12 +73,12 @@ qu lsf [op_tags...] ---------------------> list all files, optionally which cont
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
-[op_ ----------- An optional input 
-[id] ----------- Either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
-[query] -------- Either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
-[tag] ---------- A catagory to query or organize your ideas with
-[tags...] ------ A list of tags seperated by commas (such as "tag1,tag2,tag3")
-[entry] -------- Either raw input text or for untranscribed input a directory to an image/audio sample 
+[op_ ----------- an optional input 
+[id] ----------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
+[query] -------- either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
+[tag] ---------- a catagory to query or organize your ideas with
+[tags...] ------ a list of tags seperated by commas (such as "tag1,tag2,tag3")
+[entry] -------- either raw input text or source input as a file or directory
 [forcesplit] --- if the text "force-split" is included, split view will be used even if only one entry is found 
 `
 )
