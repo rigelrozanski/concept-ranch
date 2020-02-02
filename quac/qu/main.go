@@ -50,33 +50,35 @@ const (
 🦆 🦆 🦆 ✍️  🏁
 
 qu --------------------------------------> edit the tagless master quick ideas board in vim
-qu [tags...] [entry] --------------------> quick entry to a new idea
-qu [op_forcesplit] [query] --------------> open a vim tab with the contents of the query 
-qu cat [query] --------------------------> print idea(s) contents' to console
-qu scan [dir/file] [op_tag] -------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
-qu transcribe [op_query] ----------------> transcribe a random untranscribed image or specific image(s) by query
-qu consume [id] [op_entry] --------------> quick consumes the given id into a new entry
-qu consumes [consumed-id] [consumer-id] -> set the consumption of existing ideas
-qu zombie [id] --------------------------> "unconsume" an idea based on id
-qu lineage [id] -------------------------> show the consumtion lineage  
-qu new [tags...] ------------------------> create a new idea with the provided tags
-qu set-encryption [id] ------------------> set encryption of existing idea
-qu rm [id] ------------------------------> remove an idea by id
-qu cp [id] ------------------------------> duplicate an idea at the provided id
-qu tags [id] ----------------------------> list the tags for a given id
-qu kill-tag [id] [tag] ------------------> remove a tag from an idea by id
-qu add-tag [id] [tag] -------------------> add a tag from an idea by id
-qu rename-tag [from-tag] [to-tag]--------> rename all instances of a tag for all ideas
-qu destroy-tag [tag] --------------------> remove all instances of a tag for all ideas
-qu lst [op_tags...] ---------------------> list all tags used, optionally which share a set of common tags
-qu lsf [op_tags...] ---------------------> list all files, optionally which contain provided tags
+qu <tags...> <entry> --------------------> quick entry to a new idea
+qu [forcesplit] <query> -----------------> open a vim tab with the contents of the query 
+qu cat <query> --------------------------> print idea(s) contents' to console
+qu scan <dir/file> [tag] ----------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
+qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query
+qu consume <id> [entry] -----------------> quick consumes the given id into a new entry
+qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
+qu zombie <id> --------------------------> "unconsume" an idea based on id
+qu lineage <id> -------------------------> show the consumtion lineage  
+qu new <tags...> ------------------------> create a new idea with the provided tags
+qu set-encryption <id> ------------------> set encryption of existing idea
+qu rm <id> ------------------------------> remove an idea by id
+qu cp <id> ------------------------------> duplicate an idea at the provided id
+qu tags <id> ----------------------------> list the tags for a given id
+qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id
+qu add-tag <id> <tag> -------------------> add a tag from an idea by id
+qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
+qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
+qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
+qu lsf [tags...] ------------------------> list all files, optionally which contain provided tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
-[op_ ----------- an optional input 
+[...], <...> --- optional input, required input
 [id] ----------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
 [query] -------- either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
 [tag] ---------- a catagory to query or organize your ideas with
+                   special tags: TAGFILENAME - if this tag is used the filename of each entry file will be included 
+				                               as a tag per idea. errors if entry is raw text input
 [tags...] ------ a list of tags seperated by commas (such as "tag1,tag2,tag3")
 [entry] -------- either raw input text or source input as a file or directory
 [forcesplit] --- if the text "force-split" is included, split view will be used even if only one entry is found 

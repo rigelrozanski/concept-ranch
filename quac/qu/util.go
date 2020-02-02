@@ -342,17 +342,57 @@ func RemoveById(id uint32) error {
 // create an entry
 func Entry(entryOrPath string, tags []string) {
 
+	hasTFN := false
+	for i, tag := range tags {
+		if tag == "TAGFILENAME" && !hasTFN {
+			hasTFN = true
+			tags = append(tags[:i], tags[i+1:]...)
+		}
+		if tag == "TAGFILENAME" && hasTFN {
+			log.Fatal("two occurances of the tag \"TAGFILENAME\"")
+		}
+	}
+
 	if cmn.FileExists(entryOrPath) { // is a path
 
-		idea := lib.NewIdeaFromFile(tags, entryOrPath)
-
-		err := cmn.Copy(entryOrPath, idea.Path())
+		fod, err := os.Stat(entryOrPath)
 		if err != nil {
 			log.Fatal(err)
 		}
-		lib.IncrementID()
+		var filepaths []string
 
-		return
+		if fod.Mode().IsDir() {
+			files, err := ioutil.ReadDir(entryOrPath)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			for _, file := range files {
+				if !file.IsDir() {
+					filepath := path.Join(entryOrPath, file.Name())
+					filepaths = append(filepaths, filepath)
+				}
+			}
+			if len(filepaths) == 0 {
+				log.Fatal("directory is empty")
+			}
+		} else {
+			filepaths = []string{entryOrPath}
+		}
+
+		for _, filepath := range filepaths {
+			idea := lib.NewIdeaFromFile(tags, filepath, hasTFN)
+			err = cmn.Copy(filepath, idea.Path())
+			if err != nil {
+				log.Fatal(err)
+			}
+			lib.IncrementID()
+			return
+		}
+	}
+
+	if hasTFN {
+		log.Fatal("the tag \"TAGFILENAME\" is reserved for file entry not raw-text-entry")
 	}
 
 	idea := lib.NewNonConsumingTextIdea(tags)

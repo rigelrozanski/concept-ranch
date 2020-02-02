@@ -258,7 +258,8 @@ func Scan(pathToImageOrDir, opTag string) {
 
 		for _, file := range files {
 			if !file.IsDir() {
-				imgFiles = append(imgFiles, file.Name())
+				filepath := path.Join(pathToImageOrDir, file.Name())
+				imgFiles = append(imgFiles, filepath)
 			}
 		}
 		if len(imgFiles) == 0 {
@@ -405,7 +406,7 @@ func Scan(pathToImageOrDir, opTag string) {
 			}
 
 			// save the new idea
-			idea := NewIdeaFromFile(tags, imgPath)
+			idea := NewIdeaFromFile(tags, imgPath, false)
 			err := cmn.Copy(imgPath, idea.Path())
 			if err != nil {
 				log.Fatal(err)
