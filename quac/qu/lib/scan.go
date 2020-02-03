@@ -28,12 +28,11 @@ import (
 // start colour calibration read 20 pixels down
 
 const (
-	caliSetStartX  = 30        // calibration set-x start
-	caliSetEndX    = 35        // calibration set-x end
-	caliSearchMinY = 5         // calibration search y start
-	caliSearchMaxY = 100       // calibration search y max
-	thick          = 3         // pixels down and across to check for calibration and parsing
-	whiteMinRGBSum = 600 * 257 // minimum sum of RGB values to be considered white
+	caliSetStartX  = 30  // calibration set-x start
+	caliSetEndX    = 35  // calibration set-x end
+	caliSearchMinY = 5   // calibration search y start
+	caliSearchMaxY = 100 // calibration search y max
+	thick          = 3   // pixels down and across to check for calibration and parsing
 
 	minIdeaDimention = 50 // must be 50 pixels in each direction to be considered an object
 
