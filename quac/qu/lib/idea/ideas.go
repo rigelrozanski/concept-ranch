@@ -22,6 +22,7 @@ func GetAllIdeasNonConsuming() (ideas Ideas) {
 	return ideas
 }
 
+// these ideas will be sorted from oldest to newest
 func GetAllIdeas() (ideas Ideas) {
 	files, err := ioutil.ReadDir(IdeasDir)
 	if err != nil {
