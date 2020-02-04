@@ -48,14 +48,10 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 	return idea
 }
 
-func NewIdeaFromFile(tags []string, filepath string, tagFilename bool) Idea {
+func NewIdeaFromFile(tags []string, filepath string) Idea {
 	todayDate := TodayDate()
 
 	ext := path.Ext(filepath)
-	if tagFilename {
-		pathbase := strings.TrimSuffix(path.Base(filepath), ext)
-		tags = append(tags, pathbase)
-	}
 
 	idea := Idea{
 		Cycle:       CycleAlive,

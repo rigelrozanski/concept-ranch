@@ -168,6 +168,17 @@ func RemoveByID(idStr string) {
 	quac.RemoveByID(id)
 }
 
+func RemoveAcrossIDs(idStr, idStr2 string) {
+	id := parseIdStr(idStr)
+	id2 := parseIdStr(idStr2)
+	if id >= id2 {
+		log.Fatalf("second id must be greater first id")
+	}
+	for i := id; i <= id2; i++ {
+		quac.RemoveByID(i)
+	}
+}
+
 func CopyByID(idStr string) {
 	id := parseIdStr(idStr)
 	quac.Open(quac.CopyByID(id))
@@ -348,14 +359,12 @@ func RemoveById(id uint32) error {
 // create an entry
 func Entry(entryOrPath string, tags []string) {
 
-	hasTFN := false
-	for i, tag := range tags {
-		if tag == "TAGFILENAME" && !hasTFN {
-			hasTFN = true
-			tags = append(tags[:i], tags[i+1:]...)
-		}
-		if tag == "TAGFILENAME" && hasTFN {
-			log.Fatal("two occurances of the tag \"TAGFILENAME\"")
+	// TODO this logic should exist in the library
+	hasFN := false
+	for _, tag := range tags {
+		if strings.Contains(tag, "FILENAME") {
+			hasFN = true
+			break
 		}
 	}
 
@@ -387,18 +396,41 @@ func Entry(entryOrPath string, tags []string) {
 		}
 
 		for _, filepath := range filepaths {
-			idea := quac.NewIdeaFromFile(tags, filepath, hasTFN)
+			fmt.Printf("debug filepath: %v\n", filepath)
+
+			// skip if folder
+			fod2, err := os.Stat(filepath)
+			if err != nil {
+				log.Fatal(err)
+			}
+			if fod2.Mode().IsDir() {
+				continue
+			}
+
+			// TODO this logic should exist in the lib
+			tags2 := make([]string, len(tags))
+			copy(tags2, tags)
+			if hasFN {
+				for i, tag := range tags2 {
+					if strings.Contains(tag, "FILENAME") {
+						filebase := strings.TrimSuffix(path.Base(filepath), path.Ext(filepath))
+						tags2[i] = strings.Replace(tag, "FILENAME", filebase, 2)
+					}
+				}
+			}
+
+			idea := quac.NewIdeaFromFile(tags2, filepath)
 			err = cmn.Copy(filepath, idea.Path())
 			if err != nil {
 				log.Fatal(err)
 			}
 			quac.IncrementID()
-			return
 		}
+		return
 	}
 
-	if hasTFN {
-		log.Fatal("the tag \"TAGFILENAME\" is reserved for file entry not raw-text-entry")
+	if hasFN {
+		log.Fatal("the tag \"FILENAME\" is reserved for file entry not raw-text-entry")
 	}
 
 	idea := quac.NewNonConsumingTextIdea(tags)

@@ -215,7 +215,7 @@ func Scan(pathToImageOrDir, opTag string) {
 			}
 
 			// save the new idea
-			idea := NewIdeaFromFile(tags, imgPath, false)
+			idea := NewIdeaFromFile(tags, imgPath)
 			err := cmn.Copy(imgPath, idea.Path())
 			if err != nil {
 				log.Fatal(err)

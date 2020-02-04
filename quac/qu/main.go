@@ -51,7 +51,7 @@ const (
 
 qu --------------------------------------> edit the tagless master quick ideas board in vim
 qu <tags...> <entry> --------------------> quick entry to a new idea
-qu [force-split] <query> -----------------> open a vim tab with the contents of the query 
+qu [force-split] <query> ----------------> open a vim tab with the contents of the query 
 qu cat <query> --------------------------> print idea(s) contents' to console
 qu scan <dir/file> [tag] ----------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query
@@ -77,8 +77,8 @@ Explanation of some terms:
 [id] ----------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
 [query] -------- either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
 [tag] ---------- a catagory to query or organize your ideas with
-                   special tags: TAGFILENAME - if this tag is used the filename of each entry file will be included 
-				                               as a tag per idea. errors if entry is raw text input
+                   special tags: FILENAME - if this tag is used the filename of each entry file will be included 
+				                            as a tag per idea. errors if entry is raw text input
 [tags...] ------ a list of tags seperated by commas (such as "tag1,tag2,tag3")
 [entry] -------- either raw input text or source input as a file or directory
 [forcesplit] --- if the text "force-split" is included, split view will be used even if only one entry is found 
@@ -144,8 +144,14 @@ func main() {
 		EnsureLen(args, 2)
 		SetEncryption(args[1])
 	case keyRm:
-		EnsureLen(args, 2)
-		RemoveByID(args[1])
+		switch len(args) {
+		case 2:
+			RemoveByID(args[1])
+		case 3:
+			RemoveAcrossIDs(args[1], args[2])
+		default:
+			EnsureLen(args, 2)
+		}
 	case keyCp:
 		EnsureLen(args, 2)
 		CopyByID(args[1])
