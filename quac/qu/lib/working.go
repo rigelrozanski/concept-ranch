@@ -12,7 +12,7 @@ import (
 	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
 )
 
-func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLen int, singleReturn string) {
+func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
 	ideas := idea.GetAllIdeasNonConsuming()
 	subset := ideas.WithTags(tags)
 
@@ -20,8 +20,11 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string) (found bool, maxFNLe
 	case 0:
 		return false, 0, ""
 	case 1:
-		// if only one found, return its path
-		return true, 1, subset[0].Path()
+		if !forceSplitView {
+			// if only one found, return its path
+			return true, 1, subset[0].Path()
+		}
+		fallthrough
 	default:
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte

@@ -51,7 +51,7 @@ const (
 
 qu --------------------------------------> edit the tagless master quick ideas board in vim
 qu <tags...> <entry> --------------------> quick entry to a new idea
-qu [forcesplit] <query> -----------------> open a vim tab with the contents of the query 
+qu [force-split] <query> -----------------> open a vim tab with the contents of the query 
 qu cat <query> --------------------------> print idea(s) contents' to console
 qu scan <dir/file> [tag] ----------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
 qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query

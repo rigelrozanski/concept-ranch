@@ -326,8 +326,19 @@ func ViewByTags(tags []string) {
 	fmt.Printf("%s\n", content)
 }
 
+// for applications to receive content
+func GetForApp(application string) string {
+	tags := []string{"external-use", "app:" + application}
+	content, found := lib.ConcatAllContentFromTags(tags)
+	if !found {
+		fmt.Println("nothing found with those tags")
+	}
+	fmt.Printf("%s\n", content)
+	return ""
+}
+
 func MultiOpenByTags(tags []string, forceSplitView bool) {
-	found, maxFNLen, singleReturn := lib.WriteWorkingContentAndFilenamesFromTags(tags)
+	found, maxFNLen, singleReturn := lib.WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
