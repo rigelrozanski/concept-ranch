@@ -291,6 +291,9 @@ func ListAllTagsWithTags(tagsGrouped string) {
 
 func ListAllFiles() {
 	ideas := lib.GetAllIdeas()
+	if len(ideas) == 0 {
+		fmt.Println("no ideas found")
+	}
 	for _, idea := range ideas {
 		fmt.Println(idea.Filename)
 	}
@@ -299,6 +302,9 @@ func ListAllFiles() {
 func ListAllFilesWithTags(tagsGrouped string) {
 	ideas := lib.GetAllIdeas()
 	subset := ideas.WithTags(parseTags(tagsGrouped))
+	if len(subset) == 0 {
+		fmt.Println("no ideas found with those tags")
+	}
 	for _, idea := range subset {
 		fmt.Println(idea.Filename)
 	}
