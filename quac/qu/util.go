@@ -10,46 +10,46 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/thranch/quac/qu/lib"
+	"github.com/rigelrozanski/thranch/quac"
 )
 
 func Consume(consumedID, optionalEntry string) {
-	consumed, err := lib.ParseID(consumedID)
+	consumed, err := quac.ParseID(consumedID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumedID)
 	}
-	consumerFilepath := lib.SetConsume(uint32(consumed), optionalEntry)
+	consumerFilepath := quac.SetConsume(uint32(consumed), optionalEntry)
 	if optionalEntry == "" {
-		lib.OpenText(consumerFilepath)
+		quac.OpenText(consumerFilepath)
 	}
 }
 
 func Consumes(consumedID, consumesID string) {
-	consumed, err := lib.ParseID(consumedID)
+	consumed, err := quac.ParseID(consumedID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumedID)
 	}
-	consumes, err := lib.ParseID(consumesID)
+	consumes, err := quac.ParseID(consumesID)
 	if err != nil {
 		log.Fatalf("bad id %v", consumesID)
 	}
-	lib.SetConsumes(uint32(consumed), uint32(consumes))
+	quac.SetConsumes(uint32(consumed), uint32(consumes))
 }
 
 func Zombie(zombieID string) {
-	zombie, err := lib.ParseID(zombieID)
+	zombie, err := quac.ParseID(zombieID)
 	if err != nil {
 		log.Fatalf("bad id %v", zombieID)
 	}
-	lib.SetZombie(uint32(zombie))
+	quac.SetZombie(uint32(zombie))
 }
 
 func Lineage(idStr string) {
-	id, err := lib.ParseID(idStr)
+	id, err := quac.ParseID(idStr)
 	if err != nil {
 		log.Fatalf("bad id %v", idStr)
 	}
-	fmt.Print(lib.GetLineage(uint32(id)))
+	fmt.Print(quac.GetLineage(uint32(id)))
 }
 
 func Transcribe(optionalQuery string) {
@@ -60,14 +60,14 @@ func Transcribe(optionalQuery string) {
 		return
 	}
 
-	consumed, err := lib.ParseID(optionalQuery)
+	consumed, err := quac.ParseID(optionalQuery)
 	if err == nil {
-		idea := lib.GetIdeaByID(consumed)
+		idea := quac.GetIdeaByID(consumed)
 		if !(idea.IsImage() || idea.IsAudio()) {
 			fmt.Println("this idea is not an image or audio cannot be transcribed")
 			os.Exit(1)
 		}
-		lib.Open(idea.Path())
+		quac.Open(idea.Path())
 
 		// read input from console
 		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
@@ -75,14 +75,14 @@ func Transcribe(optionalQuery string) {
 		_ = consoleScanner.Scan()
 		optionalEntry := consoleScanner.Text()
 
-		consumerFilepath := lib.SetConsume(uint32(consumed), optionalEntry)
+		consumerFilepath := quac.SetConsume(uint32(consumed), optionalEntry)
 		if optionalEntry == "" {
-			lib.OpenText(consumerFilepath)
+			quac.OpenText(consumerFilepath)
 		}
 		return
 	}
 
-	subsetTagsImages := lib.GetAllIdeasNonConsuming().
+	subsetTagsImages := quac.GetAllIdeasNonConsuming().
 		WithTags(parseTags(optionalQuery)).
 		WithImage()
 
@@ -93,7 +93,7 @@ func Transcribe(optionalQuery string) {
 
 	for _, idea := range subsetTagsImages {
 
-		lib.Open(idea.Path())
+		quac.Open(idea.Path())
 
 		// read input from console
 		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
@@ -101,15 +101,15 @@ func Transcribe(optionalQuery string) {
 		_ = consoleScanner.Scan()
 		optionalEntry := consoleScanner.Text()
 
-		consumerFilepath := lib.SetConsume(idea.Id, optionalEntry)
+		consumerFilepath := quac.SetConsume(idea.Id, optionalEntry)
 		if optionalEntry == "" {
-			lib.OpenText(consumerFilepath)
+			quac.OpenText(consumerFilepath)
 		}
 	}
 }
 
 func QuickQuery(unsplitTagsOrID string) {
-	id, err := lib.ParseID(unsplitTagsOrID)
+	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {
 		ViewByID(uint32(id))
 		return
@@ -120,19 +120,19 @@ func QuickQuery(unsplitTagsOrID string) {
 
 func NewEmptyEntry(unsplitTags string) {
 	splitTags := parseTags(unsplitTags)
-	idear := lib.NewNonConsumingTextIdea(splitTags)
-	writePath := path.Join(lib.IdeasDir, idear.Filename)
-	lib.IncrementID()
-	lib.OpenText(writePath)
+	idear := quac.NewNonConsumingTextIdea(splitTags)
+	writePath := path.Join(quac.IdeasDir, idear.Filename)
+	quac.IncrementID()
+	quac.OpenText(writePath)
 }
 
 func SetEncryption(idStr string) {
-	id, err := lib.ParseID(idStr)
+	id, err := quac.ParseID(idStr)
 	if err != nil {
 		log.Fatalf("error parsing id, error: %v", err)
 	}
 
-	lib.SetEncryptionById(id)
+	quac.SetEncryptionById(id)
 }
 
 func QuickEntry(unsplitTags, entry string) {
@@ -141,10 +141,10 @@ func QuickEntry(unsplitTags, entry string) {
 }
 
 func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
-	id, err := lib.ParseID(unsplitTagsOrID)
+	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {
-		filePath := lib.GetFilepathByID(uint32(id))
-		lib.Open(filePath)
+		filePath := quac.GetFilepathByID(uint32(id))
+		quac.Open(filePath)
 		return
 	}
 	splitTags := parseTags(unsplitTagsOrID)
@@ -152,7 +152,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 }
 
 func parseIdStr(idStr string) uint32 {
-	idI, err := lib.ParseID(idStr)
+	idI, err := quac.ParseID(idStr)
 	if err != nil {
 		log.Fatalf("error parsing id, error: %v", err)
 	}
@@ -165,29 +165,29 @@ func parseTags(tagsGrouped string) []string {
 
 func RemoveByID(idStr string) {
 	id := parseIdStr(idStr)
-	lib.RemoveByID(id)
+	quac.RemoveByID(id)
 }
 
 func CopyByID(idStr string) {
 	id := parseIdStr(idStr)
-	lib.Open(lib.CopyByID(id))
+	quac.Open(quac.CopyByID(id))
 }
 
 func ListTagsByID(idStr string) {
 	id := parseIdStr(idStr)
-	idea := lib.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id)
 	fmt.Println(idea.Tags)
 }
 
 func KillTagByID(idStr, tagToKill string) {
 	id := parseIdStr(idStr)
-	idea := lib.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id)
 	origFilename := idea.Filename
 	(&idea).RemoveTag(tagToKill)
 	(&idea).UpdateFilename()
 
-	origPath := path.Join(lib.IdeasDir, origFilename)
-	newPath := path.Join(lib.IdeasDir, idea.Filename)
+	origPath := path.Join(quac.IdeasDir, origFilename)
+	newPath := path.Join(quac.IdeasDir, idea.Filename)
 	err := os.Rename(origPath, newPath)
 	if err != nil {
 		log.Fatal(err)
@@ -196,13 +196,13 @@ func KillTagByID(idStr, tagToKill string) {
 
 func AddTagByID(idStr, tagToAdd string) {
 	id := parseIdStr(idStr)
-	idea := lib.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id)
 	origFilename := idea.Filename
 	idea.Tags = append(idea.Tags, tagToAdd)
 	(&idea).UpdateFilename()
 
-	origPath := path.Join(lib.IdeasDir, origFilename)
-	newPath := path.Join(lib.IdeasDir, idea.Filename)
+	origPath := path.Join(quac.IdeasDir, origFilename)
+	newPath := path.Join(quac.IdeasDir, idea.Filename)
 	err := os.Rename(origPath, newPath)
 	if err != nil {
 		log.Fatal(err)
@@ -210,7 +210,7 @@ func AddTagByID(idStr, tagToAdd string) {
 }
 
 func RenameTag(from, to string) {
-	files, err := ioutil.ReadDir(lib.IdeasDir)
+	files, err := ioutil.ReadDir(quac.IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -219,13 +219,13 @@ func RenameTag(from, to string) {
 		if !strings.Contains(origFn, from) {
 			continue
 		}
-		idea := lib.NewIdeaFromFilename(origFn)
+		idea := quac.NewIdeaFromFilename(origFn)
 		(&idea).RenameTag(from, to)
 		(&idea).UpdateFilename()
 
 		// perform the file rename
-		origPath := path.Join(lib.IdeasDir, origFn)
-		newPath := path.Join(lib.IdeasDir, idea.Filename)
+		origPath := path.Join(quac.IdeasDir, origFn)
+		newPath := path.Join(quac.IdeasDir, idea.Filename)
 		err := os.Rename(origPath, newPath)
 		if err != nil {
 			log.Fatal(err)
@@ -234,7 +234,7 @@ func RenameTag(from, to string) {
 }
 
 func DestroyTag(tag string) {
-	files, err := ioutil.ReadDir(lib.IdeasDir)
+	files, err := ioutil.ReadDir(quac.IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -243,13 +243,13 @@ func DestroyTag(tag string) {
 		if !strings.Contains(origFn, tag) {
 			continue
 		}
-		idea := lib.NewIdeaFromFilename(origFn)
+		idea := quac.NewIdeaFromFilename(origFn)
 		(&idea).RemoveTag(tag)
 		(&idea).UpdateFilename()
 
 		// perform the file rename
-		origPath := path.Join(lib.IdeasDir, origFn)
-		newPath := path.Join(lib.IdeasDir, idea.Filename)
+		origPath := path.Join(quac.IdeasDir, origFn)
+		newPath := path.Join(quac.IdeasDir, idea.Filename)
 		err := os.Rename(origPath, newPath)
 		if err != nil {
 			log.Fatal(err)
@@ -260,12 +260,12 @@ func DestroyTag(tag string) {
 //__________________
 
 func ListAllTags() {
-	ideas := lib.GetAllIdeas()
+	ideas := quac.GetAllIdeas()
 	fmt.Println(ideas.UniqueTags())
 }
 
 func ListAllTagsWithTags(tagsGrouped string) {
-	ideas := lib.GetAllIdeas()
+	ideas := quac.GetAllIdeas()
 	queryTags := parseTags(tagsGrouped)
 	subset := ideas.WithTags(queryTags)
 	uniqueTags := subset.UniqueTags()
@@ -290,7 +290,7 @@ func ListAllTagsWithTags(tagsGrouped string) {
 }
 
 func ListAllFiles() {
-	ideas := lib.GetAllIdeas()
+	ideas := quac.GetAllIdeas()
 	if len(ideas) == 0 {
 		fmt.Println("no ideas found")
 	}
@@ -300,7 +300,7 @@ func ListAllFiles() {
 }
 
 func ListAllFilesWithTags(tagsGrouped string) {
-	ideas := lib.GetAllIdeas()
+	ideas := quac.GetAllIdeas()
 	subset := ideas.WithTags(parseTags(tagsGrouped))
 	if len(subset) == 0 {
 		fmt.Println("no ideas found with those tags")
@@ -311,7 +311,7 @@ func ListAllFilesWithTags(tagsGrouped string) {
 }
 
 func ViewByID(id uint32) {
-	content, found := lib.GetContentByID(id)
+	content, found := quac.GetContentByID(id)
 	if !found {
 		fmt.Println("nothing found with that id")
 	}
@@ -319,7 +319,7 @@ func ViewByID(id uint32) {
 }
 
 func ViewByTags(tags []string) {
-	content, found := lib.ConcatAllContentFromTags(tags)
+	content, found := quac.ConcatAllContentFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
@@ -329,7 +329,7 @@ func ViewByTags(tags []string) {
 // for applications to receive content
 func GetForApp(application string) string {
 	tags := []string{"external-use", "app:" + application}
-	content, found := lib.ConcatAllContentFromTags(tags)
+	content, found := quac.ConcatAllContentFromTags(tags)
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
@@ -337,18 +337,18 @@ func GetForApp(application string) string {
 }
 
 func MultiOpenByTags(tags []string, forceSplitView bool) {
-	found, maxFNLen, singleReturn := lib.WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
+	found, maxFNLen, singleReturn := quac.WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
 	}
-	// if only a single entry is found then lib.Open only it!
+	// if only a single entry is found then quac.Open only it!
 	if singleReturn != "" && !forceSplitView {
-		lib.Open(singleReturn)
+		quac.Open(singleReturn)
 		return
 	}
-	lib.OpenTextSplit(lib.WorkingFnsFile, lib.WorkingContentFile, maxFNLen)
-	lib.SaveFromWorkingFiles()
+	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
+	quac.SaveFromWorkingFiles()
 }
 
 func RemoveById(id uint32) error {
@@ -397,12 +397,12 @@ func Entry(entryOrPath string, tags []string) {
 		}
 
 		for _, filepath := range filepaths {
-			idea := lib.NewIdeaFromFile(tags, filepath, hasTFN)
+			idea := quac.NewIdeaFromFile(tags, filepath, hasTFN)
 			err = cmn.Copy(filepath, idea.Path())
 			if err != nil {
 				log.Fatal(err)
 			}
-			lib.IncrementID()
+			quac.IncrementID()
 			return
 		}
 	}
@@ -411,10 +411,10 @@ func Entry(entryOrPath string, tags []string) {
 		log.Fatal("the tag \"TAGFILENAME\" is reserved for file entry not raw-text-entry")
 	}
 
-	idea := lib.NewNonConsumingTextIdea(tags)
+	idea := quac.NewNonConsumingTextIdea(tags)
 	err := cmn.WriteLines([]string{entryOrPath}, idea.Path())
 	if err != nil {
 		log.Fatalf("error writing new file: %v", err)
 	}
-	lib.IncrementID()
+	quac.IncrementID()
 }

@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rigelrozanski/thranch/quac/qu/lib"
+	"github.com/rigelrozanski/thranch/quac"
 )
 
 // filestructure:
@@ -86,12 +86,12 @@ Explanation of some terms:
 )
 
 func main() {
-	lib.Initialize(os.ExpandEnv("$HOME/.thranch_config"))
+	quac.Initialize(os.ExpandEnv("$HOME/.thranch_config"))
 	args := os.Args[1:]
 
 	// for the master qu file for quick entry
 	if len(args) == 0 {
-		lib.OpenText(lib.QuFile)
+		quac.OpenText(quac.QuFile)
 		return
 	}
 
@@ -104,9 +104,9 @@ func main() {
 	case keyScan:
 		switch len(args) {
 		case 2:
-			lib.Scan(args[1], "")
+			quac.Scan(args[1], "")
 		case 3:
-			lib.Scan(args[1], args[2])
+			quac.Scan(args[1], args[2])
 		default:
 			EnsureLen(args, 2)
 		}
@@ -177,7 +177,7 @@ func main() {
 			ListAllFilesWithTags(args[1])
 		}
 	case keyPDFBackup:
-		lib.ExportToPDF()
+		quac.ExportToPDF()
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0], false)

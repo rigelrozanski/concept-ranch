@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"bytes"
@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {

@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"path"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 // directory name where boards are stored in repo

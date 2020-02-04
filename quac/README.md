@@ -38,10 +38,10 @@ cYYYYMMDD = consumed date
 The scan functionality is provided to quickly scan in a sheet of 
 paper with notes written in multiple orientations. The user is expected
 to circle each orientation (noon, 3am, 6am, 9am) with different colour
-markers. Additionally the markers are to be using for calibration:
+markers. Additionally the markers are to be using for caquacration:
 
- - The top-left 1/2 inch squared is reserved for the calibration
-   - Calibration markers should be drawn as four stacked horizontal lines representing:
+ - The top-left 1/2 inch squared is reserved for the caquacration
+   - Caquacration markers should be drawn as four stacked horizontal lines representing:
      - Noon
      - Quarter-Past
      - Half-Past

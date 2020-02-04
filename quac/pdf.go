@@ -1,11 +1,11 @@
-package lib
+package quac
 
 import (
 	"fmt"
 	"os"
 
 	"github.com/jung-kurt/gofpdf"
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func ExportToPDF() error {

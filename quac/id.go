@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"io/ioutil"
@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func GetContentByID(id uint32) (content []byte, found bool) {

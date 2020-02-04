@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"bufio"
@@ -21,29 +21,29 @@ import (
 	"github.com/rigelrozanski/common/colour"
 )
 
-// calibration area is 1/2 squared top left corner
+// caquacration area is 1/2 squared top left corner
 
 // at 200DPI a sharpie line is about 13 pixels wide
 // Test 7px & 7px Down a specific colour
-// start colour calibration read 20 pixels down
+// start colour caquacration read 20 pixels down
 
 const (
-	caliSetStartX  = 30  // calibration set-x start
-	caliSetEndX    = 35  // calibration set-x end
-	caliSearchMinY = 5   // calibration search y start
-	caliSearchMaxY = 100 // calibration search y max
-	thick          = 3   // pixels down and across to check for calibration and parsing
+	caliSetStartX  = 30  // caquacration set-x start
+	caliSetEndX    = 35  // caquacration set-x end
+	caliSearchMinY = 5   // caquacration search y start
+	caliSearchMaxY = 100 // caquacration search y max
+	thick          = 3   // pixels down and across to check for caquacration and parsing
 
 	minIdeaDimention = 50 // must be 50 pixels in each direction to be considered an object
 
 	// Allowable variance per R,G,or B, up or down from the
-	// calibration variance to be considered that colour
+	// caquacration variance to be considered that colour
 	variance = 20 * 257
 
 	brightnessVariance = 30 * 257
 )
 
-var LastScanCalibrationFile string
+var LastScanCaquacrationFile string
 
 func Scan(pathToImageOrDir, opTag string) {
 
@@ -56,7 +56,7 @@ func Scan(pathToImageOrDir, opTag string) {
 		log.Fatal(err)
 	}
 	isDir := fod.Mode().IsDir()
-	calibrationFilePath := ""
+	caquacrationFilePath := ""
 	var imgFiles []string
 
 	if isDir {
@@ -75,17 +75,17 @@ func Scan(pathToImageOrDir, opTag string) {
 			log.Fatal("directory is empty")
 		}
 
-		// get the first file as the calibration file
-		calibrationFilePath = imgFiles[0]
+		// get the first file as the caquacration file
+		caquacrationFilePath = imgFiles[0]
 
 	} else {
-		calibrationFilePath = pathToImageOrDir
+		caquacrationFilePath = pathToImageOrDir
 		imgFiles = []string{pathToImageOrDir}
 	}
 
 	// TODO get files
 
-	file, err := os.Open(calibrationFilePath)
+	file, err := os.Open(caquacrationFilePath)
 	if err != nil {
 		log.Fatal("Error: Image could not be decoded")
 	}
@@ -96,23 +96,23 @@ func Scan(pathToImageOrDir, opTag string) {
 		log.Fatal(err)
 	}
 
-	// determine calibration
-	caliNN, caliQP, caliHP, caliQT, err := getCalibrationColours(img)
+	// determine caquacration
+	caliNN, caliQP, caliHP, caliQT, err := getCaquacrationColours(img)
 	caliColours := colour.NewColours(caliNN, caliQP, caliHP, caliQT)
 	if err == nil {
 		PrintCaliColours(caliColours)
 	}
 
 	if err == nil && !(caliColours.AreUnique(variance)) {
-		err = errors.New("non-unique calibration colours")
+		err = errors.New("non-unique caquacration colours")
 	}
 
-	LastScanCalibrationFile = path.Join(QuDir, "last_scan_calibration.json")
+	LastScanCaquacrationFile = path.Join(QuDir, "last_scan_caquacration.json")
 	if err != nil {
-		fmt.Printf("error while creating calibration: %v\n", err)
+		fmt.Printf("error while creating caquacration: %v\n", err)
 
-		if cmn.FileExists(LastScanCalibrationFile) {
-			bz, err := ioutil.ReadFile(LastScanCalibrationFile)
+		if cmn.FileExists(LastScanCaquacrationFile) {
+			bz, err := ioutil.ReadFile(LastScanCaquacrationFile)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -121,7 +121,7 @@ func Scan(pathToImageOrDir, opTag string) {
 				log.Fatal(err)
 			}
 
-			fmt.Printf("Loading last used calibration %v\n", err)
+			fmt.Printf("Loading last used caquacration %v\n", err)
 			PrintCaliColours(caliColours)
 
 		} else {
@@ -132,13 +132,13 @@ func Scan(pathToImageOrDir, opTag string) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = ioutil.WriteFile(LastScanCalibrationFile, bz, os.ModePerm)
+		err = ioutil.WriteFile(LastScanCaquacrationFile, bz, os.ModePerm)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	fmt.Println("confirm calibration colours (Y/N)")
+	fmt.Println("confirm caquacration colours (Y/N)")
 	consoleScanner := bufio.NewScanner(os.Stdin)
 	_ = consoleScanner.Scan()
 	in := consoleScanner.Text()
@@ -160,13 +160,13 @@ func Scan(pathToImageOrDir, opTag string) {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("creating calibration grid for %v...\n", file.Name())
-		// get the calibration img
+		fmt.Printf("creating caquacration grid for %v...\n", file.Name())
+		// get the caquacration img
 		// 1 == noon
 		// 2 == quarterPast
 		// 3 == halfPast
 		// 4 == quarterTo
-		caliGrid := createCalibrationGrid(img, caliColours)
+		caliGrid := createCaquacrationGrid(img, caliColours)
 
 		fmt.Println("removing image marks...")
 		// remove all the marks from the image
@@ -235,41 +235,41 @@ func PrintCaliColours(in colour.Colours) {
 	if len(in) != 4 {
 		panic("bad number of colours to print")
 	}
-	fmt.Println("\nCalibration Colours:")
+	fmt.Println("\nCaquacration Colours:")
 	in[0].PrintColour(fmt.Sprintf("Noon \t\t%v\n", in[0].String()))
 	in[1].PrintColour(fmt.Sprintf("Quarter-Past \t%v\n", in[1].String()))
 	in[2].PrintColour(fmt.Sprintf("Half-Past \t\t%v\n", in[2].String()))
 	in[3].PrintColour(fmt.Sprintf("Quarter-To \t\t%v\n", in[3].String()))
 }
 
-func getCalibrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo colour.Colour, err error) {
+func getCaquacrationColours(img image.Image) (noon, quarterPast, halfPast, quarterTo colour.Colour, err error) {
 
 	noon, outsideY, err := colour.GetCalibrationColour(caliSetStartX, caliSetEndX, caliSearchMinY, caliSearchMaxY, thick, variance, img)
 	if err != nil {
-		err := errors.New(fmt.Sprintf("Error during calibration of noon: %v", err))
+		err := errors.New(fmt.Sprintf("Error during caquacration of noon: %v", err))
 		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	quarterPast, outsideY, err = colour.GetCalibrationColour(caliSetStartX, caliSetEndX, outsideY, caliSearchMaxY, thick, variance, img)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Error during calibration of quarterPast: %v", err))
+		err = errors.New(fmt.Sprintf("Error during caquacration of quarterPast: %v", err))
 		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	halfPast, outsideY, err = colour.GetCalibrationColour(caliSetStartX, caliSetEndX, outsideY, caliSearchMaxY, thick, variance, img)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Error during calibration of halfPast: %v", err))
+		err = errors.New(fmt.Sprintf("Error during caquacration of halfPast: %v", err))
 		return noon, quarterPast, halfPast, quarterTo, err
 	}
 	quarterTo, outsideY, err = colour.GetCalibrationColour(caliSetStartX, caliSetEndX, outsideY, caliSearchMaxY, thick, variance, img)
 	if err != nil {
-		err = errors.New(fmt.Sprintf("Error during calibration of quarterTo: %v", err))
+		err = errors.New(fmt.Sprintf("Error during caquacration of quarterTo: %v", err))
 		return noon, quarterPast, halfPast, quarterTo, err
 	}
 
 	return noon, quarterPast, halfPast, quarterTo, nil
 }
 
-// create the grid seperating indicating areas found from the calibration
-func createCalibrationGrid(img image.Image, Cali colour.Colours) [][]uint8 {
+// create the grid seperating indicating areas found from the caquacration
+func createCaquacrationGrid(img image.Image, Cali colour.Colours) [][]uint8 {
 
 	bounds := img.Bounds()
 	maxXInc, maxYInc := bounds.Max.X, bounds.Max.Y

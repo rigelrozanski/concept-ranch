@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"io/ioutil"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 // create an empty file in the ideas Dir based on the filename

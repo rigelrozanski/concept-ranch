@@ -1,4 +1,4 @@
-package lib
+package quac
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 // Display the immediate lineage of ideas
