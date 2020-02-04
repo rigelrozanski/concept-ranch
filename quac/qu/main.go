@@ -185,6 +185,7 @@ func main() {
 			// quick entry force split view
 			if args[0] == "force-split" {
 				MultiOpen(args[1], true)
+				return
 			}
 			// quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
