@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	cmn "github.com/rigelrozanski/common"
 )
 
 type Idea struct {
@@ -124,7 +126,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	idea.Id = id
 
 	// get creation date
-	created, err := time.Parse(layout, split[2])
+	created, err := cmn.ParseYYYYdMMdDD(split[2])
 	if err != nil {
 		log.Fatalf("bad created date file format at %v: %v", filename, err)
 	}
@@ -134,7 +136,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	if !strings.HasPrefix(split[3], "e") {
 		log.Fatalf("bad edit date file format at %v", filename)
 	}
-	edited, err := time.Parse(layout, strings.TrimPrefix(split[3], "e"))
+	edited, err := cmn.ParseYYYYdMMdDD(strings.TrimPrefix(split[3], "e"))
 	if err != nil {
 		log.Fatalf("bad created date file format at %v: %v", filename, err)
 	}
@@ -146,7 +148,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	// get any consumed date
 	if strings.HasPrefix(split[ri], "c") {
 		// ignore error
-		consumed, err := time.Parse(layout, strings.TrimPrefix(split[4], "c"))
+		consumed, err := cmn.ParseYYYYdMMdDD(strings.TrimPrefix(split[4], "c"))
 		if err == nil {
 			idea.Consumed = consumed
 			ri++

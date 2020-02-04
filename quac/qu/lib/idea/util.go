@@ -8,11 +8,12 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	cmn "github.com/rigelrozanski/common"
 )
 
 const (
-	layout = "2006-01-02" // time parse layout for YYYYMMDD
-	Last   = "last"       // last id keyword
+	Last = "last" // last id keyword
 
 	CycleAlive = iota
 	CycleConsumed
@@ -31,7 +32,7 @@ var (
 )
 
 func TodayDate() time.Time {
-	todayDate, err := time.Parse(layout, time.Now().Format(layout))
+	todayDate, err := cmn.ParseYYYYdMMdDD(time.Now().Format(cmn.LayoutYYYYdMMdDD))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -98,10 +99,10 @@ func (idea *Idea) UpdateFilename() {
 	strList := []string{
 		prefix,
 		IdStr(idea.Id),
-		idea.Created.Format(layout),
-		"e" + idea.Edited.Format(layout)}
+		idea.Created.Format(cmn.LayoutYYYYdMMdDD),
+		"e" + idea.Edited.Format(cmn.LayoutYYYYdMMdDD)}
 	if idea.Cycle != CycleAlive {
-		strList = append(strList, "c"+idea.Consumed.Format(layout))
+		strList = append(strList, "c"+idea.Consumed.Format(cmn.LayoutYYYYdMMdDD))
 	}
 	strList = append(strList, itoa(idea.ConsumesIds)...)
 	strList = append(strList, idea.Tags...)

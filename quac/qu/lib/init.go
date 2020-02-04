@@ -6,18 +6,18 @@ import (
 	"path"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
 )
 
 // directory name where boards are stored in repo
 var QuDir, QuFile, LogFile, WorkingFnsFile, WorkingContentFile string
 
 // load config and set global file directories
-func Initialize(wranchConfigPath string) {
+func Initialize(thranchConfigPath string) {
 
-	lines, err := cmn.ReadLines(wranchConfigPath)
+	lines, err := cmn.ReadLines(thranchConfigPath)
 	if err != nil {
-		panic(fmt.Sprintf("error reading %v, error: %v", wranchConfigPath, err))
+		panic(fmt.Sprintf("error reading %v, error: %v", thranchConfigPath, err))
 	}
 
 	QuDir = lines[0]
@@ -38,7 +38,7 @@ func Initialize(wranchConfigPath string) {
 
 func EnsureBasics() {
 	if !cmn.FileExists(QuDir) {
-		panic("directory specified in wranch config does not exist")
+		panic("directory specified in thranch config does not exist")
 	}
 	_ = os.Mkdir(idea.IdeasDir, os.ModePerm)
 	if !cmn.FileExists(QuFile) {

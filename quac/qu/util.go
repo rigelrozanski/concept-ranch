@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/wranch/quac/qu/lib"
+	"github.com/rigelrozanski/thranch/quac/qu/lib"
 )
 
 func Consume(consumedID, optionalEntry string) {

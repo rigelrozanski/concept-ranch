@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rigelrozanski/wranch/quac/qu/lib"
+	"github.com/rigelrozanski/thranch/quac/qu/lib"
 )
 
 // filestructure:

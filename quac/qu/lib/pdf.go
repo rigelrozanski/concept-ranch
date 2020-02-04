@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/jung-kurt/gofpdf"
-	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
 )
 
 func ExportToPDF() error {

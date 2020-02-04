@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
-	"github.com/rigelrozanski/wranch/quac/qu/lib/idea"
+	"github.com/rigelrozanski/thranch/quac/qu/lib/idea"
 )
 
 func GetContentByID(id uint32) (content []byte, found bool) {
