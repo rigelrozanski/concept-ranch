@@ -86,7 +86,7 @@ Explanation of some terms:
 )
 
 func main() {
-	lib.Initialize(os.ExpandEnv("$HOME/.thranch_config.txt"))
+	lib.Initialize(os.ExpandEnv("$HOME/.thranch_config"))
 	args := os.Args[1:]
 
 	// for the master qu file for quick entry
