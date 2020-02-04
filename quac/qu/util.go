@@ -333,8 +333,7 @@ func GetForApp(application string) string {
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
-	fmt.Printf("%s\n", content)
-	return ""
+	return string(content)
 }
 
 func MultiOpenByTags(tags []string, forceSplitView bool) {
