@@ -326,16 +326,6 @@ func ViewByTags(tags []string) {
 	fmt.Printf("%s\n", content)
 }
 
-// for applications to receive content
-func GetForApp(application string) string {
-	tags := []string{"external-use", "app:" + application}
-	content, found := quac.ConcatAllContentFromTags(tags)
-	if !found {
-		fmt.Println("nothing found with those tags")
-	}
-	return string(content)
-}
-
 func MultiOpenByTags(tags []string, forceSplitView bool) {
 	found, maxFNLen, singleReturn := quac.WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
 	if !found {
