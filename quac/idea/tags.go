@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
+	"strings"
 )
 
 //_______________________________________________________
@@ -42,6 +43,17 @@ func (idea Idea) HasTags(tags []string) bool {
 		}
 	}
 	return true
+}
+
+// returns true if the idea has the tagged value
+func (idea Idea) GetTaggedValue(tvName string) (val string, found bool) {
+	for _, tag := range idea.Tags {
+		ideaTvName := strings.Split(tag, ":")
+		if len(ideaTvName) == 2 && ideaTvName[0] == tvName {
+			return ideaTvName[1], true
+		}
+	}
+	return "", false
 }
 
 // rename the tag on this idea

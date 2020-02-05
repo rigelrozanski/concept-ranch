@@ -13,3 +13,8 @@ func GetForApp(application string) string {
 	}
 	return string(content)
 }
+
+// get a group of images by tag
+func GetImagesByTag(tags []string) (ideas Ideas) {
+	return GetAllIdeas().WithImage().WithTags(tags)
+}

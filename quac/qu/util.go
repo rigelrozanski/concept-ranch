@@ -396,7 +396,6 @@ func Entry(entryOrPath string, tags []string) {
 		}
 
 		for _, filepath := range filepaths {
-			fmt.Printf("debug filepath: %v\n", filepath)
 
 			// skip if folder
 			fod2, err := os.Stat(filepath)

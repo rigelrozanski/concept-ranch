@@ -74,3 +74,11 @@ func (ideas Ideas) UniqueTags() []string {
 	}
 	return out
 }
+
+func (ideas Ideas) Paths() []string {
+	fps := make([]string, len(ideas))
+	for i, idea := range ideas {
+		fps[i] = idea.Path()
+	}
+	return fps
+}
