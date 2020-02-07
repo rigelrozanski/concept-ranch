@@ -147,6 +147,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		if forceSplitView {
 			maxFNLen := quac.WriteWorkingContentAndFilenamesFromFilePath(filePath)
 			quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
+			quac.SaveFromWorkingFiles()
 			return
 		}
 		quac.Open(filePath)
