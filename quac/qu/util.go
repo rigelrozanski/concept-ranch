@@ -144,6 +144,11 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {
 		filePath := quac.GetFilepathByID(uint32(id))
+		if forceSplitView {
+			maxFNLen := quac.WriteWorkingContentAndFilenamesFromFilePath(filePath)
+			quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
+			return
+		}
 		quac.Open(filePath)
 		return
 	}

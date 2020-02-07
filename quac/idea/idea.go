@@ -94,6 +94,10 @@ func NewConsumingTextIdea(consumesIdea Idea) Idea {
 	return idea
 }
 
+func NewIdeaFromFilepath(filepath string) (idea Idea) {
+	return NewIdeaFromFilename(path.Base(filepath))
+}
+
 func NewIdeaFromFilename(filename string) (idea Idea) {
 	idea.Filename = filename
 

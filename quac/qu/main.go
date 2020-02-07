@@ -44,6 +44,7 @@ const (
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
 	keyPDFBackup       = "pdf-backup"
+	keyForceSplit      = "force-split"
 
 	help = `
 /|||||\ |-o-o-~|
@@ -53,7 +54,7 @@ qu --------------------------------------> edit the tagless master quick ideas b
 qu <tags...> <entry> --------------------> quick entry to a new idea
 qu [force-split] <query> ----------------> open a vim tab with the contents of the query 
 qu cat <query> --------------------------> print idea(s) contents' to console
-qu scan <dir/file> [tag] ----------------> scan a bunch of images as untranscribed ideas, optionally append a tag to all
+qu scan <dir/file> [tags] ---------------> scan a bunch of images as untranscribed ideas, optionally append tags to all
 qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query
 qu consume <id> [entry] -----------------> quick consumes the given id into a new entry
 qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
@@ -184,16 +185,14 @@ func main() {
 		}
 	case keyPDFBackup:
 		quac.ExportToPDF()
+	case keyForceSplit:
+		EnsureLen(args, 2)
+		// quick entry force split view
+		MultiOpen(args[1], true)
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0], false)
-		} else if len(args) >= 2 {
-			// quick entry force split view
-			if args[0] == "force-split" {
-				MultiOpen(args[1], true)
-				return
-			}
-			// quick entry
+		} else if len(args) >= 2 { // quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}

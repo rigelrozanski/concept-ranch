@@ -29,6 +29,7 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool)
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte
 		for _, idear := range subset {
+			// TODO de-dup code from below
 			if !idear.IsText() {
 				continue
 			}
@@ -56,6 +57,38 @@ func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool)
 		}
 		return true, maxFNLen, ""
 	}
+}
+
+func WriteWorkingContentAndFilenamesFromFilePath(filePath string) (maxFNLen int) {
+	idear := idea.NewIdeaFromFilepath(filePath)
+
+	// write working contents and filenames from tags
+	var contentBz, fnBz []byte
+	if !idear.IsText() {
+		log.Fatal("file at this idea is not text")
+	}
+	icontentBz, err := ioutil.ReadFile(idear.Path())
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	noLines := bytes.Count(icontentBz, []byte{'\n'})
+
+	if len(idear.Filename)+2 > maxFNLen {
+		maxFNLen = len(idear.Filename) + 2
+	}
+	fnBz = append(fnBz, []byte(idear.Filename+strings.Repeat("\n", noLines))...)
+	contentBz = append(contentBz, icontentBz...)
+
+	err = ioutil.WriteFile(WorkingFnsFile, fnBz, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	err = ioutil.WriteFile(WorkingContentFile, contentBz, os.ModePerm)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return maxFNLen
 }
 
 func SaveFromWorkingFiles() {
