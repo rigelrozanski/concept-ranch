@@ -102,3 +102,21 @@ func ParseIDOp(idStr string, logLast bool) (uint32, error) {
 
 	return parsedID, nil
 }
+
+func GetLastIDs() []uint32 {
+
+	// read in the lastIDs
+	lastIDs, err := cmn.ReadLines(LastIdFile)
+	if err != nil {
+		panic(err)
+	}
+	ids := make([]uint32, len(lastIDs))
+	for i, idStr := range lastIDs {
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			panic(err)
+		}
+		ids[i] = uint32(id)
+	}
+	return ids
+}

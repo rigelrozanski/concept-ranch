@@ -70,7 +70,7 @@ qu add-tag <id> <tag> -------------------> add a tag from an idea by id
 qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
-qu lsf [tags...] ------------------------> list all files, optionally which contain provided tags
+qu lsf ["last"] [tags...] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -180,6 +180,8 @@ func main() {
 	case keyLsFiles:
 		if len(args) == 1 {
 			ListAllFiles()
+		} else if args[1] == "last" {
+			ListAllFilesLast()
 		} else {
 			ListAllFilesWithTags(args[1])
 		}

@@ -11,6 +11,7 @@ import (
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func Consume(consumedID, optionalEntry string) {
@@ -324,6 +325,13 @@ func ListAllFilesWithTags(tagsGrouped string) {
 	}
 	for _, idea := range subset {
 		fmt.Println(idea.Filename)
+	}
+}
+
+func ListAllFilesLast() {
+	ids := idea.GetLastIDs()
+	for _, id := range ids {
+		fmt.Println(quac.GetFilenameByID(id))
 	}
 }
 
