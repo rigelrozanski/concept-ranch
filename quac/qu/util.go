@@ -507,6 +507,7 @@ func Entry(entryOrPath string, tags []string) {
 			if err != nil {
 				log.Fatal(err)
 			}
+			quac.PrependLast(idea.Id)
 			quac.IncrementID()
 		}
 		return
@@ -521,5 +522,6 @@ func Entry(entryOrPath string, tags []string) {
 	if err != nil {
 		log.Fatalf("error writing new file: %v", err)
 	}
+	quac.PrependLast(idea.Id)
 	quac.IncrementID()
 }
