@@ -68,6 +68,15 @@ func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
 	return subset
 }
 
+func (ideas Ideas) WithAnyOfTags(tags []string) (subset Ideas) {
+	for _, idea := range ideas {
+		if idea.HasAnyOfTags(tags) {
+			subset = append(subset, idea)
+		}
+	}
+	return subset
+}
+
 func (ideas Ideas) WithText() (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.IsText() {

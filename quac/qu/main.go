@@ -41,6 +41,7 @@ const (
 	keyRemoveTag       = "rm-tag"
 	keyRenameTag       = "rename-tag"
 	keyAddTag          = "add-tag"
+	keyAddTagToMany    = "add-tag-to-many"
 	keyAddTags         = "add-tags"
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
@@ -70,7 +71,8 @@ qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
 qu tags <id> ----------------------------> list the tags for a given id
 qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id (alternate cmd rm-tag)
-qu add-tags <id> <tags> -----------------> add a tag from an idea by id (alternate cmd add-tag)
+qu add-tags <id> <tags> -----------------> add (a) tag(s) to an idea by id (alternate cmd add-tag)
+qu add-tag-to-many <newtag> <tags..> ----> add a <newtag> to all ideas with any of <tags...>
 qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu open-working -------------------------> open the working files to manually correct mistakes
@@ -163,9 +165,16 @@ func main() {
 	case keyKillTag, keyRemoveTag:
 		EnsureLen(args, 3)
 		KillTagByID(args[1], args[2])
+	case "rm-tags":
+		fmt.Println("didn't you mean rm-tag???")
+	case "kill-tags":
+		fmt.Println("didn't you mean kill-tag???")
 	case keyAddTag, keyAddTags:
 		EnsureLen(args, 3)
 		AddTagByID(args[1], args[2])
+	case keyAddTagToMany:
+		EnsureLen(args, 3)
+		AddTagToMany(args[1], args[2])
 	case keyRenameTag:
 		EnsureLen(args, 3)
 		RenameTag(args[1], args[2])
@@ -201,6 +210,7 @@ func main() {
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0], false)
 		} else if len(args) >= 2 { // quick entry
+			fmt.Printf("debug QuickEntry: %v\n", QuickEntry)
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}

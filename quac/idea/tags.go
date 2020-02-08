@@ -28,6 +28,15 @@ func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
 
 //_______________________________________________________
 
+func (idea Idea) HasTag(tag string) bool {
+	for _, ideaTag := range idea.Tags {
+		if tag == ideaTag {
+			return true
+		}
+	}
+	return false
+}
+
 // returns true if the idea contains all the input tags
 func (idea Idea) HasTags(tags []string) bool {
 	for _, tag := range tags {
@@ -43,6 +52,18 @@ func (idea Idea) HasTags(tags []string) bool {
 		}
 	}
 	return true
+}
+
+// returns true if the idea contains any of the input tags
+func (idea Idea) HasAnyOfTags(tags []string) bool {
+	for _, tag := range tags {
+		for _, ideaTag := range idea.Tags {
+			if tag == ideaTag {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // returns true if the idea has the tagged value
@@ -66,7 +87,7 @@ func (idea *Idea) RenameTag(from, to string) {
 	}
 }
 
-// rename the tag on this idea
+// remove the tag on this idea
 func (idea *Idea) RemoveTag(tagToKill string) {
 	if len(idea.Tags) == 1 && idea.Tags[0] == tagToKill {
 		log.Fatalf("cannot remove the final tag of %v, aborting", idea.Filename)
@@ -77,4 +98,12 @@ func (idea *Idea) RemoveTag(tagToKill string) {
 			break
 		}
 	}
+}
+
+// add the tag on this idea
+func (idea *Idea) AddTag(tag string) {
+	if idea.HasTag(tag) {
+		return
+	}
+	idea.Tags = append(idea.Tags, tag)
 }

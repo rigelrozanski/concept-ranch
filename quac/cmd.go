@@ -101,8 +101,10 @@ func SetEncryptionById(id uint32) {
 func OpenTextSplit(pathToOpenLeft, pathToOpenRight string, maxFNLen int) {
 
 	cmd := exec.Command("vim",
-		"-c", "vertical resize "+strconv.Itoa(maxFNLen+4)+" | execute \"normal \\<C-w>\\<C-l>\"",
-		"-O", pathToOpenLeft, pathToOpenRight)
+		"-c", "vertical resize "+strconv.Itoa(maxFNLen+4)+
+			" | set scb!"+ // set the scrollbind
+			" | execute \"normal \\<C-w>\\<C-l>\""+
+			" | set scb!", "-O", pathToOpenLeft, pathToOpenRight)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout

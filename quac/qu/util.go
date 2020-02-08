@@ -232,15 +232,27 @@ func KillTagByID(idStr, tagToKill string) {
 func AddTagByID(idStr, tagToAdd string) {
 	id := parseIdStr(idStr)
 	idea := quac.GetIdeaByID(id)
-	origFilename := idea.Filename
-	idea.Tags = append(idea.Tags, tagToAdd)
-	(&idea).UpdateFilename()
+	AddTagByIdea(idea, tagToAdd)
+}
 
+func AddTagByIdea(idea quac.Idea, tagToAdd string) {
+	origFilename := idea.Filename
+	(&idea).AddTag(tagToAdd)
+	(&idea).UpdateFilename()
 	origPath := path.Join(quac.IdeasDir, origFilename)
 	newPath := path.Join(quac.IdeasDir, idea.Filename)
 	err := os.Rename(origPath, newPath)
 	if err != nil {
 		log.Fatal(err)
+	}
+}
+
+func AddTagToMany(tagToAdd, manyTagsClumped string) {
+
+	manyTags := strings.Split(manyTagsClumped, ",")
+	ideas := quac.GetAllIdeas().WithAnyOfTags(manyTags)
+	for _, idea := range ideas {
+		AddTagByIdea(idea, tagToAdd)
 	}
 }
 
