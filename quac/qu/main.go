@@ -40,11 +40,14 @@ const (
 	keyKillTag         = "kill-tag"
 	keyRenameTag       = "rename-tag"
 	keyAddTag          = "add-tag"
+	keyAddTags         = "add-tags"
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
+	keyOpenWorking     = "open-working"
+	keySaveWorking     = "save-working"
 
 	help = `
 /|||||\ |-o-o-~|
@@ -66,9 +69,11 @@ qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
 qu tags <id> ----------------------------> list the tags for a given id
 qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id
-qu add-tag <id> <tag> -------------------> add a tag from an idea by id
+qu add-tags <id> <tags> -----------------> add a tag from an idea by id
 qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
+qu open-working -------------------------> open the working files to manually correct mistakes
+qu save-working -------------------------> save the working files to manually correct mistakes
 qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
 qu lsf ["last"] [query] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
@@ -157,10 +162,7 @@ func main() {
 	case keyKillTag:
 		EnsureLen(args, 3)
 		KillTagByID(args[1], args[2])
-	case "add-tags":
-		fmt.Println("did you mean add-tags???")
-		os.Exit(1)
-	case keyAddTag:
+	case keyAddTag, keyAddTags:
 		EnsureLen(args, 3)
 		AddTagByID(args[1], args[2])
 	case keyRenameTag:
@@ -190,6 +192,10 @@ func main() {
 		EnsureLen(args, 2)
 		// quick entry force split view
 		MultiOpen(args[1], true)
+	case keyOpenWorking:
+		OpenWorking()
+	case keySaveWorking:
+		SaveWorking()
 	default:
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0], false)

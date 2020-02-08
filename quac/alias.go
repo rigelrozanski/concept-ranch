@@ -27,6 +27,7 @@ var (
 	ParseID                  = idea.ParseID
 	ParseIDNoLogLast         = idea.ParseIDNoLogLast
 	ParseIDOp                = idea.ParseIDOp
+	PrependLast              = idea.PrependLast
 	GetLastIDs               = idea.GetLastIDs
 	NewNonConsumingTextIdea  = idea.NewNonConsumingTextIdea
 	NewTextIdea              = idea.NewTextIdea

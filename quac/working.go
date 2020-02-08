@@ -104,6 +104,11 @@ func SaveFromWorkingFiles() {
 		log.Fatal(err)
 	}
 
+	if len(fnLines) != len(contentLines) {
+		fmt.Println("Error! unequal number of lines in working files! Correct manually with cmd: qu open-working")
+		os.Exit(1)
+	}
+
 	var mostRecentCompleteName string
 	for startRange, fnLine := range fnLines {
 		if fnLine == "" {

@@ -100,20 +100,41 @@ func ParseIDOp(idStr string, logLast bool) (uint32, error) {
 	}
 
 	if logLast {
-		// Prepend retrieved id to the "last" list
-		// and trim the list to the appropriate length
-		parsedIDStr := strconv.Itoa(int(parsedID))
-		lastIDs = append([]string{parsedIDStr}, lastIDs...)
-		if len(lastIDs) > 9 {
-			lastIDs = lastIDs[:9]
-		}
-		err = cmn.WriteLines(lastIDs, LastIdFile)
-		if err != nil {
-			return 0, err
-		}
+		prependLast(lastIDs, parsedID)
 	}
 
 	return parsedID, nil
+}
+
+func prependLast(lastIDs []string, id uint32) {
+	// Prepend retrieved id to the "last" list
+	// and trim the list to the appropriate length
+	parsedIDStr := strconv.Itoa(int(id))
+
+	// don't write if this was just written to
+	if len(lastIDs) > 0 && parsedIDStr == lastIDs[0] {
+		return
+	}
+
+	lastIDs = append([]string{parsedIDStr}, lastIDs...)
+	if len(lastIDs) > 9 {
+		lastIDs = lastIDs[:9]
+	}
+	err = cmn.WriteLines(lastIDs, LastIdFile)
+	if err != nil {
+		panic(err)
+	}
+
+}
+
+func PrependLast(id uint32) {
+
+	// read in the lastIDs
+	lastIDs, err := cmn.ReadLines(LastIdFile)
+	if err != nil {
+		panic(err)
+	}
+	prependLast(lastIDs, parsedID)
 }
 
 func GetLastIDs() []uint32 {

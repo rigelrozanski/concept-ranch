@@ -11,7 +11,6 @@ import (
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
-	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func Consume(consumedID, optionalEntry string) {
@@ -160,6 +159,14 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 	}
 	splitTags := parseTags(unsplitTagsOrID)
 	MultiOpenByTags(splitTags, forceSplitView)
+}
+
+func OpenWorking() {
+	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, 50)
+}
+
+func SaveWorking() {
+	quac.SaveFromWorkingFiles()
 }
 
 func parseIdStr(idStr string) uint32 {
@@ -333,11 +340,11 @@ func IsIDRange(query string) (idStart, idEnd uint32, isRange bool) {
 		return 0, 0, false
 	}
 
-	idStart, err := idea.ParseID(sp[0])
+	idStart, err := quac.ParseID(sp[0])
 	if err != nil {
 		return 0, 0, false
 	}
-	idEnd, err = idea.ParseID(sp[1])
+	idEnd, err = quac.ParseID(sp[1])
 	if err != nil {
 		return 0, 0, false
 	}
@@ -366,6 +373,7 @@ func ListAllFilesWithTags(tagsGrouped string) {
 		os.Exit(1)
 	}
 	for _, idea := range subset {
+		quac.PrependLast(idea.Id)
 		fmt.Println(idea.Filename)
 	}
 }
@@ -377,12 +385,13 @@ func ListAllFilesIDRange(idStart, idEnd uint32) {
 		os.Exit(1)
 	}
 	for _, idea := range ideas {
+		quac.PrependLast(idea.Id)
 		fmt.Println(idea.Filename)
 	}
 }
 
 func ListAllFilesLast() {
-	ids := idea.GetLastIDs()
+	ids := quac.GetLastIDs()
 	for _, id := range ids {
 		fmt.Println(quac.GetFilenameByID(id))
 	}
@@ -412,6 +421,7 @@ func MultiOpenByTags(tags []string, forceSplitView bool) {
 	}
 	// if only a single entry is found then quac.Open only it!
 	if singleReturn != "" && !forceSplitView {
+		fmt.Println(path.Base(singleReturn))
 		quac.Open(singleReturn)
 		return
 	}

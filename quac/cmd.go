@@ -15,6 +15,9 @@ import (
 func Open(pathToOpen string) {
 	ext := path.Ext(pathToOpen)
 
+	id := GetIdByFilename(pathToOpen)
+	PrependLast(id)
+
 	switch GetKind(ext) {
 	case KindText:
 		OpenText(pathToOpen)
