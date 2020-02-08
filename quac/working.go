@@ -133,7 +133,7 @@ func SaveFromWorkingFiles() {
 
 		} else {
 			// get the orig bytes (non existant if a split)
-			id := GetIdByFilename(fnLine)
+			id := idea.GetIdByFilename(fnLine)
 			found := false
 			origBz, found = GetContentByID(id)
 			if !found {

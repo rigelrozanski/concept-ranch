@@ -322,13 +322,56 @@ func ListAllFiles() {
 	}
 }
 
+func IsIDRange(query string) (idStart, idEnd uint32, isRange bool) {
+	sp := strings.Split(query, "-")
+	if len(sp) != 2 {
+		return 0, 0, false
+	}
+
+	idStart, err := idea.ParseID(sp[0])
+	if err != nil {
+		return 0, 0, false
+	}
+	idEnd, err = idea.ParseID(sp[1])
+	if err != nil {
+		return 0, 0, false
+	}
+
+	return idStart, idEnd, true
+}
+
+func ListAllFilesWithQuery(query string) {
+	if query == "last" {
+		ListAllFilesLast()
+		return
+	}
+	idStart, idEnd, isRange := IsIDRange(query)
+	if isRange {
+		ListAllFilesIDRange(idStart, idEnd)
+		return
+	}
+	ListAllFilesWithTags(query)
+}
+
 func ListAllFilesWithTags(tagsGrouped string) {
 	ideas := quac.GetAllIdeas()
 	subset := ideas.WithTags(parseTags(tagsGrouped))
 	if len(subset) == 0 {
 		fmt.Println("no ideas found with those tags")
+		os.Exit(1)
 	}
 	for _, idea := range subset {
+		fmt.Println(idea.Filename)
+	}
+}
+
+func ListAllFilesIDRange(idStart, idEnd uint32) {
+	ideas := quac.GetAllIdeasInRange(idStart, idEnd)
+	if len(ideas) == 0 {
+		fmt.Println("no ideas found with in that range")
+		os.Exit(1)
+	}
+	for _, idea := range ideas {
 		fmt.Println(idea.Filename)
 	}
 }

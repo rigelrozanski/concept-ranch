@@ -3,11 +3,24 @@ package idea
 import (
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 
 	cmn "github.com/rigelrozanski/common"
 )
+
+func GetIdByFilename(filename string) (id uint32) {
+	split := strings.SplitN(filename, ",", 3)
+	if len(split) != 3 {
+		log.Fatal("bad split")
+	}
+	idI, err := ParseID(split[1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	return uint32(idI)
+}
 
 func GetNextID() uint32 {
 	lines, err := cmn.ReadLines(ConfigFile)

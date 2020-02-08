@@ -70,13 +70,14 @@ qu add-tag <id> <tag> -------------------> add a tag from an idea by id
 qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
-qu lsf ["last"] [tags...] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
+qu lsf ["last"] [query] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
 [id] ----------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
-[query] -------- either an [id] or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
+[query] -------- either an [id], id range (such as "123456-222000"),  
+                   or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
 [tag] ---------- a catagory to query or organize your ideas with
                    special tags: FILENAME - if this tag is used the filename of each entry file will be included 
 				                            as a tag per idea. errors if entry is raw text input
@@ -180,10 +181,8 @@ func main() {
 	case keyLsFiles:
 		if len(args) == 1 {
 			ListAllFiles()
-		} else if args[1] == "last" {
-			ListAllFilesLast()
 		} else {
-			ListAllFilesWithTags(args[1])
+			ListAllFilesWithQuery(args[1])
 		}
 	case keyPDFBackup:
 		quac.ExportToPDF()

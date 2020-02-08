@@ -16,23 +16,27 @@ const (
 	KindText      = idea.KindText
 	KindImage     = idea.KindImage
 	KindAudio     = idea.KindAudio
-	KindEnText    = idea.KindEnText // encrypted text
+	KindEnText    = idea.KindEnText
 )
 
 var (
 	// functions aliases
+	GetIdByFilename          = idea.GetIdByFilename
 	GetNextID                = idea.GetNextID
 	IncrementID              = idea.IncrementID
 	ParseID                  = idea.ParseID
 	ParseIDNoLogLast         = idea.ParseIDNoLogLast
 	ParseIDOp                = idea.ParseIDOp
+	GetLastIDs               = idea.GetLastIDs
 	NewNonConsumingTextIdea  = idea.NewNonConsumingTextIdea
 	NewTextIdea              = idea.NewTextIdea
 	NewIdeaFromFile          = idea.NewIdeaFromFile
 	NewConsumingTextIdea     = idea.NewConsumingTextIdea
+	NewIdeaFromFilepath      = idea.NewIdeaFromFilepath
 	NewIdeaFromFilename      = idea.NewIdeaFromFilename
 	GetAllIdeasNonConsuming  = idea.GetAllIdeasNonConsuming
 	GetAllIdeas              = idea.GetAllIdeas
+	GetAllIdeasInRange       = idea.GetAllIdeasInRange
 	ConcatAllContentFromTags = idea.ConcatAllContentFromTags
 	TodayDate                = idea.TodayDate
 	GetKind                  = idea.GetKind

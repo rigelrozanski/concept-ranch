@@ -34,6 +34,21 @@ func GetAllIdeas() (ideas Ideas) {
 	return ideas
 }
 
+// these ideas will be sorted from oldest to newest
+func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
+	files, err := ioutil.ReadDir(IdeasDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		id := GetIdByFilename(file.Name())
+		if id >= idStart && id <= idEnd {
+			ideas = append(ideas, NewIdeaFromFilename(file.Name()))
+		}
+	}
+	return ideas
+}
+
 func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.HasTags(tags) {

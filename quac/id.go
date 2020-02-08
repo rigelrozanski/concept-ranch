@@ -56,18 +56,6 @@ func GetIdeaByID(id uint32) idea.Idea {
 
 }
 
-func GetIdByFilename(filename string) (id uint32) {
-	split := strings.SplitN(filename, ",", 3)
-	if len(split) != 3 {
-		log.Fatal("bad split")
-	}
-	idI, err := ParseID(split[1])
-	if err != nil {
-		log.Fatal(err)
-	}
-	return uint32(idI)
-}
-
 func RemoveByID(id uint32) {
 	fp, found := GetFilepathByID(id)
 	if !found {
