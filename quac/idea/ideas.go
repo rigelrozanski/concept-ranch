@@ -3,6 +3,7 @@ package idea
 import (
 	"io/ioutil"
 	"log"
+	"path"
 	"strings"
 )
 
@@ -17,6 +18,9 @@ func GetAllIdeasNonConsuming() (ideas Ideas) {
 		if strings.HasPrefix(file.Name(), "c") { // do not read from consumed ideas
 			continue
 		}
+		if path.Ext(file.Name()) == ".swp" {
+			continue
+		}
 		ideas = append(ideas, NewIdeaFromFilename(file.Name()))
 	}
 	return ideas
@@ -29,6 +33,9 @@ func GetAllIdeas() (ideas Ideas) {
 		log.Fatal(err)
 	}
 	for _, file := range files {
+		if path.Ext(file.Name()) == ".swp" {
+			continue
+		}
 		ideas = append(ideas, NewIdeaFromFilename(file.Name()))
 	}
 	return ideas
@@ -43,6 +50,9 @@ func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
 	for _, file := range files {
 		id := GetIdByFilename(file.Name())
 		if id >= idStart && id <= idEnd {
+			if path.Ext(file.Name()) == ".swp" {
+				continue
+			}
 			ideas = append(ideas, NewIdeaFromFilename(file.Name()))
 		}
 	}
