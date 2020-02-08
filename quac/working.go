@@ -191,7 +191,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		}
 
 		// do not write the file if there is no content
-		if startRange-endRange == 1 &&
+		if endRange-startRange == 1 &&
 			strings.TrimSpace(contentLines[startRange]) == "" {
 			continue
 		}
