@@ -38,6 +38,7 @@ const (
 	keyCp              = "cp"
 	keyTags            = "tags"
 	keyKillTag         = "kill-tag"
+	keyRemoveTag       = "rm-tag"
 	keyRenameTag       = "rename-tag"
 	keyAddTag          = "add-tag"
 	keyAddTags         = "add-tags"
@@ -68,8 +69,8 @@ qu set-encryption <id> ------------------> set encryption of existing idea
 qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
 qu tags <id> ----------------------------> list the tags for a given id
-qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id
-qu add-tags <id> <tags> -----------------> add a tag from an idea by id
+qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id (alternate cmd rm-tag)
+qu add-tags <id> <tags> -----------------> add a tag from an idea by id (alternate cmd add-tag)
 qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu open-working -------------------------> open the working files to manually correct mistakes
@@ -159,7 +160,7 @@ func main() {
 	case keyTags:
 		EnsureLen(args, 2)
 		ListTagsByID(args[1])
-	case keyKillTag:
+	case keyKillTag, keyRemoveTag:
 		EnsureLen(args, 3)
 		KillTagByID(args[1], args[2])
 	case keyAddTag, keyAddTags:
