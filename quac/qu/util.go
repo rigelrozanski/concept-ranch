@@ -159,7 +159,6 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		return
 	}
 	splitTags := parseTags(unsplitTagsOrID)
-	fmt.Printf("debug splitTags: %v\n", splitTags)
 	MultiOpenByTags(splitTags, forceSplitView)
 }
 

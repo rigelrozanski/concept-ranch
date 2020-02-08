@@ -163,6 +163,9 @@ func main() {
 	case keyKillTag:
 		EnsureLen(args, 3)
 		KillTagByID(args[1], args[2])
+	case "add-tags":
+		fmt.Println("did you mean add-tags???")
+		os.Exit(1)
 	case keyAddTag:
 		EnsureLen(args, 3)
 		AddTagByID(args[1], args[2])
@@ -184,6 +187,9 @@ func main() {
 		} else {
 			ListAllFilesWithQuery(args[1])
 		}
+	case "lsd":
+		fmt.Println("fking rip'd")
+		os.Exit(1)
 	case keyPDFBackup:
 		quac.ExportToPDF()
 	case keyForceSplit:
