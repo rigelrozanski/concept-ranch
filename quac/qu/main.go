@@ -62,7 +62,7 @@ qu zombie <id> --------------------------> "unconsume" an idea based on id
 qu lineage <id> -------------------------> show the consumtion lineage  
 qu new <tags...> ------------------------> create a new idea with the provided tags
 qu set-encryption <id> ------------------> set encryption of existing idea
-qu rm <id> ------------------------------> remove an idea by id
+qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
 qu tags <id> ----------------------------> list the tags for a given id
 qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id
@@ -75,15 +75,15 @@ qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
-[id] ----------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
-[query] -------- either an [id], id range (such as "123456-222000"),  
-                   or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
-[tag] ---------- a catagory to query or organize your ideas with
+id ------------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
+id1-id2 -------- either just an [id] or a range of ids in the form 123456-222000
+query ---------- either an [id], [id1-id2], or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
+tag ------------ a catagory to query or organize your ideas with
                    special tags: FILENAME - if this tag is used the filename of each entry file will be included 
 				                            as a tag per idea. errors if entry is raw text input
-[tags...] ------ a list of tags seperated by commas (such as "tag1,tag2,tag3")
-[entry] -------- either raw input text or source input as a file or directory
-[forcesplit] --- if the text "force-split" is included, split view will be used even if only one entry is found 
+tags... -------- a list of tags seperated by commas (such as "tag1,tag2,tag3")
+entry ---------- either raw input text or source input as a file or directory
+force-split ---- if the text "force-split" is included, split view will be used even if only one entry is found 
 `
 )
 
@@ -146,14 +146,8 @@ func main() {
 		EnsureLen(args, 2)
 		SetEncryption(args[1])
 	case keyRm:
-		switch len(args) {
-		case 2:
-			RemoveByID(args[1])
-		case 3:
-			RemoveAcrossIDs(args[1], args[2])
-		default:
-			EnsureLen(args, 2)
-		}
+		EnsureLen(args, 2)
+		RemoveByID(args[1])
 	case keyCp:
 		EnsureLen(args, 2)
 		CopyByID(args[1])

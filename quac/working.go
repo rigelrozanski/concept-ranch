@@ -12,6 +12,8 @@ import (
 	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
+const SPLIT = "SPLIT"
+
 func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
 	ideas := idea.GetAllIdeasNonConsuming()
 	subset := ideas.WithTags(tags)
@@ -107,7 +109,7 @@ func SaveFromWorkingFiles() {
 			continue
 		}
 		splitFile := false
-		if fnLine == "SPLIT" {
+		if strings.HasPrefix(fnLine, SPLIT) {
 			splitFile = true
 		} else {
 			mostRecentCompleteName = fnLine
@@ -126,7 +128,11 @@ func SaveFromWorkingFiles() {
 			if mostRecentCompleteName == "" {
 				log.Fatal("cannot split from nonexistent file")
 			}
-			filename := ReserveCopyFilename(mostRecentCompleteName)
+			potentialTags := strings.TrimSpace(
+				strings.TrimPrefix(fnLine, SPLIT))
+			tags := strings.Split(potentialTags, ",")
+
+			filename := ReserveCopyFilename(mostRecentCompleteName, tags)
 
 			// create the split filepath but change the id
 			filepath = path.Join(idea.IdeasDir, filename)

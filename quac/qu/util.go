@@ -174,18 +174,24 @@ func parseTags(tagsGrouped string) []string {
 	return strings.Split(tagsGrouped, ",")
 }
 
-func RemoveByID(idStr string) {
-	id := parseIdStr(idStr)
+func RemoveByID(idOrIds string) {
+	startID, endID, isRange := IsIDRange(idOrIds)
+	if isRange {
+		RemoveAcrossIDs(startID, endID)
+		fmt.Println("roger, removed everything between those ids")
+		return
+	}
+
+	id := parseIdStr(idOrIds)
 	quac.RemoveByID(id)
+	fmt.Println("roger, removed that id")
 }
 
-func RemoveAcrossIDs(idStr, idStr2 string) {
-	id := parseIdStr(idStr)
-	id2 := parseIdStr(idStr2)
-	if id >= id2 {
+func RemoveAcrossIDs(id1, id2 uint32) {
+	if id1 >= id2 {
 		log.Fatalf("second id must be greater first id")
 	}
-	for i := id; i <= id2; i++ {
+	for i := id1; i <= id2; i++ {
 		quac.RemoveByID(i)
 	}
 }
@@ -411,10 +417,6 @@ func MultiOpenByTags(tags []string, forceSplitView bool) {
 	}
 	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
 	quac.SaveFromWorkingFiles()
-}
-
-func RemoveById(id uint32) error {
-	return nil
 }
 
 // create an entry
