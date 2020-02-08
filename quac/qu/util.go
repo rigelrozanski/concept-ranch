@@ -150,8 +150,9 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		}
 		if forceSplitView {
 			maxFNLen := quac.WriteWorkingContentAndFilenamesFromFilePath(filePath)
+			origBzFN, origBzContent := quac.GetOrigWorkingFileBytes()
 			quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
-			quac.SaveFromWorkingFiles()
+			quac.SaveFromWorkingFiles(origBzFN, origBzContent)
 			return
 		}
 		quac.Open(filePath)
@@ -166,7 +167,7 @@ func OpenWorking() {
 }
 
 func SaveWorking() {
-	quac.SaveFromWorkingFiles()
+	quac.SaveFromWorkingFiles([]byte{}, []byte{})
 }
 
 func parseIdStr(idStr string) uint32 {
@@ -437,8 +438,9 @@ func MultiOpenByTags(tags []string, forceSplitView bool) {
 		quac.Open(singleReturn)
 		return
 	}
+	origBzFN, origBzContent := quac.GetOrigWorkingFileBytes()
 	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
-	quac.SaveFromWorkingFiles()
+	quac.SaveFromWorkingFiles(origBzFN, origBzContent)
 }
 
 // create an entry

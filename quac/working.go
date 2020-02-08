@@ -94,7 +94,38 @@ func WriteWorkingContentAndFilenamesFromFilePath(filePath string) (maxFNLen int)
 	return maxFNLen
 }
 
-func SaveFromWorkingFiles() {
+// get the bytes of the working files (original)
+func GetOrigWorkingFileBytes() (origBzFN, origBzContent []byte) {
+
+	// do not save if no modifications have been made
+	origBzFN, err := ioutil.ReadFile(WorkingFnsFile)
+	if err != nil {
+		panic(err)
+	}
+	origBzContent, err = ioutil.ReadFile(WorkingContentFile)
+	if err != nil {
+		panic(err)
+	}
+
+	return origBzFN, origBzContent
+}
+
+func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
+
+	// do not save if no modifications have been made
+	finalBzFN, err := ioutil.ReadFile(WorkingFnsFile)
+	if err != nil {
+		panic(err)
+	}
+	finalBzContent, err := ioutil.ReadFile(WorkingContentFile)
+	if err != nil {
+		panic(err)
+	}
+	if bytes.Compare(origBzFN, finalBzFN) == 0 &&
+		bytes.Compare(origBzContent, finalBzContent) == 0 {
+		return
+	}
+
 	fnLines, err := cmn.ReadLines(WorkingFnsFile)
 	if err != nil {
 		log.Fatal(err)
