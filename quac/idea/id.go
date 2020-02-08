@@ -120,7 +120,7 @@ func prependLast(lastIDs []string, id uint32) {
 	if len(lastIDs) > 9 {
 		lastIDs = lastIDs[:9]
 	}
-	err = cmn.WriteLines(lastIDs, LastIdFile)
+	err := cmn.WriteLines(lastIDs, LastIdFile)
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +134,7 @@ func PrependLast(id uint32) {
 	if err != nil {
 		panic(err)
 	}
-	prependLast(lastIDs, parsedID)
+	prependLast(lastIDs, id)
 }
 
 func GetLastIDs() []uint32 {
