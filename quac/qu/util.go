@@ -11,6 +11,7 @@ import (
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 func Consume(consumedID, optionalEntry string) {
@@ -83,7 +84,7 @@ func Transcribe(optionalQuery string) {
 	}
 
 	subsetTagsImages := quac.GetAllIdeasNonConsuming().
-		WithTags(parseTags(optionalQuery)).
+		WithTags(idea.ParseClumpedTags(optionalQuery)).
 		WithImage()
 
 	if len(subsetTagsImages) == 0 {
@@ -114,12 +115,12 @@ func QuickQuery(unsplitTagsOrID string) {
 		ViewByID(uint32(id))
 		return
 	}
-	splitTags := parseTags(unsplitTagsOrID)
+	splitTags := idea.ParseClumpedTags(unsplitTagsOrID)
 	ViewByTags(splitTags)
 }
 
 func NewEmptyEntry(unsplitTags string) {
-	splitTags := parseTags(unsplitTags)
+	splitTags := idea.ParseClumpedTags(unsplitTags)
 	idear := quac.NewNonConsumingTextIdea(splitTags)
 	writePath := path.Join(quac.IdeasDir, idear.Filename)
 	quac.IncrementID()
@@ -136,7 +137,7 @@ func SetEncryption(idStr string) {
 }
 
 func QuickEntry(unsplitTags, entry string) {
-	splitTags := parseTags(unsplitTags)
+	splitTags := idea.ParseClumpedTags(unsplitTags)
 	Entry(entry, splitTags)
 }
 
@@ -158,7 +159,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		quac.Open(filePath)
 		return
 	}
-	splitTags := parseTags(unsplitTagsOrID)
+	splitTags := idea.ParseClumpedTags(unsplitTagsOrID)
 	MultiOpenByTags(splitTags, forceSplitView)
 }
 
@@ -176,10 +177,6 @@ func parseIdStr(idStr string) uint32 {
 		log.Fatalf("error parsing id, error: %v", err)
 	}
 	return uint32(idI)
-}
-
-func parseTags(tagsGrouped string) []string {
-	return strings.Split(tagsGrouped, ",")
 }
 
 func RemoveByID(idOrIds string) {
@@ -250,7 +247,7 @@ func AddTagByIdea(idea quac.Idea, tagToAdd string) {
 
 func AddTagToMany(tagToAdd, manyTagsClumped string) {
 
-	manyTags := strings.Split(manyTagsClumped, ",")
+	manyTags := idea.ParseClumpedTags(manyTagsClumped)
 	ideas := quac.GetAllIdeas().WithAnyOfTags(manyTags)
 	for _, idea := range ideas {
 		AddTagByIdea(idea, tagToAdd)
@@ -314,7 +311,7 @@ func ListAllTags() {
 
 func ListAllTagsWithTags(tagsGrouped string) {
 	ideas := quac.GetAllIdeas()
-	queryTags := parseTags(tagsGrouped)
+	queryTags := idea.ParseClumpedTags(tagsGrouped)
 	subset := ideas.WithTags(queryTags)
 	uniqueTags := subset.UniqueTags()
 	outTags := make([]string, len(uniqueTags))
@@ -380,7 +377,7 @@ func ListAllFilesWithQuery(query string) {
 
 func ListAllFilesWithTags(tagsGrouped string) {
 	ideas := quac.GetAllIdeas()
-	subset := ideas.WithTags(parseTags(tagsGrouped))
+	subset := ideas.WithTags(idea.ParseClumpedTags(tagsGrouped))
 	if len(subset) == 0 {
 		fmt.Println("no ideas found with those tags")
 		os.Exit(1)

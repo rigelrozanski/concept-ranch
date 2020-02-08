@@ -106,7 +106,7 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	idea.Kind = GetKind(ext)
 
 	base := strings.TrimSuffix(filename, path.Ext(filename))
-	split := strings.Split(base, ",")
+	split := ParseClumpedTags(base)
 	if len(split) < 5 { // must have at minimum: ConsumedPrefix, Id, Created, Edited,and a Tag
 		log.Fatalf("bad filename at %v", filename)
 	}

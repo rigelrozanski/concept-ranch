@@ -26,6 +26,15 @@ func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
 	return content, true
 }
 
+func ParseClumpedTags(clumpedTags string) []string {
+	split := strings.Split(clumpedTags, ",")
+	trimmed := make([]string, len(split))
+	for i, s := range split {
+		trimmed[i] = strings.TrimSpace(s)
+	}
+	return trimmed
+}
+
 //_______________________________________________________
 
 func (idea Idea) HasTag(tag string) bool {

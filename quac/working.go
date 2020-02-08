@@ -167,7 +167,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 			}
 			potentialTags := strings.TrimSpace(
 				strings.TrimPrefix(fnLine, SPLIT))
-			tags := strings.Split(potentialTags, ",")
+			tags := idea.ParseClumpedTags(potentialTags)
 
 			filename := ReserveCopyFilename(topFileName, tags)
 
