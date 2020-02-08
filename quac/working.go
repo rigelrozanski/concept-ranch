@@ -140,7 +140,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		os.Exit(1)
 	}
 
-	var mostRecentCompleteName string
+	var topFileName string
 	for startRange, fnLine := range fnLines {
 		if fnLine == "" {
 			continue
@@ -149,7 +149,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		if strings.HasPrefix(fnLine, SPLIT) {
 			splitFile = true
 		} else {
-			mostRecentCompleteName = fnLine
+			topFileName = fnLine
 		}
 
 		endRange := startRange + 1
@@ -162,14 +162,14 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		var filepath string
 
 		if splitFile {
-			if mostRecentCompleteName == "" {
+			if topFileName == "" {
 				log.Fatal("cannot split from nonexistent file")
 			}
 			potentialTags := strings.TrimSpace(
 				strings.TrimPrefix(fnLine, SPLIT))
 			tags := strings.Split(potentialTags, ",")
 
-			filename := ReserveCopyFilename(mostRecentCompleteName, tags)
+			filename := ReserveCopyFilename(topFileName, tags)
 
 			// create the split filepath but change the id
 			filepath = path.Join(idea.IdeasDir, filename)
@@ -188,6 +188,12 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 
 			// create the new file
 			filepath = path.Join(idea.IdeasDir, fnLine)
+		}
+
+		// do not write the file if there is no content
+		if startRange-endRange == 1 &&
+			strings.TrimSpace(contentLines[startRange]) == "" {
+			continue
 		}
 
 		// write the file
