@@ -78,7 +78,11 @@ func OpenText(pathToOpen string) {
 
 func SetEncryptionById(id uint32) {
 
-	pathToOpen := GetFilepathByID(id)
+	pathToOpen, found := GetFilepathByID(id)
+	if !found {
+		fmt.Println("nothing found at that ID")
+		os.Exit(1)
+	}
 	enPath := UpdateFilepathToEncrypted(pathToOpen)
 
 	// ignore error, allow for no file to be present

@@ -144,7 +144,11 @@ func QuickEntry(unsplitTags, entry string) {
 func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {
-		filePath := quac.GetFilepathByID(uint32(id))
+		filePath, found := quac.GetFilepathByID(uint32(id))
+		if !found {
+			fmt.Println("nothing found at that ID")
+			os.Exit(1)
+		}
 		if forceSplitView {
 			maxFNLen := quac.WriteWorkingContentAndFilenamesFromFilePath(filePath)
 			quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
@@ -155,6 +159,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		return
 	}
 	splitTags := parseTags(unsplitTagsOrID)
+	fmt.Printf("debug splitTags: %v\n", splitTags)
 	MultiOpenByTags(splitTags, forceSplitView)
 }
 

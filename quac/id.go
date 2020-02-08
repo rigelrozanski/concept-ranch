@@ -1,6 +1,7 @@
 package quac
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,8 +13,8 @@ import (
 )
 
 func GetContentByID(id uint32) (content []byte, found bool) {
-	filepath := GetFilepathByID(id)
-	if filepath == "" {
+	filepath, found := GetFilepathByID(id)
+	if !found {
 		return content, false
 	}
 	content, err := ioutil.ReadFile(filepath)
@@ -23,12 +24,12 @@ func GetContentByID(id uint32) (content []byte, found bool) {
 	return content, true
 }
 
-func GetFilepathByID(id uint32) (filepath string) {
+func GetFilepathByID(id uint32) (filepath string, found bool) {
 	filename := GetFilenameByID(id)
 	if filename == "" {
-		return ""
+		return "", false
 	}
-	return path.Join(idea.IdeasDir, filename)
+	return path.Join(idea.IdeasDir, filename), true
 }
 
 func GetFilenameByID(id uint32) (filepath string) {
@@ -68,7 +69,11 @@ func GetIdByFilename(filename string) (id uint32) {
 }
 
 func RemoveByID(id uint32) {
-	fp := GetFilepathByID(id)
+	fp, found := GetFilepathByID(id)
+	if !found {
+		fmt.Println("nothing found at that ID")
+		os.Exit(1)
+	}
 	err := os.Remove(fp)
 	if err != nil {
 		log.Fatal(err)
