@@ -2,6 +2,7 @@ package quac
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -158,6 +159,7 @@ func SaveFromWorkingFiles() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		fmt.Printf("Split this out: %v\n", filepath)
 
 		// check the content and possibly mark as edited
 		finalBz, err := ioutil.ReadFile(filepath)
