@@ -30,6 +30,23 @@ func Open(pathToOpen string) {
 	}
 }
 
+// open supported files
+func View(pathToOpen string) {
+	ext := path.Ext(pathToOpen)
+
+	id := GetIdByFilename(pathToOpen)
+	PrependLast(id)
+
+	switch GetKind(ext) {
+	case KindText:
+		ViewText(pathToOpen)
+	case KindImage:
+		ViewImage(pathToOpen)
+	case KindAudio:
+		ListenAudio(pathToOpen)
+	}
+}
+
 func ViewImage(pathToOpen string) {
 	fmt.Println(path.Base(pathToOpen))
 	ViewImageNoFilename(pathToOpen)
@@ -55,6 +72,14 @@ func ListenAudio(pathToOpen string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func ViewText(filepath string) {
+	content, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Printf("%s\n", content)
 }
 
 func OpenText(pathToOpen string) {

@@ -15,23 +15,32 @@ import (
 
 const SPLIT = "SPLIT"
 
+func WriteWorkingContentAndFilenamesFromRange(startId, endId uint32, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
+	ideas := idea.GetAllIdeasInRange(startId, endId)
+	return WriteWorkingContentAndFilenamesFromIdeas(ideas, forceSplitView)
+}
+
 func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
 	ideas := idea.GetAllIdeasNonConsuming()
 	subset := ideas.WithTags(tags)
+	return WriteWorkingContentAndFilenamesFromIdeas(subset, forceSplitView)
+}
 
-	switch len(subset) {
+func WriteWorkingContentAndFilenamesFromIdeas(idears idea.Ideas, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
+
+	switch len(idears) {
 	case 0:
 		return false, 0, ""
 	case 1:
 		if !forceSplitView {
 			// if only one found, return its path
-			return true, 1, subset[0].Path()
+			return true, 1, idears[0].Path()
 		}
 		fallthrough
 	default:
 		// write working contents and filenames from tags
 		var contentBz, fnBz []byte
-		for _, idear := range subset {
+		for _, idear := range idears {
 			// TODO de-dup code from below
 			if !idear.IsText() {
 				continue
