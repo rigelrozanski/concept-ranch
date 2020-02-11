@@ -33,6 +33,7 @@ const (
 	keyZombie          = "zombie"
 	keyLineage         = "lineage"
 	keyNew             = "new"
+	keyManualEntry     = "manual-entry"
 	keySetEncryption   = "set-encryption"
 	keyRm              = "rm"
 	keyCp              = "cp"
@@ -40,6 +41,7 @@ const (
 	keyKillTag         = "kill-tag"
 	keyRemoveTag       = "rm-tag"
 	keyRenameTag       = "rename-tag"
+	keyRenameTag2      = "tag-rename"
 	keyAddTag          = "add-tag"
 	keyAddTagToMany    = "add-tag-to-many"
 	keyAddTags         = "add-tags"
@@ -66,6 +68,7 @@ qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
 qu zombie <id> --------------------------> "unconsume" an idea based on id
 qu lineage <id> -------------------------> show the consumtion lineage  
 qu new <tags...> ------------------------> create a new idea with the provided tags
+qu manual-entry [tags...] ---------------> interactive manual entry common tags may be entered with this command
 qu set-encryption <id> ------------------> set encryption of existing idea
 qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
@@ -150,6 +153,12 @@ func main() {
 	case keyNew:
 		EnsureLen(args, 2)
 		NewEmptyEntry(args[1])
+	case keyManualEntry:
+		if len(args) == 1 {
+			ManualEntry("")
+		} else {
+			ManualEntry(args[1])
+		}
 	case keySetEncryption:
 		EnsureLen(args, 2)
 		SetEncryption(args[1])
@@ -175,7 +184,7 @@ func main() {
 	case keyAddTagToMany:
 		EnsureLen(args, 3)
 		AddTagToMany(args[1], args[2])
-	case keyRenameTag:
+	case keyRenameTag, keyRenameTag2:
 		EnsureLen(args, 3)
 		RenameTag(args[1], args[2])
 	case keyDestroyTag:

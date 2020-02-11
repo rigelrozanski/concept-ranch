@@ -127,6 +127,34 @@ func NewEmptyEntry(unsplitTags string) {
 	quac.OpenText(writePath)
 }
 
+func ManualEntry(commonTagsClumped string) {
+	commonTags := idea.ParseClumpedTags(commonTagsClumped)
+
+	fmt.Println("_________________________________________")
+	fmt.Println("INTERACTIVE MANUAL TRANSCRIPTION")
+	fmt.Println(" - tags to be entered seperated by spaces")
+	fmt.Println(" - quit with ctrl-c, or by typing QUIT during tag entry")
+	fmt.Println("")
+	for {
+
+		fmt.Print("enter tags:\t")
+		consoleScanner := bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		newTags := strings.Fields(consoleScanner.Text())
+		if len(newTags) > 0 && newTags[0] == "QUIT" {
+			break
+		}
+		tags := append(commonTags, newTags...)
+
+		fmt.Print("enter entry:\t")
+		consoleScanner = bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		entry := consoleScanner.Text()
+
+		Entry(entry, tags)
+	}
+}
+
 func SetEncryption(idStr string) {
 	id, err := quac.ParseID(idStr)
 	if err != nil {
