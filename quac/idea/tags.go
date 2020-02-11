@@ -78,7 +78,7 @@ func (idea Idea) HasAnyOfTags(tags []string) bool {
 // returns true if the idea has the tagged value
 func (idea Idea) GetTaggedValue(tvName string) (val string, found bool) {
 	for _, tag := range idea.Tags {
-		ideaTvName := strings.Split(tag, ":")
+		ideaTvName := strings.Split(tag, "=")
 		if len(ideaTvName) == 2 && ideaTvName[0] == tvName {
 			return ideaTvName[1], true
 		}
