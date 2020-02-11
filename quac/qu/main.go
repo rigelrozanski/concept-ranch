@@ -210,7 +210,6 @@ func main() {
 		if len(args) == 1 { // quick query
 			MultiOpen(args[0], false)
 		} else if len(args) >= 2 { // quick entry
-			fmt.Printf("debug QuickEntry: %v\n", QuickEntry)
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
 	}
