@@ -53,6 +53,10 @@ func ParseIDNoLogLast(idStr string) (uint32, error) {
 // parse the last id, if no error add to the last ids file
 func ParseIDOp(idStr string, logLast bool) (uint32, error) {
 
+	if len(idStr) == 0 {
+		errors.New("no id string provided")
+	}
+
 	if len(strings.Split(idStr, ",")) > 1 {
 		errors.New("not an id, contains commas")
 	}

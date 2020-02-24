@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path"
 	"strings"
+	"time"
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
@@ -55,12 +57,6 @@ func Lineage(idStr string) {
 
 func Transcribe(optionalQuery string) {
 
-	if optionalQuery == "" {
-
-		// TODO
-		return
-	}
-
 	consumed, err := quac.ParseID(optionalQuery)
 	if err == nil {
 		idea := quac.GetIdeaByID(consumed)
@@ -83,37 +79,76 @@ func Transcribe(optionalQuery string) {
 		return
 	}
 
-	subsetTagsImages := quac.GetAllIdeasNonConsuming().
-		WithTags(idea.ParseClumpedTags(optionalQuery)).
-		WithImage()
+	ideaImages := quac.GetAllIdeasNonConsuming().
+		WithImage().WithoutTag("DNT")
 
-	if len(subsetTagsImages) == 0 {
-		fmt.Println("no active images to transcribe with those tags")
-		os.Exit(1)
+	if optionalQuery != "" {
+		ideaImages = ideaImages.WithTags(idea.ParseClumpedTags(optionalQuery))
+		if len(ideaImages) == 0 {
+			fmt.Println("no active images to transcribe with those tags")
+			os.Exit(1)
+		}
 	}
 
-	for _, idea := range subsetTagsImages {
+	// shuffle the images to transcribe
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(ideaImages), func(i, j int) { ideaImages[i], ideaImages[j] = ideaImages[j], ideaImages[i] })
+
+	fmt.Println("\n-------------------------------------------------------------")
+	fmt.Println("                     ~ Instructions ~")
+	fmt.Println("       After each transcription item enter either:")
+	fmt.Println("         - nothing to open up your editor where you")
+	fmt.Println("             may enter the transcription text")
+	fmt.Println("         - transcribed entry text")
+	fmt.Println("         - DNT for do not transcribe (DNT is added as")
+	fmt.Println("             a tag and never asked to transcribe again)")
+	fmt.Println("         - KILL to delete the entry")
+	fmt.Println("         - SKIP to skip")
+	fmt.Println("         - QUIT to quit")
+	fmt.Println("-------------------------------------------------------------\n")
+
+	for _, idea := range ideaImages {
 
 		quac.Open(idea.Path())
 
 		// read input from console
-		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
 		consoleScanner := bufio.NewScanner(os.Stdin)
 		_ = consoleScanner.Scan()
 		optionalEntry := consoleScanner.Text()
+		optionalEntry = strings.TrimSpace(optionalEntry)
+
+		if optionalEntry == "DNT" {
+			AddTagByIdea(idea, "DNT")
+			fmt.Println("ol'right never transcribing again!")
+			continue
+		}
+		if optionalEntry == "SKIP" {
+			fmt.Println("skipp'd")
+			continue
+		}
+		if optionalEntry == "KILL" {
+			quac.RemoveByID(idea.Id)
+			fmt.Println("killed it")
+			continue
+		}
+		if optionalEntry == "QUIT" {
+			break
+		}
 
 		consumerFilepath := quac.SetConsume(idea.Id, optionalEntry)
 		if optionalEntry == "" {
 			quac.OpenText(consumerFilepath)
 		}
+		fmt.Printf("created: %v\n", consumerFilepath)
 	}
 }
 
 func Retag() {
 	untaggedIdeas := idea.GetAllIdeasNonConsuming().WithTag("UNTAGGED")
 
-	fmt.Println("Instructions enter desired tags seperated by spaces")
-	fmt.Println("or SKIP to skip or QUIT to quit\n")
+	fmt.Println("             ~ Instructions ~")
+	fmt.Println("enter desired tags seperated by spaces")
+	fmt.Println("alternatively, enter SKIP to skip or QUIT to quit\n")
 
 	for _, idea := range untaggedIdeas {
 		quac.View(idea.Path())
@@ -311,6 +346,7 @@ func AddTagByID(idStr, tagToAdd string) {
 	AddTagByIdea(idea, tagToAdd)
 }
 
+// TODO move to library
 func AddTagByIdea(idea quac.Idea, tagToAdd string) {
 	origFilename := idea.Filename
 	(&idea).AddTag(tagToAdd)

@@ -81,6 +81,19 @@ func (ideas Ideas) WithAnyOfTags(tags []string) (subset Ideas) {
 	return subset
 }
 
+func (ideas Ideas) WithoutTag(tag string) (subset Ideas) {
+	return ideas.WithoutTags([]string{tag})
+}
+
+func (ideas Ideas) WithoutTags(tags []string) (subset Ideas) {
+	for _, idea := range ideas {
+		if !idea.HasTags(tags) {
+			subset = append(subset, idea)
+		}
+	}
+	return subset
+}
+
 func (ideas Ideas) WithText() (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.IsText() {
