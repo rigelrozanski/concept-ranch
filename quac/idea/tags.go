@@ -27,12 +27,17 @@ func ConcatAllContentFromTags(tags []string) (content []byte, found bool) {
 }
 
 func ParseClumpedTags(clumpedTags string) []string {
-	split := strings.Split(clumpedTags, ",")
-	trimmed := make([]string, len(split))
-	for i, s := range split {
-		trimmed[i] = strings.TrimSpace(s)
+	trim := strings.TrimPrefix(clumpedTags, ",")
+	trim = strings.TrimSuffix(trim, ",")
+	split := strings.Split(trim, ",")
+	var out []string
+	for _, s := range split {
+		trim = strings.TrimSpace(s)
+		if len(trim) > 0 {
+			out = append(out, trim)
+		}
 	}
-	return trimmed
+	return out
 }
 
 //_______________________________________________________

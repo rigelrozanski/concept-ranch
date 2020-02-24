@@ -59,6 +59,10 @@ func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
 	return ideas
 }
 
+func (ideas Ideas) WithTag(tag string) (subset Ideas) {
+	return ideas.WithTags([]string{tag})
+}
+
 func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.HasTags(tags) {

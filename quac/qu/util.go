@@ -109,6 +109,44 @@ func Transcribe(optionalQuery string) {
 	}
 }
 
+func Retag() {
+	untaggedIdeas := idea.GetAllIdeasNonConsuming().WithTag("UNTAGGED")
+
+	fmt.Println("Instructions enter desired tags seperated by spaces")
+	fmt.Println("or SKIP to skip or QUIT to quit\n")
+
+	for _, idea := range untaggedIdeas {
+		quac.View(idea.Path())
+
+		// read input from console
+		fmt.Println("Desired tags:")
+		consoleScanner := bufio.NewScanner(os.Stdin)
+		_ = consoleScanner.Scan()
+		spacedTags := consoleScanner.Text()
+		tags := strings.Fields(spacedTags)
+
+		if len(tags) == 1 && tags[0] == "SKIP" {
+			continue
+		}
+		if len(tags) == 1 && tags[0] == "QUIT" {
+			break
+		}
+
+		origPath := idea.Path()
+
+		// add the tags
+		idea.Tags = tags
+		(&idea).UpdateFilename()
+
+		// perform the file rename
+		err := os.Rename(origPath, idea.Path())
+		fmt.Printf("retagged to:\n%v\n", idea.Filename)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
 func QuickQuery(unsplitTagsOrID string) {
 	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {

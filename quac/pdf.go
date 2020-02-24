@@ -11,22 +11,24 @@ import (
 func ExportToPDF() error {
 	pdf := gofpdf.New("P", "mm", "Letter", "")
 	pdf.AddPage()
-	pdf.SetFont("Arial", "", 11)
+	pdf.SetFont("Courier", "", 7)
+	writeHeight := float64(3)
+
 	ideas := idea.GetAllIdeasNonConsuming()
 	ideasText := ideas.WithText()
 	ideasImage := ideas.WithImage()
 	for _, idea := range ideasText {
-		pdf.Write(10, fmt.Sprintf("%v\n%s\n_______________________________\n",
+		pdf.Write(writeHeight, fmt.Sprintf("%v\n%s\n_______________________________\n",
 			idea.Filename, idea.GetContent()))
 	}
 
-	pdf.Write(10, fmt.Sprintf("________________IMAGES_______________\n"))
+	pdf.Write(writeHeight, fmt.Sprintf("________________IMAGES_______________\n"))
 
 	var opt gofpdf.ImageOptions
 	for _, idea := range ideasImage {
-		pdf.Write(10, fmt.Sprintf("%v\n", idea.Filename))
+		pdf.Write(writeHeight, fmt.Sprintf("%v\n", idea.Filename))
 		pdf.ImageOptions(idea.Path(), -10, 1, 0, 0, true, opt, 0, "")
-		pdf.Write(10, fmt.Sprintf("_______________________________\n"))
+		pdf.Write(writeHeight, fmt.Sprintf("_______________________________\n"))
 	}
 
 	err := pdf.OutputFileAndClose(os.ExpandEnv("$HOME/Desktop/quack_export.pdf"))

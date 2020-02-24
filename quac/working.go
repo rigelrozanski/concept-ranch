@@ -149,7 +149,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		os.Exit(1)
 	}
 
-	var topFileName string
+	var recentFileName string
 	for startRange, fnLine := range fnLines {
 		if fnLine == "" {
 			continue
@@ -158,7 +158,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		if strings.HasPrefix(fnLine, SPLIT) {
 			splitFile = true
 		} else {
-			topFileName = fnLine
+			recentFileName = fnLine
 		}
 
 		endRange := startRange + 1
@@ -171,14 +171,14 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 		var filepath string
 
 		if splitFile {
-			if topFileName == "" {
-				log.Fatal("cannot split from nonexistent file")
+			if recentFileName == "" {
+				log.Fatal("cannot split with no prior filename")
 			}
 			potentialTags := strings.TrimSpace(
 				strings.TrimPrefix(fnLine, SPLIT))
 			tags := idea.ParseClumpedTags(potentialTags)
 
-			filename := ReserveCopyFilename(topFileName, tags)
+			filename := ReserveCopyFilename(recentFileName, tags)
 
 			// create the split filepath but change the id
 			filepath = path.Join(idea.IdeasDir, filename)

@@ -28,6 +28,7 @@ const (
 	keyCat             = "cat"
 	keyScan            = "scan"
 	keyTranscribe      = "transcribe"
+	keyRetag           = "retag"
 	keyConsume         = "consume"
 	keyConsumes        = "consumes"
 	keyZombie          = "zombie"
@@ -63,6 +64,7 @@ qu [force-split] <query> ----------------> open a vim tab with the contents of t
 qu cat <query> --------------------------> print idea(s) contents' to console
 qu scan <dir/file> [tags] ---------------> scan a bunch of images as untranscribed ideas, optionally append tags to all
 qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query
+qu retag --------------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
 qu consume <id> [entry] -----------------> quick consumes the given id into a new entry
 qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
 qu zombie <id> --------------------------> "unconsume" an idea based on id
@@ -132,6 +134,8 @@ func main() {
 		default:
 			EnsureLen(args, 1)
 		}
+	case keyRetag:
+		Retag()
 	case keyConsume:
 		switch len(args) {
 		case 2:

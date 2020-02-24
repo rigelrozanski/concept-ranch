@@ -47,6 +47,10 @@ markers. Additionally the markers are to be using for caquacration:
      - Half-Past
      - Quarter-To
 
+### Using SPLIT
+
+ - the SPLIT keyword takes the most recent above tags AS WELL AS any new provided tags "SPLIT newtag1,newtag2"
+
 ### License
 
 Quick Ideas is released under the Apache 2.0 license.
