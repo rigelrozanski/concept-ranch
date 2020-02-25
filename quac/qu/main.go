@@ -40,6 +40,7 @@ const (
 	keyCp              = "cp"
 	keyTags            = "tags"
 	keyKillTag         = "kill-tag"
+	keyBrowse          = "browse"
 	keyRemoveTag       = "rm-tag"
 	keyRenameTag       = "rename-tag"
 	keyRenameTag2      = "tag-rename"
@@ -84,6 +85,7 @@ qu open-working -------------------------> open the working files to manually co
 qu save-working -------------------------> save the working files to manually correct mistakes
 qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
 qu lsf ["last"] [query] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
+qu browse -------------------------------> browse all tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -209,6 +211,8 @@ func main() {
 	case "lsd":
 		fmt.Println("fking rip'd")
 		os.Exit(1)
+	case keyBrowse:
+		quac.Browse()
 	case keyPDFBackup:
 		quac.ExportToPDF()
 	case keyForceSplit:
