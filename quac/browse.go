@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path"
 	"sort"
 
 	tui "github.com/marcusolsson/tui-go"
@@ -15,6 +16,7 @@ type bList struct {
 	items      []string
 	blankItems int
 	maxWidth   int
+	isFile     bool // is the list of files instead of tags?
 }
 
 func (b *bList) PrependBlanks(noBlanks int) {
@@ -71,10 +73,13 @@ func rankByWordCount(wordFrequencies map[string]int) PairList {
 	return pl
 }
 
-func GetAssociations(idears idea.Ideas, tags []string) (associatedTags PairList) {
+func GetAssociations(idears idea.Ideas, tags []string, searchForFilenames bool) (associatedTags PairList, outIdears idea.Ideas) {
 	subset := idears
 	if len(tags) > 0 {
 		subset = idears.WithTags(tags)
+	}
+	if len(subset) == 1 || searchForFilenames {
+		return associatedTags, subset
 	}
 
 	at := make(map[string]int)
@@ -101,7 +106,7 @@ func GetAssociations(idears idea.Ideas, tags []string) (associatedTags PairList)
 			}
 		}
 	}
-	return rankByWordCount(at)
+	return rankByWordCount(at), outIdears
 }
 
 var highlighted []string
@@ -133,7 +138,7 @@ func Ls(clumpedTags string) {
 
 	initDrill := false
 	if len(inputTags) == 0 {
-		tagCounts := GetAssociations(idears, inputTags)
+		tagCounts, _ := GetAssociations(idears, inputTags, false) // TODO should handle the single file case
 		if len(tagCounts) == 0 {
 			fmt.Println("no associations found")
 			os.Exit(1)
@@ -148,7 +153,7 @@ func Ls(clumpedTags string) {
 	l1.SetFocused(true)
 	l1.AddItems(l1Items...)
 	l1.SetSelected(0)
-	lists = append(lists, &bList{l1, l1Items, 0, MaxWidth(l1Items)})
+	lists = append(lists, &bList{l1, l1Items, 0, MaxWidth(l1Items), false})
 
 	t := tui.NewTheme()
 	t.SetStyle("list.item", tui.Style{Bg: tui.ColorDefault, Fg: tui.ColorWhite})
@@ -168,7 +173,7 @@ func Ls(clumpedTags string) {
 
 	ui.SetTheme(t)
 
-	setListFn := func() {
+	setListFn := func(searchForFiles bool) {
 		l2 := tui.NewList()
 		dudItems := lists[listi].Selected()
 		for i := 0; i < dudItems; i++ {
@@ -176,19 +181,26 @@ func Ls(clumpedTags string) {
 		}
 
 		selectedTag := lists[listi].SelectedItem()
-		newItems := GetAssociations(idears, append(highlighted, selectedTag)).Top(100)
+		newItemsPairs, idears := GetAssociations(idears, append(highlighted, selectedTag), searchForFiles)
+		newItems := newItemsPairs.Top(100)
+		isFile := false
+		if len(idears) > 0 {
+			l2.SetStyle("highlightedList") // always highlight files
+			isFile = true
+			newItems = idears.Filenames()
+		}
 		mw := MaxWidth(newItems)
 		s.Scroll(mw, 0)
 		l2.AddItems(newItems...)
 
 		l2.SetSelected(dudItems)
 		hlists.Append(l2)
-		lists = append(lists, &bList{l2, newItems, dudItems, mw})
+		lists = append(lists, &bList{l2, newItems, dudItems, mw, isFile})
 		listi++
 	}
 
 	if initDrill {
-		setListFn()
+		setListFn(false)
 	}
 
 	ui.SetKeybinding("q", func() {
@@ -196,10 +208,17 @@ func Ls(clumpedTags string) {
 	})
 
 	ui.SetKeybinding("Enter", func() {
+		if lists[listi].isFile {
+			ui.Quit()
+			filename := lists[listi].SelectedItem()
+			pathDir := path.Join(IdeasDir, filename)
+			Open(pathDir)
+			return
+		}
 		if len(highlighted) > 0 {
 			ui.Quit()
-			fmt.Printf("debug highlighted: %v\n", highlighted)
 			MultiOpenByTags(highlighted, false)
+			return
 		}
 	})
 
@@ -217,15 +236,21 @@ func Ls(clumpedTags string) {
 		}
 	})
 
+	ui.SetKeybinding("f", func() {
+		lists[listi].SetStyle("highlightedList")
+		AddHighlighted(lists[listi].SelectedItem())
+		setListFn(true)
+	})
+
 	ui.SetKeybinding("Ctrl+l", func() {
 		lists[listi].SetStyle("highlightedList")
 		AddHighlighted(lists[listi].SelectedItem())
-		setListFn()
+		setListFn(false)
 	})
 
 	ui.SetKeybinding("l", func() {
 		lists[listi].SetStyle("list.item")
-		setListFn()
+		setListFn(false)
 	})
 
 	ui.SetKeybinding("h", func() {

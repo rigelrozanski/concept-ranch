@@ -133,3 +133,11 @@ func (ideas Ideas) Paths() []string {
 	}
 	return fps
 }
+
+func (ideas Ideas) Filenames() []string {
+	fns := make([]string, len(ideas))
+	for i, idea := range ideas {
+		fns[i] = idea.Filename
+	}
+	return fns
+}
