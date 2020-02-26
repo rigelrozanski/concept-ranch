@@ -51,6 +51,18 @@ markers. Additionally the markers are to be using for caquacration:
 
  - the SPLIT keyword takes the most recent above tags AS WELL AS any new provided tags "SPLIT newtag1,newtag2"
 
+### Using the browser
+
+the tag browser can be accessed through `qu ls`, Once launched the following commands can be used:
+ `q` - quit
+ `h` - go to previous list
+ `j` - move down list
+ `k` - move up list
+ `l` - find associated tags to the current list item (as well as highlighted tags) 
+ `Ctrl-l` - highlight the previous tag and drill to associated tags 
+ `f` - find associated files with current highlighted tags 
+ `Enter` - Either open the highlighted file, or all files associated with the highlighted tags
+
 ### License
 
 Quick Ideas is released under the Apache 2.0 license.
