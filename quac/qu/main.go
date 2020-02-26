@@ -40,7 +40,6 @@ const (
 	keyCp              = "cp"
 	keyTags            = "tags"
 	keyKillTag         = "kill-tag"
-	keyBrowse          = "browse"
 	keyRemoveTag       = "rm-tag"
 	keyRenameTag       = "rename-tag"
 	keyRenameTag2      = "tag-rename"
@@ -50,6 +49,7 @@ const (
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
+	keyLs              = "ls"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
 	keyOpenWorking     = "open-working"
@@ -70,8 +70,8 @@ qu consume <id> [entry] -----------------> quick consumes the given id into a ne
 qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
 qu zombie <id> --------------------------> "unconsume" an idea based on id
 qu lineage <id> -------------------------> show the consumtion lineage  
-qu new <tags...> ------------------------> create a new idea with the provided tags
-qu manual-entry [tags...] ---------------> interactive manual entry common tags may be entered with this command
+qu new <tags> ---------------------------> create a new idea with the provided tags
+qu manual-entry [tags] ------------------> interactive manual entry common tags may be entered with this command
 qu set-encryption <id> ------------------> set encryption of existing idea
 qu rm <id1-id2> -------------------------> remove an idea by id
 qu cp <id> ------------------------------> duplicate an idea at the provided id
@@ -83,9 +83,9 @@ qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu open-working -------------------------> open the working files to manually correct mistakes
 qu save-working -------------------------> save the working files to manually correct mistakes
-qu lst [tags...] ------------------------> list all tags used, optionally which share a set of common tags
-qu lsf ["last"] [query] -----------------> list all files, optionally which contain provided tags, or the last 9 viewed
-qu browse -------------------------------> browse all tags
+qu lst [tags] ---------------------------> list all tags used, optionally which share a set of common tags
+qu lsf [query] --------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
+qu ls  [tags]----------------------------> browse all tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 
 Explanation of some terms:
@@ -96,7 +96,7 @@ query ---------- either an [id], [id1-id2], or a list of tags seperated by comma
 tag ------------ a catagory to query or organize your ideas with
                    special tags: FILENAME - if this tag is used the filename of each entry file will be included 
 				                            as a tag per idea. errors if entry is raw text input
-tags... -------- a list of tags seperated by commas (such as "tag1,tag2,tag3")
+tags ----------- a list of tags seperated by commas (such as "tag1,tag2,tag3")
 entry ---------- either raw input text or source input as a file or directory
 force-split ---- if the text "force-split" is included, split view will be used even if only one entry is found 
 `
@@ -210,9 +210,13 @@ func main() {
 		}
 	case "lsd":
 		fmt.Println("fking rip'd")
-		os.Exit(1)
-	case keyBrowse:
-		quac.Browse()
+		os.Exit(0)
+	case keyLs:
+		if len(args) == 1 {
+			quac.Ls("")
+		} else {
+			quac.Ls(args[1])
+		}
 	case keyPDFBackup:
 		quac.ExportToPDF()
 	case keyForceSplit:

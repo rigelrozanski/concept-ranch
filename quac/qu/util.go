@@ -251,7 +251,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 
 	startID, endID, isRange := IsIDRange(unsplitTagsOrID)
 	if isRange {
-		MultiOpenByRange(startID, endID, forceSplitView)
+		quac.MultiOpenByRange(startID, endID, forceSplitView)
 		return
 	}
 
@@ -273,7 +273,7 @@ func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 		return
 	}
 	splitTags := idea.ParseClumpedTags(unsplitTagsOrID)
-	MultiOpenByTags(splitTags, forceSplitView)
+	quac.MultiOpenByTags(splitTags, forceSplitView)
 }
 
 func OpenWorking() {
@@ -535,40 +535,6 @@ func ViewByTags(tags []string) {
 		fmt.Println("nothing found with those tags")
 	}
 	fmt.Printf("%s\n", content)
-}
-
-func MultiOpenByTags(tags []string, forceSplitView bool) {
-	found, maxFNLen, singleReturn := quac.WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
-	if !found {
-		fmt.Println("nothing found with those tags")
-		return
-	}
-	// if only a single entry is found then quac.Open only it!
-	if singleReturn != "" && !forceSplitView {
-		fmt.Println(path.Base(singleReturn))
-		quac.Open(singleReturn)
-		return
-	}
-	origBzFN, origBzContent := quac.GetOrigWorkingFileBytes()
-	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
-	quac.SaveFromWorkingFiles(origBzFN, origBzContent)
-}
-
-func MultiOpenByRange(startId, endId uint32, forceSplitView bool) {
-	found, maxFNLen, singleReturn := quac.WriteWorkingContentAndFilenamesFromRange(startId, endId, forceSplitView)
-	if !found {
-		fmt.Println("nothing found with those tags")
-		return
-	}
-	// if only a single entry is found then quac.Open only it!
-	if singleReturn != "" && !forceSplitView {
-		fmt.Println(path.Base(singleReturn))
-		quac.Open(singleReturn)
-		return
-	}
-	origBzFN, origBzContent := quac.GetOrigWorkingFileBytes()
-	quac.OpenTextSplit(quac.WorkingFnsFile, quac.WorkingContentFile, maxFNLen)
-	quac.SaveFromWorkingFiles(origBzFN, origBzContent)
 }
 
 // create an entry
