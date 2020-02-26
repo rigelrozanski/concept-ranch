@@ -26,6 +26,7 @@ import (
 const (
 	keyHelp1, keyHelp2 = "--help", "-h"
 	keyCat             = "cat"
+	keyStats           = "stats"
 	keyScan            = "scan"
 	keyTranscribe      = "transcribe"
 	keyRetag           = "retag"
@@ -87,6 +88,7 @@ qu lst [tags] ---------------------------> list all tags used, optionally which 
 qu lsf [query] --------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu ls  [tags]----------------------------> browse all tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
+qu stats --------------------------------> statistics on your ideas
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
@@ -219,6 +221,8 @@ func main() {
 		}
 	case keyPDFBackup:
 		quac.ExportToPDF()
+	case keyStats:
+		quac.GetStats()
 	case keyForceSplit:
 		EnsureLen(args, 2)
 		// quick entry force split view
