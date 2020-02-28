@@ -58,35 +58,23 @@ func Lineage(idStr string) {
 func Transcribe(optionalQuery string) {
 
 	consumed, err := quac.ParseID(optionalQuery)
+	var ideaImages quac.Ideas
 	if err == nil {
-		idea := quac.GetIdeaByID(consumed)
-		if !(idea.IsImage() || idea.IsAudio()) {
+		idear := quac.GetIdeaByID(consumed)
+		if !(idear.IsImage() || idear.IsAudio()) {
 			fmt.Println("this idea is not an image or audio cannot be transcribed")
 			os.Exit(1)
 		}
-		quac.Open(idea.Path())
-
-		// read input from console
-		fmt.Println("Please enter the entry text here: (or just hit enter to open editor)")
-		consoleScanner := bufio.NewScanner(os.Stdin)
-		_ = consoleScanner.Scan()
-		optionalEntry := consoleScanner.Text()
-
-		consumerFilepath := quac.SetConsume(uint32(consumed), optionalEntry)
-		if optionalEntry == "" {
-			quac.OpenText(consumerFilepath)
-		}
-		return
-	}
-
-	ideaImages := quac.GetAllIdeasNonConsuming().
-		WithImage().WithoutTag("DNT")
-
-	if optionalQuery != "" {
-		ideaImages = ideaImages.WithTags(idea.ParseClumpedTags(optionalQuery))
-		if len(ideaImages) == 0 {
-			fmt.Println("no active images to transcribe with those tags")
-			os.Exit(1)
+		ideaImages = []quac.Idea{idear}
+	} else { // not an id, get by tags
+		ideaImages = quac.GetAllIdeasNonConsuming().
+			WithImage().WithoutTag("DNT")
+		if optionalQuery != "" {
+			ideaImages = ideaImages.WithTags(idea.ParseClumpedTags(optionalQuery))
+			if len(ideaImages) == 0 {
+				fmt.Println("no active images to transcribe with those tags")
+				os.Exit(1)
+			}
 		}
 	}
 
@@ -102,6 +90,8 @@ func Transcribe(optionalQuery string) {
 	fmt.Println("         - transcribed entry text")
 	fmt.Println("         - DNT for do not transcribe (DNT is added as")
 	fmt.Println("             a tag and never asked to transcribe again)")
+	fmt.Println("         - ADDTAG <newtag> to add the newtag to the entry")
+	fmt.Println("         - KILLTAG <tag> to remove the existing tag to the entry")
 	fmt.Println("         - KILL to delete the entry")
 	fmt.Println("         - SKIP to skip")
 	fmt.Println("         - QUIT to quit")
@@ -111,27 +101,39 @@ func Transcribe(optionalQuery string) {
 
 		quac.Open(idea.Path())
 
+	GETINPUT:
+
 		// read input from console
 		consoleScanner := bufio.NewScanner(os.Stdin)
 		_ = consoleScanner.Scan()
 		optionalEntry := consoleScanner.Text()
 		optionalEntry = strings.TrimSpace(optionalEntry)
 
-		if optionalEntry == "DNT" {
-			AddTagByIdea(idea, "DNT")
+		switch {
+		case optionalEntry == "DNT":
+			AddTagByIdea(&idea, "DNT")
 			fmt.Println("ol'right never transcribing again!")
 			continue
-		}
-		if optionalEntry == "SKIP" {
+		case optionalEntry == "SKIP":
 			fmt.Println("skipp'd")
 			continue
-		}
-		if optionalEntry == "KILL" {
+		case optionalEntry == "KILL":
 			quac.RemoveByID(idea.Id)
 			fmt.Println("killed it")
 			continue
-		}
-		if optionalEntry == "QUIT" {
+		case strings.HasPrefix(optionalEntry, "ADDTAG "):
+			newTag := strings.SplitN(optionalEntry, " ", 1)
+			AddTagByIdea(&idea, newTag[1])
+			fmt.Printf("added the tag! new filename:\n%v\n", idea.Filename)
+			fmt.Println("continue transcription:")
+			goto GETINPUT
+		case strings.HasPrefix(optionalEntry, "KILLTAG "):
+			newTag := strings.SplitN(optionalEntry, " ", 2)
+			KillTagByIdea(&idea, newTag[1])
+			fmt.Printf("removed the tag! new filename:\n%v\n", idea.Filename)
+			fmt.Println("continue transcription:")
+			goto GETINPUT
+		case optionalEntry == "QUIT":
 			break
 		}
 
@@ -202,6 +204,7 @@ func NewEmptyEntry(unsplitTags string) {
 	idear := quac.NewNonConsumingTextIdea(splitTags)
 	writePath := path.Join(quac.IdeasDir, idear.Filename)
 	quac.IncrementID()
+	fmt.Printf("created: %v\n", writePath)
 	quac.OpenText(writePath)
 }
 
@@ -328,12 +331,16 @@ func ListTagsByID(idStr string) {
 func KillTagByID(idStr, tagToKill string) {
 	id := parseIdStr(idStr)
 	idea := quac.GetIdeaByID(id)
-	origFilename := idea.Filename
-	(&idea).RemoveTag(tagToKill)
-	(&idea).UpdateFilename()
+	KillTagByIdea(&idea, tagToKill)
+}
 
+// TODO move to library
+func KillTagByIdea(idea *quac.Idea, tagToKill string) {
+	origFilename := (*idea).Filename
+	idea.RemoveTag(tagToKill)
+	idea.UpdateFilename()
 	origPath := path.Join(quac.IdeasDir, origFilename)
-	newPath := path.Join(quac.IdeasDir, idea.Filename)
+	newPath := path.Join(quac.IdeasDir, (*idea).Filename)
 	err := os.Rename(origPath, newPath)
 	if err != nil {
 		log.Fatal(err)
@@ -343,16 +350,16 @@ func KillTagByID(idStr, tagToKill string) {
 func AddTagByID(idStr, tagToAdd string) {
 	id := parseIdStr(idStr)
 	idea := quac.GetIdeaByID(id)
-	AddTagByIdea(idea, tagToAdd)
+	AddTagByIdea(&idea, tagToAdd)
 }
 
 // TODO move to library
-func AddTagByIdea(idea quac.Idea, tagToAdd string) {
-	origFilename := idea.Filename
-	(&idea).AddTag(tagToAdd)
-	(&idea).UpdateFilename()
+func AddTagByIdea(idea *quac.Idea, tagToAdd string) {
+	origFilename := (*idea).Filename
+	idea.AddTag(tagToAdd)
+	idea.UpdateFilename()
 	origPath := path.Join(quac.IdeasDir, origFilename)
-	newPath := path.Join(quac.IdeasDir, idea.Filename)
+	newPath := path.Join(quac.IdeasDir, (*idea).Filename)
 	err := os.Rename(origPath, newPath)
 	if err != nil {
 		log.Fatal(err)
@@ -364,7 +371,7 @@ func AddTagToMany(tagToAdd, manyTagsClumped string) {
 	manyTags := idea.ParseClumpedTags(manyTagsClumped)
 	ideas := quac.GetAllIdeas().WithAnyOfTags(manyTags)
 	for _, idea := range ideas {
-		AddTagByIdea(idea, tagToAdd)
+		AddTagByIdea(&idea, tagToAdd)
 	}
 }
 
