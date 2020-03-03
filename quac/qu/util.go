@@ -97,6 +97,7 @@ func Transcribe(optionalQuery string) {
 	fmt.Println("         - QUIT to quit")
 	fmt.Println("-------------------------------------------------------------\n")
 
+IdeaLoop:
 	for _, idea := range ideaImages {
 
 		quac.Open(idea.Path())
@@ -134,7 +135,7 @@ func Transcribe(optionalQuery string) {
 			fmt.Println("continue transcription:")
 			goto GETINPUT
 		case optionalEntry == "QUIT":
-			break
+			break IdeaLoop
 		}
 
 		consumerFilepath := quac.SetConsume(idea.Id, optionalEntry)
