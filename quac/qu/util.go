@@ -95,6 +95,7 @@ func Transcribe(optionalQuery string) {
 	fmt.Println("         - KILL to delete the entry")
 	fmt.Println("         - SKIP to skip")
 	fmt.Println("         - QUIT to quit")
+	fmt.Println("         - UNDO to undo the previous transcription")
 	fmt.Println("-------------------------------------------------------------\n")
 
 IdeaLoop:
@@ -136,6 +137,8 @@ IdeaLoop:
 			goto GETINPUT
 		case optionalEntry == "QUIT":
 			break IdeaLoop
+		case optionalEntry == "UNDO":
+			panic("unimplemented")
 		}
 
 		consumerFilepath := quac.SetConsume(idea.Id, optionalEntry)
