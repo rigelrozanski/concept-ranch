@@ -154,7 +154,10 @@ func Retag() {
 
 	fmt.Println("             ~ Instructions ~")
 	fmt.Println("enter desired tags seperated by spaces")
-	fmt.Println("alternatively, enter SKIP to skip or QUIT to quit\n")
+	fmt.Println("alternatively, enter:")
+	fmt.Println("         - KILL to delete the entry")
+	fmt.Println("         - SKIP to skip")
+	fmt.Println("         - QUIT to quit")
 
 	for _, idea := range untaggedIdeas {
 		quac.View(idea.Path())
@@ -167,9 +170,16 @@ func Retag() {
 		tags := strings.Fields(spacedTags)
 
 		if len(tags) == 1 && tags[0] == "SKIP" {
+			fmt.Println("k, skip'd")
+			continue
+		}
+		if len(tags) == 1 && tags[0] == "KILL" {
+			quac.RemoveByID(idea.Id)
+			fmt.Println("killed it")
 			continue
 		}
 		if len(tags) == 1 && tags[0] == "QUIT" {
+			fmt.Println("goodbye")
 			break
 		}
 
