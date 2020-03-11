@@ -6,13 +6,16 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"log"
 	"math"
 	"os"
+	"path"
 
 	"github.com/disintegration/imaging"
 	"github.com/faiface/pixel"
 	"github.com/faiface/pixel/imdraw"
 	"github.com/faiface/pixel/pixelgl"
+	cmn "github.com/rigelrozanski/common"
 	"golang.org/x/image/colornames"
 )
 
@@ -31,16 +34,6 @@ func loadPicture(path string) (pic pixel.Picture, img image.Image, err error) {
 
 func concatImage(img1, img2 image.Image) image.Image {
 
-	////starting position of the second image (bottom left)
-	//sp2 := image.Point{img1.Bounds().Dx(), 0}
-	//fmt.Printf("debug sp2: %v\n", sp2)
-	////new rectangle for the second image
-	//r2 := image.Rectangle{sp2, sp2.Add(img2.Bounds().Size())}
-	//fmt.Printf("debug r2: %v\n", r2)
-	////rectangle for the big image
-	//r := image.Rectangle{image.Point{0, 0}, r2.Max}
-	//fmt.Printf("debug r: %v\n", r)
-
 	maxX := img1.Bounds().Dx()
 	maxX2 := img2.Bounds().Dx()
 	if maxX2 > maxX {
@@ -52,13 +45,15 @@ func concatImage(img1, img2 image.Image) image.Image {
 
 	concatRect := image.Rectangle{image.Point{0, 0},
 		image.Point{maxX, y2}}
-	img2Rect := img1.Bounds().Add(image.Point{0, y1})
+	img2Rect := img2.Bounds().Add(image.Point{0, y1})
 
 	concatImg := image.NewRGBA(concatRect)
 	draw.Draw(concatImg, img1.Bounds(), img1, image.Point{0, 0}, draw.Src)
 	draw.Draw(concatImg, img2Rect, img2, image.Point{0, 0}, draw.Src)
 	return concatImg
 }
+
+var scanimgFilepath string
 
 func run() {
 
@@ -74,10 +69,14 @@ func run() {
 
 	imd := imdraw.New(nil)
 
-	pic, img, err := loadPicture("apple.jpeg")
+	pic, img, err := loadPicture(scanimgFilepath)
 	if err != nil {
 		panic(err)
 	}
+
+	// ensure scan dir
+	scanDir := path.Join(QuDir, "working_scan")
+	_ = os.Mkdir(scanDir, os.ModePerm)
 
 	//pic, img0, err := loadPicture("outimage_0.png")
 	//if err != nil {
@@ -145,7 +144,6 @@ func run() {
 			}
 			boxes[len(boxes)-1] = append(boxes[len(boxes)-1], pos)
 			isConnected := win.Pressed(pixelgl.KeyC)
-			fmt.Printf("debug isConnected: %v\n", isConnected)
 			boxesIsConnectedToPrevious = append(boxesIsConnectedToPrevious, isConnected)
 		}
 
@@ -250,7 +248,7 @@ func run() {
 				if img == nil {
 					continue
 				}
-				f, err := os.Create(fmt.Sprintf("outimage_%v.png", i))
+				f, err := os.Create(path.Join(scanDir, fmt.Sprintf("outimage_%v.png", i)))
 				if err != nil {
 					panic(err)
 				}
@@ -263,7 +261,7 @@ func run() {
 			// reload images
 			reimgs := []image.Image{}
 			for i := range imgs {
-				_, img, err := loadPicture(fmt.Sprintf("outimage_%v.png", i))
+				_, img, err := loadPicture(path.Join(scanDir, fmt.Sprintf("outimage_%v.png", i)))
 				if err != nil {
 					panic(err)
 				}
@@ -282,12 +280,13 @@ func run() {
 				imgConcats[len(imgConcats)-1] = concatImage(imgConcats[len(imgConcats)-1], img)
 			}
 
-			// save files
+			// save final images as ideas
 			for i, img := range imgConcats {
 				if img == nil {
 					continue
 				}
-				f, err := os.Create(fmt.Sprintf("outimageCON_%v.png", i))
+				filepath := path.Join(scanDir, fmt.Sprintf("outimageCON_%v.png", i))
+				f, err := os.Create(filepath)
 				if err != nil {
 					panic(err)
 				}
@@ -296,6 +295,23 @@ func run() {
 				if err != nil {
 					panic(err)
 				}
+
+				idea := NewIdeaFromFile([]string{"UNTAGGED"}, filepath)
+				err = cmn.Copy(filepath, idea.Path())
+				if err != nil {
+					log.Fatal(err)
+				}
+				PrependLast(idea.Id)
+				IncrementID()
+
+				fmt.Println("Added the following idea:")
+				View(idea.Path())
+
+			}
+
+			err = os.RemoveAll(scanDir)
+			if err != nil {
+				log.Fatal(err)
 			}
 
 			win.Destroy()
@@ -312,6 +328,7 @@ func run() {
 	}
 }
 
-func ScanManual() {
+func ScanManual(scanFile string) {
+	scanimgFilepath = scanFile
 	pixelgl.Run(run)
 }
