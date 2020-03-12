@@ -10,6 +10,7 @@ import (
 	"math"
 	"os"
 	"path"
+	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/faiface/pixel"
@@ -69,6 +70,12 @@ func run() {
 
 	imd := imdraw.New(nil)
 
+	if scanimgFilepath == "" {
+		cmn.Execute(fmt.Sprintf("open %v/quick_portrait_scan.kmtrigger", QuDir))
+		time.Sleep(60 * time.Second)
+		scanimgFilepath = path.Join(os.ExpandEnv("$HOME"), "Desktop", "auto_scan.png")
+	}
+
 	pic, img, err := loadPicture(scanimgFilepath)
 	if err != nil {
 		panic(err)
@@ -77,23 +84,6 @@ func run() {
 	// ensure scan dir
 	scanDir := path.Join(QuDir, "working_scan")
 	_ = os.Mkdir(scanDir, os.ModePerm)
-
-	//pic, img0, err := loadPicture("outimage_0.png")
-	//if err != nil {
-	//panic(err)
-	//}
-	//pic, img1, err := loadPicture("outimage_1.png")
-	//if err != nil {
-	//panic(err)
-	//}
-	//img = concatImage(img0, img1)
-	//f, _ := os.Create("testConcat.png")
-	//defer f.Close()
-	//err = png.Encode(f, img)
-	//if err != nil {
-	//panic(err)
-	//}
-	//return
 
 	//picRatio := pic.Bounds().Resized(pic.Bounds().Center(), pixel.V(1024, 768)) // resizes around the center
 	doc := pixel.NewSprite(pic, pic.Bounds())
