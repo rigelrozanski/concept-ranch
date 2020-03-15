@@ -26,6 +26,26 @@ func GetAllIdeasNonConsuming() (ideas Ideas) {
 	return ideas
 }
 
+func TagUsedInNonConsuming(tag string) bool {
+	files, err := ioutil.ReadDir(IdeasDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		fn := file.Name()
+		if strings.HasPrefix(fn, "c") { // do not read from consumed ideas
+			continue
+		}
+		if path.Ext(fn) == ".swp" {
+			continue
+		}
+		if strings.Contains(fn, tag) {
+			return true
+		}
+	}
+	return false
+}
+
 // these ideas will be sorted from oldest to newest
 func GetAllIdeas() (ideas Ideas) {
 	files, err := ioutil.ReadDir(IdeasDir)

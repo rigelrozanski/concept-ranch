@@ -198,6 +198,14 @@ func Retag() {
 	}
 }
 
+func WaterCloset() {
+	if idea.TagUsedInNonConsuming("UNTAGGED") {
+		Retag()
+	} else {
+		Transcribe("")
+	}
+}
+
 func QuickQuery(unsplitTagsOrID string) {
 	id, err := quac.ParseID(unsplitTagsOrID)
 	if err == nil {
