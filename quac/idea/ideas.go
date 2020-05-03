@@ -18,7 +18,8 @@ func GetAllIdeasNonConsuming() (ideas Ideas) {
 		if strings.HasPrefix(file.Name(), "c") { // do not read from consumed ideas
 			continue
 		}
-		if path.Ext(file.Name()) == ".swp" {
+		ext := path.Ext(file.Name())
+		if ext == ".swp" || ext == ".vim" {
 			continue
 		}
 		ideas = append(ideas, NewIdeaFromFilename(file.Name()))

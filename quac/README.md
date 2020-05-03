@@ -35,17 +35,12 @@ cYYYYMMDD = consumed date
 
 ### Details on use of `qu scan`
 
-The scan functionality is provided to quickly scan in a sheet of 
-paper with notes written in multiple orientations. The user is expected
-to circle each orientation (noon, 3am, 6am, 9am) with different colour
-markers. Additionally the markers are to be using for caquacration:
+The scan functionality is provided to quickly scan in a sheet of paper with
+notes written in multiple orientations (currently only, rightside-up or upside
+down).  The scan image is then reoriented and seperated out into smaller,
+untranscribed, untagged images which can then be quickly tagged and later
+transcribed with the `qu wc` command. 
 
- - The top-left 1/2 inch squared is reserved for the caquacration
-   - Caquacration markers should be drawn as four stacked horizontal lines representing:
-     - Noon
-     - Quarter-Past
-     - Half-Past
-     - Quarter-To
 
 ### Using SPLIT
 
