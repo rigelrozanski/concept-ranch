@@ -125,6 +125,11 @@ func SetEncryptionById(id uint32) {
 
 func OpenTextSplit(pathToOpenLeft, pathToOpenRight string, maxFNLen int) {
 
+	// limit the split
+	if maxFNLen > 65 {
+		maxFNLen = 65
+	}
+
 	cmd := exec.Command("vim",
 		"-c", "vertical resize "+strconv.Itoa(maxFNLen+4)+
 			" | set scb!"+ // set the scrollbind
