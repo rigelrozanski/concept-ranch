@@ -51,6 +51,7 @@ const (
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
+	keyLsLocationFiles = "lsfl"
 	keyLs              = "ls"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
@@ -86,9 +87,10 @@ qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu open-working -------------------------> open the working files to manually correct mistakes
 qu save-working -------------------------> save the working files to manually correct mistakes
-qu lst [tags] ---------------------------> list all tags used, optionally which share a set of common tags
-qu lsf [query] --------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
-qu ls  [tags]----------------------------> browse all tags
+qu lst  [tags] ---------------------------> list all tags used, optionally which share a set of common tags
+qu lsf  [query] --------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
+qu lsfl [query] --------------------------> list all files by file location
+qu ls   [tags]----------------------------> browse all tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 qu stats --------------------------------> statistics on your ideas
 
@@ -213,6 +215,12 @@ func main() {
 			ListAllFiles()
 		} else {
 			ListAllFilesWithQuery(args[1])
+		}
+	case keyLsLocationFiles:
+		if len(args) == 1 {
+			ListAllFilesByLocation()
+		} else {
+			ListAllFilesByLocationWithQuery(args[1])
 		}
 	case "lsd":
 		fmt.Println("fking rip'd")

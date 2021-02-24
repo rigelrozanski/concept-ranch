@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 
@@ -274,7 +275,7 @@ func QuickEntry(unsplitTags, entry string) {
 
 func MultiOpen(unsplitTagsOrID string, forceSplitView bool) {
 
-	startID, endID, isRange := IsIDRange(unsplitTagsOrID)
+	startID, endID, isRange := IsIDorIDRange(unsplitTagsOrID)
 	if isRange {
 		quac.MultiOpenByRange(startID, endID, forceSplitView)
 		return
@@ -318,7 +319,7 @@ func parseIdStr(idStr string) uint32 {
 }
 
 func RemoveByID(idOrIds string) {
-	startID, endID, isRange := IsIDRange(idOrIds)
+	startID, endID, isRange := IsIDorIDRange(idOrIds)
 	if isRange {
 		RemoveAcrossIDs(startID, endID)
 		fmt.Println("roger, removed everything between those ids")
@@ -487,13 +488,28 @@ func ListAllFiles() {
 	}
 }
 
-func IsIDRange(query string) (idStart, idEnd uint32, isRange bool) {
+func ListAllFilesByLocation() {
+	ideas := quac.GetAllIdeas()
+	if len(ideas) == 0 {
+		fmt.Println("no ideas found")
+	}
+	for _, idea := range ideas {
+		fmt.Println(idea.Path())
+	}
+}
+
+func IsIDorIDRange(query string) (idStart, idEnd uint32, isIDorIDRange bool) {
+	id, err := strconv.Atoi(query)
+	if err == nil {
+		return uint32(id), uint32(id), true
+	}
+
 	sp := strings.Split(query, "-")
 	if len(sp) != 2 {
 		return 0, 0, false
 	}
 
-	idStart, err := quac.ParseID(sp[0])
+	idStart, err = quac.ParseID(sp[0])
 	if err != nil {
 		return 0, 0, false
 	}
@@ -506,19 +522,27 @@ func IsIDRange(query string) (idStart, idEnd uint32, isRange bool) {
 }
 
 func ListAllFilesWithQuery(query string) {
-	if query == "last" {
-		ListAllFilesLast()
-		return
-	}
-	idStart, idEnd, isRange := IsIDRange(query)
-	if isRange {
-		ListAllFilesIDRange(idStart, idEnd)
-		return
-	}
-	ListAllFilesWithTags(query)
+	listAllFilesWithQuery(query, false)
 }
 
-func ListAllFilesWithTags(tagsGrouped string) {
+func ListAllFilesByLocationWithQuery(query string) {
+	listAllFilesWithQuery(query, true)
+}
+
+func listAllFilesWithQuery(query string, showFilepath bool) {
+	if query == "last" {
+		ListAllFilesLast(showFilepath)
+		return
+	}
+	idStart, idEnd, isRange := IsIDorIDRange(query)
+	if isRange {
+		ListAllFilesIDRange(idStart, idEnd, showFilepath)
+		return
+	}
+	ListAllFilesWithTags(query, showFilepath)
+}
+
+func ListAllFilesWithTags(tagsGrouped string, showFilepath bool) {
 	ideas := quac.GetAllIdeas()
 	subset := ideas.WithTags(idea.ParseClumpedTags(tagsGrouped))
 	if len(subset) == 0 {
@@ -527,11 +551,15 @@ func ListAllFilesWithTags(tagsGrouped string) {
 	}
 	for _, idea := range subset {
 		quac.PrependLast(idea.Id)
-		fmt.Println(idea.Filename)
+		if showFilepath {
+			fmt.Println(idea.Path())
+		} else {
+			fmt.Println(idea.Filename)
+		}
 	}
 }
 
-func ListAllFilesIDRange(idStart, idEnd uint32) {
+func ListAllFilesIDRange(idStart, idEnd uint32, showFilepath bool) {
 	ideas := quac.GetAllIdeasInRange(idStart, idEnd)
 	if len(ideas) == 0 {
 		fmt.Println("no ideas found with in that range")
@@ -539,14 +567,22 @@ func ListAllFilesIDRange(idStart, idEnd uint32) {
 	}
 	for _, idea := range ideas {
 		quac.PrependLast(idea.Id)
-		fmt.Println(idea.Filename)
+		if showFilepath {
+			fmt.Println(idea.Path())
+		} else {
+			fmt.Println(idea.Filename)
+		}
 	}
 }
 
-func ListAllFilesLast() {
+func ListAllFilesLast(showFilepath bool) {
 	ids := quac.GetLastIDs()
 	for _, id := range ids {
-		fmt.Println(quac.GetFilenameByID(id))
+		if showFilepath {
+			fmt.Println(quac.GetFilenameByID(id))
+		} else {
+			fmt.Println(quac.GetIdeaByID(id).Path())
+		}
 	}
 }
 

@@ -32,13 +32,12 @@ func GetFilepathByID(id uint32) (filepath string, found bool) {
 	return path.Join(idea.IdeasDir, filename), true
 }
 
-func GetFilenameByID(id uint32) (filepath string) {
+func GetFilenameByID(id uint32) (fileName string) {
 	files, err := ioutil.ReadDir(idea.IdeasDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fileName := ""
 	idStr := idea.IdStr(id)
 	for _, file := range files {
 		fn := file.Name()
