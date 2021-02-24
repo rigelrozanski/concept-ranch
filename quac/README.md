@@ -11,8 +11,8 @@ The intention behind this program is to provide a space for quickly:
 ### Installation From Source
 
 1. make sure you [have Go installed][1] and [put $GOPATH/bin in your $PATH][2]
-2. run `go get github.com/rigelrozanski/qi`
-3. run `go install` from the repo directory
+2. run `go get github.com/rigelrozanski/thranch`
+3. run `go install` while navigated to this directory
 4. set the `qi` working directory in a config file in `~/qi_config.txt` (see `example_config.txt`)
 
 [1]: https://golang.org/doc/install
