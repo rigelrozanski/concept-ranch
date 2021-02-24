@@ -322,19 +322,11 @@ func RemoveByID(idOrIds string) {
 	startID, endID, isRange := IsIDorIDRange(idOrIds)
 	if isRange {
 		RemoveAcrossIDs(startID, endID)
-		fmt.Println("roger, removed everything between those ids")
-		return
+		fmt.Println("roger, removed that id (or id range)")
 	}
-
-	id := parseIdStr(idOrIds)
-	quac.RemoveByID(id)
-	fmt.Println("roger, removed that id")
 }
 
 func RemoveAcrossIDs(id1, id2 uint32) {
-	if id1 >= id2 {
-		log.Fatalf("second id must be greater first id")
-	}
 	for i := id1; i <= id2; i++ {
 		quac.RemoveByID(i)
 	}
