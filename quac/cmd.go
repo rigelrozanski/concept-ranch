@@ -53,7 +53,8 @@ func ViewImage(pathToOpen string) {
 }
 
 func ViewImageNoFilename(pathToOpen string) {
-	cmd := exec.Command("imgcat", pathToOpen)
+	//fmt.Printf("debug pathToOpen: %v\n", pathToOpen)
+	cmd := exec.Command("kitty", "+kitten", "icat", pathToOpen) // using kitty command line
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	err := cmd.Run()
