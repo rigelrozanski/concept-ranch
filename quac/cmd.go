@@ -15,10 +15,14 @@ import (
 func Open(pathToOpen string) {
 	ext := path.Ext(pathToOpen)
 
-	id := GetIdByFilename(pathToOpen)
+	id, _ := GetIdByFilename(pathToOpen)
 	PrependLast(id)
 
-	switch GetKind(ext) {
+	kind, err := GetKind(ext)
+	if err != nil {
+		log.Fatal(err)
+	}
+	switch kind {
 	case KindText:
 		OpenText(pathToOpen)
 	case KindEnText:
@@ -34,10 +38,14 @@ func Open(pathToOpen string) {
 func View(pathToOpen string) {
 	ext := path.Ext(pathToOpen)
 
-	id := GetIdByFilename(pathToOpen)
+	id, _ := GetIdByFilename(pathToOpen)
 	PrependLast(id)
 
-	switch GetKind(ext) {
+	kind, err := GetKind(ext)
+	if err != nil {
+		log.Fatal(err)
+	}
+	switch kind {
 	case KindText:
 		ViewText(pathToOpen)
 	case KindImage:

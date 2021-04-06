@@ -61,7 +61,7 @@ func Transcribe(optionalQuery string) {
 	consumed, err := quac.ParseID(optionalQuery)
 	var ideaImages quac.Ideas
 	if err == nil {
-		idear := quac.GetIdeaByID(consumed)
+		idear := quac.GetIdeaByID(consumed, true)
 		if !(idear.IsImage() || idear.IsAudio()) {
 			fmt.Println("this idea is not an image or audio cannot be transcribed")
 			os.Exit(1)
@@ -339,13 +339,13 @@ func CopyByID(idStr string) {
 
 func ListTagsByID(idStr string) {
 	id := parseIdStr(idStr)
-	idea := quac.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id, false)
 	fmt.Println(idea.Tags)
 }
 
 func KillTagByID(idStr, tagToKill string) {
 	id := parseIdStr(idStr)
-	idea := quac.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id, true)
 	KillTagByIdea(&idea, tagToKill)
 }
 
@@ -364,7 +364,7 @@ func KillTagByIdea(idea *quac.Idea, tagToKill string) {
 
 func AddTagByID(idStr, tagToAdd string) {
 	id := parseIdStr(idStr)
-	idea := quac.GetIdeaByID(id)
+	idea := quac.GetIdeaByID(id, true)
 	AddTagByIdea(&idea, tagToAdd)
 }
 
@@ -400,7 +400,7 @@ func RenameTag(from, to string) {
 		if !strings.Contains(origFn, from) {
 			continue
 		}
-		idea := quac.NewIdeaFromFilename(origFn)
+		idea := quac.NewIdeaFromFilename(origFn, true)
 		(&idea).RenameTag(from, to)
 		(&idea).UpdateFilename()
 
@@ -424,7 +424,7 @@ func DestroyTag(tag string) {
 		if !strings.Contains(origFn, tag) {
 			continue
 		}
-		idea := quac.NewIdeaFromFilename(origFn)
+		idea := quac.NewIdeaFromFilename(origFn, true)
 		(&idea).RemoveTag(tag)
 		(&idea).UpdateFilename()
 
@@ -573,7 +573,7 @@ func ListAllFilesLast(showFilepath bool) {
 		if showFilepath {
 			fmt.Println(quac.GetFilenameByID(id))
 		} else {
-			fmt.Println(quac.GetIdeaByID(id).Path())
+			fmt.Println(quac.GetIdeaByID(id, false).Path())
 		}
 	}
 }

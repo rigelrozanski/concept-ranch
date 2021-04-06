@@ -11,7 +11,7 @@ import (
 
 // Display the immediate lineage of ideas
 func GetLineage(id uint32) (compiled string) {
-	lineageIdea := GetIdeaByID(id)
+	lineageIdea := GetIdeaByID(id, false)
 	for _, consume := range lineageIdea.ConsumesIds {
 		fn := GetFilenameByID(consume)
 		content, found := GetContentByID(consume)
@@ -25,7 +25,7 @@ func GetLineage(id uint32) (compiled string) {
 
 // copy an idea by the id
 func SetConsume(consumedId uint32, entry string) (consumerFilepath string) {
-	consumedIdea := GetIdeaByID(consumedId)
+	consumedIdea := GetIdeaByID(consumedId, true)
 
 	// consumer: remove the id, add in a new id, add the consumes id
 	consumerIdea := idea.NewConsumingTextIdea(consumedIdea)
@@ -38,8 +38,8 @@ func SetConsume(consumedId uint32, entry string) (consumerFilepath string) {
 
 func SetConsumes(consumedId, consumesId uint32) {
 
-	consumedIdea := GetIdeaByID(consumedId)
-	consumesIdea := GetIdeaByID(consumesId)
+	consumedIdea := GetIdeaByID(consumedId, true)
+	consumesIdea := GetIdeaByID(consumesId, true)
 
 	// consumer: remove the id, add in a new id, add the consumes id
 	consumesIdea.ConsumesIds = append(consumesIdea.ConsumesIds, consumedId)
@@ -56,6 +56,6 @@ func SetConsumes(consumedId, consumesId uint32) {
 
 // Set a consumed idea to zombie
 func SetZombie(zombieId uint32) {
-	consumedIdea := GetIdeaByID(zombieId)
+	consumedIdea := GetIdeaByID(zombieId, true)
 	consumedIdea.SetZombie()
 }

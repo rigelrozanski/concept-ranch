@@ -39,20 +39,21 @@ func TodayDate() time.Time {
 	return todayDate
 }
 
-func GetKind(ext string) int {
+func GetKind(ext string) (int, error) {
 	switch ext {
 	case ".mp3", ".wav":
-		return KindAudio
+		return KindAudio, nil
 	case ".jpg", ".jpeg", ".tiff", ".png":
-		return KindImage
+		return KindImage, nil
 	case "", ".txt":
-		return KindText
+		return KindText, nil
 	case ".en":
-		return KindEnText
+		return KindEnText, nil
 	default:
-		log.Fatalf("unknown filetype: %v", ext)
+		err := fmt.Errorf("unknown filetype: %v", ext)
+		return 0, err
 	}
-	return 0
+	return 0, nil
 }
 
 func (idea Idea) Path() string {

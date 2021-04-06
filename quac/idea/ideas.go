@@ -22,7 +22,7 @@ func GetAllIdeasNonConsuming() (ideas Ideas) {
 		if ext == ".swp" || ext == ".vim" {
 			continue
 		}
-		ideas = append(ideas, NewIdeaFromFilename(file.Name()))
+		ideas = append(ideas, NewIdeaFromFilename(file.Name(), false))
 	}
 	return ideas
 }
@@ -57,7 +57,7 @@ func GetAllIdeas() (ideas Ideas) {
 		if path.Ext(file.Name()) == ".swp" {
 			continue
 		}
-		ideas = append(ideas, NewIdeaFromFilename(file.Name()))
+		ideas = append(ideas, NewIdeaFromFilename(file.Name(), false))
 	}
 	return ideas
 }
@@ -68,13 +68,17 @@ func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// TODO there has got to be a faster way of doing this!!!!
 	for _, file := range files {
-		id := GetIdByFilename(file.Name())
+		id, skip := GetIdByFilename(file.Name())
+		if skip {
+			continue
+		}
 		if id >= idStart && id <= idEnd {
 			if path.Ext(file.Name()) == ".swp" {
 				continue
 			}
-			ideas = append(ideas, NewIdeaFromFilename(file.Name()))
+			ideas = append(ideas, NewIdeaFromFilename(file.Name(), false))
 		}
 	}
 	return ideas

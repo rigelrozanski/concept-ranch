@@ -52,12 +52,16 @@ func NewIdeaFromFile(tags []string, filepath string) Idea {
 	todayDate := TodayDate()
 
 	ext := path.Ext(filepath)
+	kind, err := GetKind(ext)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	idea := Idea{
 		Cycle:       CycleAlive,
 		Id:          GetNextID(),
 		ConsumesIds: []uint32{},
-		Kind:        GetKind(ext),
+		Kind:        kind,
 		Ext:         ext,
 		Created:     todayDate,
 		Edited:      todayDate,
@@ -94,16 +98,20 @@ func NewConsumingTextIdea(consumesIdea Idea) Idea {
 	return idea
 }
 
-func NewIdeaFromFilepath(filepath string) (idea Idea) {
-	return NewIdeaFromFilename(path.Base(filepath))
+func NewIdeaFromFilepath(filepath string, loglast bool) (idea Idea) {
+	return NewIdeaFromFilename(path.Base(filepath), loglast)
 }
 
-func NewIdeaFromFilename(filename string) (idea Idea) {
+func NewIdeaFromFilename(filename string, loglast bool) (idea Idea) {
 	idea.Filename = filename
 
 	ext := path.Ext(filename)
 	idea.Ext = ext
-	idea.Kind = GetKind(ext)
+	var err error
+	idea.Kind, err = GetKind(ext)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	base := strings.TrimSuffix(filename, path.Ext(filename))
 	split := ParseClumpedTags(base)
@@ -119,7 +127,12 @@ func NewIdeaFromFilename(filename string) (idea Idea) {
 	}
 
 	// Get id
-	id, err := ParseID(split[1])
+	var id uint32
+	if loglast {
+		id, err = ParseID(split[1])
+	} else {
+		id, err = ParseIDNoLogLast(split[1])
+	}
 	if err != nil {
 		log.Fatal(err)
 	}

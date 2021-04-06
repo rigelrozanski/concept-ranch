@@ -10,16 +10,16 @@ import (
 	cmn "github.com/rigelrozanski/common"
 )
 
-func GetIdByFilename(filename string) (id uint32) {
+func GetIdByFilename(filename string) (id uint32, skip bool) {
 	split := strings.SplitN(filename, ",", 3)
 	if len(split) != 3 {
-		log.Fatal("bad split")
+		return 0, true
 	}
 	idI, err := ParseID(split[1])
 	if err != nil {
 		log.Fatal(err)
 	}
-	return uint32(idI)
+	return uint32(idI), false
 }
 
 func GetNextID() uint32 {
@@ -119,6 +119,9 @@ func prependLast(lastIDs []string, id uint32) {
 	if len(lastIDs) > 0 && parsedIDStr == lastIDs[0] {
 		return
 	}
+
+	// TODO it would be nice if old copies of this id were erased
+	// if they move to the front of the line
 
 	lastIDs = append([]string{parsedIDStr}, lastIDs...)
 	if len(lastIDs) > 9 {

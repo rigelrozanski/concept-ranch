@@ -72,7 +72,7 @@ func WriteWorkingContentAndFilenamesFromIdeas(idears idea.Ideas, forceSplitView 
 }
 
 func WriteWorkingContentAndFilenamesFromFilePath(filePath string) (maxFNLen int) {
-	idear := idea.NewIdeaFromFilepath(filePath)
+	idear := idea.NewIdeaFromFilepath(filePath, true)
 
 	// write working contents and filenames from tags
 	var contentBz, fnBz []byte
@@ -185,7 +185,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 
 		} else {
 			// get the orig bytes (non existant if a split)
-			id := idea.GetIdByFilename(fnLine)
+			id, _ := idea.GetIdByFilename(fnLine)
 			found := false
 			origBz, found = GetContentByID(id)
 			if !found {

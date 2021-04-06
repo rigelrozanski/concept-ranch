@@ -20,7 +20,7 @@ func WriteIdea(filename, entry string) {
 
 func UpdateEditedDateNow(updatePath string) {
 	origFilename := path.Base(updatePath)
-	idear := idea.NewIdeaFromFilename(origFilename)
+	idear := idea.NewIdeaFromFilename(origFilename, true)
 	idear.Edited = idea.TodayDate()
 	(&idear).UpdateFilename()
 	origPath := path.Join(idea.IdeasDir, origFilename)

@@ -49,10 +49,9 @@ func GetFilenameByID(id uint32) (fileName string) {
 	return fileName
 }
 
-func GetIdeaByID(id uint32) idea.Idea {
+func GetIdeaByID(id uint32, loglast bool) idea.Idea {
 	fn := GetFilenameByID(id)
-	return idea.NewIdeaFromFilename(fn)
-
+	return idea.NewIdeaFromFilename(fn, loglast)
 }
 
 func RemoveByID(id uint32) {
@@ -83,7 +82,7 @@ func CopyByID(id uint32) (newFilepath string) {
 func ReserveCopyFilename(oldFilename string, newTags []string) (newFilename string) {
 
 	// remove the id, add in a new id
-	idear := idea.NewIdeaFromFilename(oldFilename)
+	idear := idea.NewIdeaFromFilename(oldFilename, true)
 	idear.Id = idea.GetNextID()
 	idear.Created = idea.TodayDate()
 	idear.Tags = append(idear.Tags, newTags...)
