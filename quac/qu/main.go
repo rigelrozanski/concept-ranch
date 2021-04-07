@@ -87,10 +87,10 @@ qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all
 qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
 qu open-working -------------------------> open the working files to manually correct mistakes
 qu save-working -------------------------> save the working files to manually correct mistakes
-qu lst  [tags] ---------------------------> list all tags used, optionally which share a set of common tags
-qu lsf  [query] --------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
-qu lsfl [query] --------------------------> list all files by file location
-qu ls   [tags]----------------------------> browse all tags
+qu lst  [tags] --------------------------> list all tags used, optionally which share a set of common tags
+qu lsf  [query] -------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
+qu lsfl [query] -------------------------> list all files by file location
+qu ls   [tags]---------------------------> browse all tags
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 qu stats --------------------------------> statistics on your ideas
 
@@ -118,7 +118,6 @@ func main() {
 		return
 	}
 
-	var err error
 	switch args[0] {
 	case keyHelp1, keyHelp2:
 		fmt.Println(help)
@@ -237,8 +236,7 @@ func main() {
 		quac.GetStats()
 	case keyForceSplit:
 		EnsureLen(args, 2)
-		// quick entry force split view
-		MultiOpen(args[1], true)
+		MultiOpen(args[1], true) // quick entry force split view
 	case keyOpenWorking:
 		OpenWorking()
 	case keySaveWorking:
@@ -249,9 +247,6 @@ func main() {
 		} else if len(args) >= 2 { // quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}
-	}
-	if err != nil {
-		fmt.Println(err)
 	}
 }
 
