@@ -53,6 +53,7 @@ const (
 	keyLsFiles         = "lsf"
 	keyLsLocationFiles = "lsfl"
 	keyLs              = "ls"
+	keySelectFiles     = "sel"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
 	keyOpenWorking     = "open-working"
@@ -91,6 +92,7 @@ qu lst  [tags] --------------------------> list all tags used, optionally which 
 qu lsf  [query] -------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu lsfl [query] -------------------------> list all files by file location
 qu ls   [tags]---------------------------> browse all tags
+qu sel  [tags]---------------------------> select the idea from the tags (in cui)
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 qu stats --------------------------------> statistics on your ideas
 
@@ -230,6 +232,12 @@ func main() {
 		} else {
 			quac.Ls(args[1])
 		}
+	case keySelectFiles:
+		if len(args) == 1 {
+			EnsureLen(args, 2)
+		} else {
+			ListSelectAllFilesWithQuery(args[1])
+		}
 	case keyPDFBackup:
 		quac.ExportToPDF()
 	case keyStats:
@@ -243,7 +251,8 @@ func main() {
 		SaveWorking()
 	default:
 		if len(args) == 1 { // quick query
-			MultiOpen(args[0], false)
+			//MultiOpen(args[0], false)
+			ListSelectAllFilesWithQuery(args[0])
 		} else if len(args) >= 2 { // quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}

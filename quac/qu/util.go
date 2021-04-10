@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eiannone/keyboard"
+
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
 	"github.com/rigelrozanski/thranch/quac/idea"
@@ -511,6 +513,109 @@ func IsIDorIDRange(query string) (idStart, idEnd uint32, isIDorIDRange bool) {
 	}
 
 	return idStart, idEnd, true
+}
+
+func ListSelectAllFilesWithQuery(query string) {
+	refined := RefineQueryCUI(query)
+	MultiOpen(refined, false)
+}
+
+func RefineQueryCUI(query string) (refinedQuery string) {
+
+	// get query ideas
+	var ideas idea.Ideas
+	idStart, idEnd, isRange := IsIDorIDRange(query)
+	switch {
+	case isRange:
+		ideas = quac.GetAllIdeasInRange(idStart, idEnd)
+	case query == "last":
+		ids := quac.GetLastIDs()
+		for _, id := range ids {
+			ideas = append(ideas, quac.GetIdeaByID(id, false))
+		}
+	default:
+		ideas = quac.GetAllIdeas().WithTags(idea.ParseClumpedTags(query))
+	}
+
+	// skip this process if there is only one entry (or none)
+	switch len(ideas) {
+	case 0:
+		return ""
+	case 1:
+		return query
+	}
+
+	colorBlue := "\033[34m"
+	colorReset := "\033[0m"
+	lenList := len(ideas) + 1 // +1  for the "open all" line
+	selected := 0
+
+	fmt.Print("\033[?25l") // hide cursor
+	defer func() {
+		fmt.Print("\033[?25h") // show cursor
+
+		// move the cursor to the bottom of the list
+		fmt.Print(fmt.Sprintf("\033[%vB", lenList))
+	}()
+
+	for {
+
+		textToDisplay := ">>> OPEN ALL SIMULTANEOUSLY "
+		if selected == 0 {
+			fmt.Println(string(colorBlue), textToDisplay, string(colorReset))
+		} else { // print normally
+			fmt.Println(" " + textToDisplay)
+		}
+
+		for i, idea := range ideas {
+			quac.PrependLast(idea.Id)
+			textToDisplay := idea.Filename
+			//if showFilepath {
+			//textToDisplay = idea.Path()
+			//}
+			textToDisplay += "      " // add extra space for visual errors once in a blue moon
+
+			// print text
+			if i+1 == selected {
+				// adds an extra space at the beginning for some reason
+				fmt.Println(string(colorBlue), textToDisplay, string(colorReset))
+			} else { // print normally
+				fmt.Println(" " + textToDisplay)
+			}
+
+		}
+
+		// move the cursor back up for the next print
+		fmt.Print(fmt.Sprintf("\033[%vA", lenList))
+
+		// TODO replace with my own code
+		// scan for user input
+		ch, key, err := keyboard.GetSingleKey()
+		if err != nil {
+			return ""
+		}
+
+		// TODO ability to use arrow keys
+		switch {
+		case ch == 'k' || ch == 'h':
+			if selected > 0 {
+				selected--
+			}
+		case ch == 'j' || ch == 'l':
+			if selected < lenList-1 {
+				selected++
+			}
+		case key == keyboard.KeyEnter:
+			switch selected {
+			case 0:
+				return query // "all" of the original query
+			default:
+				return fmt.Sprintf("%v", ideas[selected-1].Id)
+			}
+		case key == keyboard.KeyEsc || key == keyboard.KeyCtrlC:
+			return ""
+		}
+	}
 }
 
 func ListAllFilesWithQuery(query string) {
