@@ -1,10 +1,6 @@
 package quac
 
 import (
-	"fmt"
-	"log"
-	"os"
-	"path"
 	"sort"
 
 	tui "github.com/marcusolsson/tui-go"
@@ -125,6 +121,7 @@ func RemoveHighlighted(tag string) {
 	highlighted = newHighlighted
 }
 
+/*
 func Ls(clumpedTags string) {
 
 	inputTags := idea.ParseClumpedTags(clumpedTags)
@@ -281,3 +278,4 @@ func Ls(clumpedTags string) {
 		log.Fatal(err)
 	}
 }
+*/

@@ -52,12 +52,12 @@ const (
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
 	keyLsLocationFiles = "lsfl"
-	keyLs              = "ls"
-	keySelectFiles     = "sel"
-	keyPDFBackup       = "pdf-backup"
-	keyForceSplit      = "force-split"
-	keyOpenWorking     = "open-working"
-	keySaveWorking     = "save-working"
+	//keyLs              = "ls"
+	keySelectFiles = "sel"
+	keyPDFBackup   = "pdf-backup"
+	keyForceSplit  = "force-split"
+	keyOpenWorking = "open-working"
+	keySaveWorking = "save-working"
 
 	help = `
 /|||||\ |-o-o-~|
@@ -91,7 +91,6 @@ qu save-working -------------------------> save the working files to manually co
 qu lst  [tags] --------------------------> list all tags used, optionally which share a set of common tags
 qu lsf  [query] -------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
 qu lsfl [query] -------------------------> list all files by file location
-qu ls   [tags]---------------------------> browse all tags
 qu sel  [tags]---------------------------> select the idea from the tags (in cui)
 qu pdf-backup ---------------------------> backup best ideas to a printable pdf
 qu stats --------------------------------> statistics on your ideas
@@ -226,12 +225,6 @@ func main() {
 	case "lsd":
 		fmt.Println("fking rip'd")
 		os.Exit(0)
-	case keyLs:
-		if len(args) == 1 {
-			quac.Ls("")
-		} else {
-			quac.Ls(args[1])
-		}
 	case keySelectFiles:
 		if len(args) == 1 {
 			EnsureLen(args, 2)
