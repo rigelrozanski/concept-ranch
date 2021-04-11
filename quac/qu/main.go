@@ -252,7 +252,7 @@ func main() {
 	default:
 		if len(args) == 1 { // quick query
 			//MultiOpen(args[0], false)
-			ListSelectAllFilesWithQuery(args[0])
+			ListSelectAllFilesWithQueryNoLast(args[0])
 		} else if len(args) >= 2 { // quick entry
 			QuickEntry(args[0], strings.Join(args[1:], " "))
 		}

@@ -515,8 +515,23 @@ func IsIDorIDRange(query string) (idStart, idEnd uint32, isIDorIDRange bool) {
 	return idStart, idEnd, true
 }
 
+func ListSelectAllFilesWithQueryNoLast(query string) {
+	if query == "last" {
+		MultiOpen("last", false)
+		return
+	}
+	refined := RefineQueryCUI(query)
+	if refined == "" {
+		return
+	}
+	MultiOpen(refined, false)
+}
+
 func ListSelectAllFilesWithQuery(query string) {
 	refined := RefineQueryCUI(query)
+	if refined == "" {
+		return
+	}
 	MultiOpen(refined, false)
 }
 
