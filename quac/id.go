@@ -19,7 +19,8 @@ func GetContentByID(id uint32) (content []byte, found bool) {
 	}
 	content, err := ioutil.ReadFile(filepath)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Printf("problem reading filepath %v: %v\n", filepath, err)
+		return content, false
 	}
 	return content, true
 }
