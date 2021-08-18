@@ -28,7 +28,7 @@ func NewNonConsumingTextIdea(tags []string) Idea {
 }
 
 func NewNonConsumingAudioIdea(tags []string) Idea {
-	return NewTextIdea([]uint32{}, tags)
+	return NewIdea([]uint32{}, tags, ".wav")
 }
 
 // NewAliveIdea creates a new idea object
@@ -38,7 +38,7 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 
 // NewAliveIdea creates a new idea object
 func NewAudioIdea(consumesIds []uint32, tags []string) Idea {
-	return NewIdea(consumesIds, tags, "wav")
+	return NewIdea(consumesIds, tags, ".wav")
 }
 
 // new idea with an arbitrary extension
@@ -46,11 +46,17 @@ func NewIdea(consumesIds []uint32, tags []string, extension string) Idea {
 
 	todayDate := TodayDate()
 
+	kind := KindText
+	switch extension {
+	case ".wav", ".mp3":
+		kind = KindAudio
+	}
+
 	idea := Idea{
 		Cycle:       CycleAlive,
 		Id:          GetNextID(),
 		ConsumesIds: consumesIds,
-		Kind:        KindText,
+		Kind:        kind,
 		Ext:         extension,
 		Created:     todayDate,
 		Edited:      todayDate,
