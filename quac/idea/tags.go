@@ -91,6 +91,18 @@ func (idea Idea) GetTaggedValue(tvName string) (val string, found bool) {
 	return "", false
 }
 
+// get all the tags clumped together
+func (idea Idea) GetClumpedTags() (out string) {
+	for _, tag := range idea.Tags {
+		if len(out) == 0 {
+			out = tag
+		} else {
+			out += "," + tag
+		}
+	}
+	return out
+}
+
 // rename the tag on this idea
 func (idea *Idea) RenameTag(from, to string) {
 	for i, tag := range idea.Tags {
