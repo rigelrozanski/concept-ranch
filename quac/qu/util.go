@@ -233,14 +233,6 @@ func NewEmptyEntry(unsplitTags string) {
 	quac.OpenText(writePath)
 }
 
-func NewEmptyAudioEntry(unsplitTags string) (filepath string, id uint32) {
-	splitTags := idea.ParseClumpedTags(unsplitTags)
-	idear := quac.NewNonConsumingAudioIdea(splitTags)
-	writePath := path.Join(quac.IdeasDir, idear.Filename)
-	quac.IncrementID()
-	return writePath, idear.Id
-}
-
 func ManualEntry(commonTagsClumped string) {
 	commonTags := idea.ParseClumpedTags(commonTagsClumped)
 

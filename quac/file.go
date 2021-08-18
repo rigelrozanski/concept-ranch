@@ -9,6 +9,14 @@ import (
 	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
+func NewEmptyAudioEntry(unsplitTags string) (filepath string, id uint32) {
+	splitTags := idea.ParseClumpedTags(unsplitTags)
+	idear := idea.NewNonConsumingAudioIdea(splitTags)
+	writePath := path.Join(idea.IdeasDir, idear.Filename)
+	idea.IncrementID()
+	return writePath, idear.Id
+}
+
 // create an empty file in the ideas Dir based on the filename
 func WriteIdea(filename, entry string) {
 	filepath := path.Join(idea.IdeasDir, filename)
