@@ -16,7 +16,7 @@ type Idea struct {
 	Id          uint32
 	ConsumesIds []uint32 // Id of idea which this idea consumes
 	Kind        int      // kind of information
-	Ext         string   // file extension, blank is assumed to be text
+	Ext         string   // file extension, blank is assumed to be text TODO does this include the '.' or not?!
 	Created     time.Time
 	Edited      time.Time
 	Consumed    time.Time
@@ -27,8 +27,22 @@ func NewNonConsumingTextIdea(tags []string) Idea {
 	return NewTextIdea([]uint32{}, tags)
 }
 
+func NewNonConsumingAudioIdea(tags []string) Idea {
+	return NewTextIdea([]uint32{}, tags)
+}
+
 // NewAliveIdea creates a new idea object
 func NewTextIdea(consumesIds []uint32, tags []string) Idea {
+	return NewIdea(consumesIds, tags, "")
+}
+
+// NewAliveIdea creates a new idea object
+func NewAudioIdea(consumesIds []uint32, tags []string) Idea {
+	return NewIdea(consumesIds, tags, "wav")
+}
+
+// new idea with an arbitrary extension
+func NewIdea(consumesIds []uint32, tags []string, extension string) Idea {
 
 	todayDate := TodayDate()
 
@@ -37,7 +51,7 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 		Id:          GetNextID(),
 		ConsumesIds: consumesIds,
 		Kind:        KindText,
-		Ext:         "",
+		Ext:         extension,
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
@@ -46,6 +60,7 @@ func NewTextIdea(consumesIds []uint32, tags []string) Idea {
 
 	(&idea).UpdateFilename()
 	return idea
+
 }
 
 func NewIdeaFromFile(tags []string, filepath string) Idea {

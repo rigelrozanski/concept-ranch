@@ -6,7 +6,8 @@ import (
 )
 
 func MultiOpenByTags(tags []string, forceSplitView bool) {
-	found, maxFNLen, singleReturn := WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
+	found, maxFNLen, singleReturn :=
+		WriteWorkingContentAndFilenamesFromTags(tags, forceSplitView)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
@@ -23,7 +24,8 @@ func MultiOpenByTags(tags []string, forceSplitView bool) {
 }
 
 func MultiOpenByRange(startId, endId uint32, forceSplitView bool) {
-	found, maxFNLen, singleReturn := WriteWorkingContentAndFilenamesFromRange(startId, endId, forceSplitView)
+	found, maxFNLen, singleReturn :=
+		WriteWorkingContentAndFilenamesFromRange(startId, endId, forceSplitView)
 	if !found {
 		fmt.Println("nothing found with those tags")
 		return
