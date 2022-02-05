@@ -1,9 +1,4 @@
-Thought/Think/Thonk Ranch
-# Thonk Ranch
-
-\#Thonk
-
----
+# Concept Ranch
 
 ### Installation From Source
 
