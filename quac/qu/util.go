@@ -134,7 +134,7 @@ IdeaLoop:
 			goto GETINPUT
 		case strings.HasPrefix(optionalEntry, "KILLTAG "):
 			newTag := strings.SplitN(optionalEntry, " ", 2)
-			KillTagByIdea(&idea, newTag[1])
+			RemoveTagByIdea(&idea, newTag[1])
 			fmt.Printf("removed the tag! new filename:\n%v\n", idea.Filename)
 			fmt.Println("continue transcription:")
 			goto GETINPUT
@@ -345,16 +345,16 @@ func ListTagsByID(idStr string) {
 	fmt.Println(idea.Tags)
 }
 
-func KillTagByID(idStr, tagToKill string) {
+func RemoveTagByID(idStr, tagToRemove string) {
 	id := parseIdStr(idStr)
 	idea := quac.GetIdeaByID(id, true)
-	KillTagByIdea(&idea, tagToKill)
+	RemoveTagByIdea(&idea, tagToRemove)
 }
 
 // TODO move to library
-func KillTagByIdea(idea *quac.Idea, tagToKill string) {
+func RemoveTagByIdea(idea *quac.Idea, tagToRemove string) {
 	origFilename := (*idea).Filename
-	idea.RemoveTag(tagToKill)
+	idea.RemoveTag(tagToRemove)
 	idea.UpdateFilename()
 	origPath := path.Join(quac.IdeasDir, origFilename)
 	newPath := path.Join(quac.IdeasDir, (*idea).Filename)
@@ -479,16 +479,6 @@ func ListAllFiles() {
 	}
 	for _, idea := range ideas {
 		fmt.Println(idea.Filename)
-	}
-}
-
-func ListAllFilesByLocation() {
-	ideas := quac.GetAllIdeas()
-	if len(ideas) == 0 {
-		fmt.Println("no ideas found")
-	}
-	for _, idea := range ideas {
-		fmt.Println(idea.Path())
 	}
 }
 

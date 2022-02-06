@@ -10,12 +10,12 @@ import (
 )
 
 // filestructure:
-//                ./ideas/a,123456,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,c432978,c543098...,tag1,tag2,tag3...
-//                ./qu
-//                ./log
-//                ./config
-//                ./working_files
-//                ./working_content
+//       ./ideas/a,123456,YYYYMMDD,eYYYYMMDD,cYYYYMMDD,c432978,c543098...,tag1,tag2,tag3...
+//       ./qu
+//       ./log
+//       ./config
+//       ./working_files
+//       ./working_content
 // 123456 = id
 // c123456 = consumes-id
 // YYYYMMDD = creation date
@@ -41,71 +41,74 @@ const (
 	keyRm              = "rm"
 	keyCp              = "cp"
 	keyTags            = "tags"
-	keyKillTag         = "kill-tag"
 	keyRemoveTag       = "rm-tag"
-	keyRenameTag       = "rename-tag"
-	keyRenameTag2      = "tag-rename"
+	keyRenameTagToMany = "rename-tag-to-many"
 	keyAddTag          = "add-tag"
 	keyAddTagToMany    = "add-tag-to-many"
 	keyAddTags         = "add-tags"
 	keyDestroyTag      = "destroy-tag"
 	keyLsTags          = "lst"
 	keyLsFiles         = "lsf"
-	keyLsLocationFiles = "lsfl"
-	//keyLs              = "ls"
-	keySelectFiles = "sel"
-	keyPDFBackup   = "pdf-backup"
-	keyForceSplit  = "force-split"
-	keyOpenWorking = "open-working"
-	keySaveWorking = "save-working"
+	keySelectFiles     = "sel"
+	keyPDFBackup       = "pdf-backup"
+	keyForceSplit      = "force-split"
+	keyOpenWorking     = "open-working"
+	keySaveWorking     = "save-working"
 
 	help = `
 /|||||\ |-o-o-~|
 🦆 🦆 🦆 ✍️  🏁
 
-qu --------------------------------------> edit the tagless master quick ideas board in vim
-qu <tags...> <entry> --------------------> quick entry to a new idea
-qu [force-split] <query> ----------------> open a vim tab with the contents of the query 
-qu cat <query> --------------------------> print idea(s) contents' to console
-qu scan <dir/file> [tags] ---------------> scan a bunch of images as untranscribed ideas, optionally append tags to all
-qu transcribe [query] -------------------> transcribe a random untranscribed image or specific image(s) by query
-qu retag --------------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
-qu wc -----------------------------------> while sitting on the toilet, either retag or if all are already tagged then transcribe
-qu consume <id> [entry] -----------------> quick consumes the given id into a new entry
-qu consumes <consumed-id> <consumer-id> -> set the consumption of existing ideas
-qu zombie <id> --------------------------> "unconsume" an idea based on id
-qu lineage <id> -------------------------> show the consumtion lineage  
-qu new <tags> ---------------------------> create a new idea with the provided tags
-qu manual-entry [tags] ------------------> interactive manual entry common tags may be entered with this command
-qu set-encryption <id> ------------------> set encryption of existing idea
-qu rm <id1-id2> -------------------------> remove an idea by id
-qu cp <id> ------------------------------> duplicate an idea at the provided id
-qu tags <id> ----------------------------> list the tags for a given id
-qu kill-tag <id> <tag> ------------------> remove a tag from an idea by id (alternate cmd rm-tag)
-qu add-tags <id> <tags> -----------------> add (a) tag(s) to an idea by id (alternate cmd add-tag)
-qu add-tag-to-many <newtag> <tags..> ----> add a <newtag> to all ideas with any of <tags...>
-qu rename-tag <from-tag> <to-tag>--------> rename all instances of a tag for all ideas
-qu destroy-tag <tag> --------------------> remove all instances of a tag for all ideas
-qu open-working -------------------------> open the working files to manually correct mistakes
-qu save-working -------------------------> save the working files to manually correct mistakes
-qu lst  [tags] --------------------------> list all tags used, optionally which share a set of common tags
-qu lsf  [query] -------------------------> list all files, optionally which contain provided tags, or the last 9 viewed
-qu lsfl [query] -------------------------> list all files by file location
-qu sel  [tags]---------------------------> select the idea from the tags (in cui)
-qu pdf-backup ---------------------------> backup best ideas to a printable pdf
-qu stats --------------------------------> statistics on your ideas
+qu ---------------------------------------> edit the tagless master idea in vim
+qu qe <tags...> <entry> ------------------> quick entry to a new idea
+qu [force-split] <query> -----------------> open a vim tab with the contents of the query 
+qu cat <query> ---------------------------> print idea(s) contents' to console
+qu scan <dir/file> [tags] ----------------> add provided image(s) to untranscribed ideas, 
+                                              optionally appending tags to all
+qu retag ---------------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
+qu transcribe [query] --------------------> transcribe either a random untranscribed image 
+                                              or specific image(s) by query
+qu wc ------------------------------------> (washroom) retag all then transcribe
+qu consume <id> [entry] ------------------> quick consumes the given id into a new entry
+qu consumes <consumed-id> <consumer-id> --> set the consumption of existing ideas
+qu zombie <id> ---------------------------> "unconsume" an idea based on id
+qu lineage <id> --------------------------> show the consumtion lineage  
+qu new <tags> ----------------------------> create a new idea with the provided tags
+qu manual-entry [tags] -------------------> interactive manual entry common tags may be entered 
+                                              with this command
+qu set-encryption <id> -------------------> set encryption of existing idea
+qu rm <id1-id2> --------------------------> remove an idea by id or id-range
+qu cp <id> -------------------------------> duplicate an idea at the provided id
+qu tags <id> -----------------------------> list the tags for a given id
+qu rm-tag <id> <tag> ---------------------> remove a tag from an idea by id
+qu add-tags <id> <tags> ------------------> add (a) tag(s) to an idea by id (alias: add-tag)
+qu add-tag-to-many <newtag> <tags..> -----> add a <newtag> to all ideas with any of <tags...>
+qu rename-tag-to-many <from-tag> <to-tag> > rename all instances of a tag for all ideas
+qu destroy-tag <tag> ---------------------> remove all instances of a tag for all ideas
+qu open-working --------------------------> open the working split files to manually correct mistakes
+qu save-working --------------------------> save the working split files to manually correct mistakes
+qu lst [tags] ----------------------------> list all tags which share a set of common [tags]
+qu lsf [query] ---------------------------> list all files, optionally which contain provided tags, 
+                                              or the last 9 viewed
+qu sel [tags]-----------------------------> select the idea from the tags (in cui)
+qu pdf-backup ----------------------------> backup active ideas to a printable pdf
+qu stats ---------------------------------> statistics on your ideas
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
-id ------------- either a 6 digit number (such as "123456") or the keyword "lastid" or "lastXid" where X is an integer
+id ------------- either a 6 digit number (such as "123456") or the keyword "lastid" 
+                   or "lastXid" where X is an integer
 id1-id2 -------- either just an [id] or a range of ids in the form 123456-222000
-query ---------- either an [id], [id1-id2], or a list of tags seperated by commas (such as "tag1,tag2,tag3") 
+query ---------- either an [id], [id1-id2], or a list of tags 
+                   seperated by commas (such as "tag1,tag2,tag3") 
 tag ------------ a catagory to query or organize your ideas with
-                   special tags: FILENAME - if this tag is used the filename of each entry file will be included 
-				                            as a tag per idea. errors if entry is raw text input
+                   special tags: FILENAME - if this tag is used the filename of 
+				   each entry file will be included as a tag per idea, 
+				   errors if entry is raw text input
 tags ----------- a list of tags seperated by commas (such as "tag1,tag2,tag3")
 entry ---------- either raw input text or source input as a file or directory
-force-split ---- if the text "force-split" is included, split view will be used even if only one entry is found 
+force-split ---- if the text "force-split" is included, split view will be used 
+                   even if only one entry is found 
 `
 )
 
@@ -124,6 +127,12 @@ func main() {
 		fmt.Println(help)
 	case keyCat:
 		QuickQuery(args[1])
+	case keyQuickEntry:
+		if len(args) >= 2 {
+			QuickEntry(args[0], strings.Join(args[1:], " "))
+		} else {
+			fmt.Println("not enough arguments for a quick entry")
+		}
 	case keyScan:
 		switch len(args) {
 		case 1:
@@ -185,20 +194,18 @@ func main() {
 	case keyTags:
 		EnsureLen(args, 2)
 		ListTagsByID(args[1])
-	case keyKillTag, keyRemoveTag:
+	case keyRemoveTag:
 		EnsureLen(args, 3)
-		KillTagByID(args[1], args[2])
+		RemoveTagByID(args[1], args[2])
 	case "rm-tags":
 		fmt.Println("didn't you mean rm-tag???")
-	case "kill-tags":
-		fmt.Println("didn't you mean kill-tag???")
 	case keyAddTag, keyAddTags:
 		EnsureLen(args, 3)
 		AddTagByID(args[1], args[2])
 	case keyAddTagToMany:
 		EnsureLen(args, 3)
 		AddTagToMany(args[1], args[2])
-	case keyRenameTag, keyRenameTag2:
+	case keyRenameTagToMany:
 		EnsureLen(args, 3)
 		RenameTag(args[1], args[2])
 	case keyDestroyTag:
@@ -216,15 +223,6 @@ func main() {
 		} else {
 			ListAllFilesWithQuery(args[1])
 		}
-	case keyLsLocationFiles:
-		if len(args) == 1 {
-			ListAllFilesByLocation()
-		} else {
-			ListAllFilesByLocationWithQuery(args[1])
-		}
-	case "lsd":
-		fmt.Println("fking rip'd")
-		os.Exit(0)
 	case keySelectFiles:
 		if len(args) == 1 {
 			EnsureLen(args, 2)
@@ -244,10 +242,9 @@ func main() {
 		SaveWorking()
 	default:
 		if len(args) == 1 { // quick query
-			//MultiOpen(args[0], false)
 			ListSelectAllFilesWithQueryNoLast(args[0])
-		} else if len(args) >= 2 { // quick entry
-			QuickEntry(args[0], strings.Join(args[1:], " "))
+		} else {
+			fmt.Println("unknown command")
 		}
 	}
 }

@@ -1,4 +1,5 @@
  
+ - improve speed by not iterating through every single file all the time
  - create a trash can for the `rm` files (as well as an empty trash command) 
  - remove quick entry command, or turn it into a rarely used subcommand:
     - qu qe 
