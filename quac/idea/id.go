@@ -10,6 +10,17 @@ import (
 	cmn "github.com/rigelrozanski/common"
 )
 
+func ValidateFilenameAsIdea(filename string) {
+	split := strings.SplitN(filename, ",", 3)
+	if len(split) != 3 {
+		panic(fmt.Sprintf("%v is not an idea file (error-1)", filename))
+	}
+	_, err := ParseID(split[1])
+	if err != nil {
+		panic(fmt.Sprintf("%v is not an idea file (error-2)", filename))
+	}
+}
+
 func GetIdByFilename(filename string) (id uint32, skip bool) {
 	split := strings.SplitN(filename, ",", 3)
 	if len(split) != 3 {

@@ -10,7 +10,7 @@ import (
 )
 
 // directory name where boards are stored in repo
-var QuDir, QuFile, LogFile, WorkingFnsFile, WorkingContentFile string
+var QuDir, TrashCanDir, QuFile, LogFile, WorkingFnsFile, WorkingContentFile string
 
 // load config and set global file directories
 func Initialize(thranchConfigPath string) {
@@ -22,6 +22,7 @@ func Initialize(thranchConfigPath string) {
 
 	QuDir = lines[0]
 	idea.IdeasDir = path.Join(QuDir, "ideas")
+	TrashCanDir = path.Join(QuDir, "trash")
 	QuFile = path.Join(QuDir, "qu")
 	LogFile = path.Join(QuDir, "log")
 	idea.ConfigFile = path.Join(QuDir, "config")
@@ -40,7 +41,10 @@ func EnsureBasics() {
 	if !cmn.FileExists(QuDir) {
 		panic("directory specified in thranch config does not exist")
 	}
+
 	_ = os.Mkdir(idea.IdeasDir, os.ModePerm)
+	_ = os.Mkdir(TrashCanDir, os.ModePerm)
+
 	if !cmn.FileExists(QuFile) {
 		err := cmn.CreateEmptyFile(QuFile)
 		if err != nil {

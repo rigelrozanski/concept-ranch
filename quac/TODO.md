@@ -1,8 +1,5 @@
  
  - improve speed by not iterating through every single file all the time
- - create a trash can for the `rm` files (as well as an empty trash command) 
- - remove quick entry command, or turn it into a rarely used subcommand:
-    - qu qe 
  - fix various bugs preventing error output
  - search or list by file contents as well as tags
  - add dynamic linking within the idea files like logseq has, this should:
@@ -32,7 +29,9 @@
                                                                           
                                                                           
                                                                           
-                                                                          
+ - LOW PRIORITY                                                                          
+   - view trash
+   - recover from trash
                                                                           
                                                                           
                                                                           

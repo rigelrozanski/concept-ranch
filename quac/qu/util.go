@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/eiannone/keyboard"
+	"golang.org/x/term"
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac"
@@ -321,11 +321,33 @@ func parseIdStr(idStr string) uint32 {
 }
 
 func RemoveByID(idOrIds string) {
-	startID, endID, isRange := IsIDorIDRange(idOrIds)
-	if isRange {
+	startID, endID, valid := IsIDorIDRange(idOrIds)
+	if valid {
 		RemoveAcrossIDs(startID, endID)
-		fmt.Println("roger, removed that id (or id range)")
+		fmt.Println("roger, moved to the trash-can")
+	} else {
+		fmt.Println("invalid remove range")
 	}
+}
+
+func EmptyTrash() {
+	if len(quac.TrashCanDir) < 5 { // NOTE vital, don't want to delete the root
+		panic("TrashCanDir not set!")
+	}
+	names, err := ioutil.ReadDir(quac.TrashCanDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, n := range names {
+		idea.ValidateFilenameAsIdea(n.Name()) // panic on things which are not ideas
+
+		fp := path.Join(quac.TrashCanDir, n.Name())
+		err := os.Remove(fp)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	fmt.Println("trash can emptied into the void")
 }
 
 func RemoveAcrossIDs(id1, id2 uint32) {
@@ -552,7 +574,7 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 
 	colorBlue := "\033[34m"
 	colorReset := "\033[0m"
-	lenList := len(ideas) + 1 // +1  for the "open all" line
+	lenList := len(ideas) + 3 // +1  for the "open all" line, +1 for usage line
 	selected := 0
 
 	fmt.Print("\033[?25l") // hide cursor
@@ -564,6 +586,7 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 	}()
 
 	for {
+		fmt.Println("navigation: 'j'/'k', select: 'enter', escape: 'esc'/'q'\n")
 
 		textToDisplay := ">>> OPEN ALL SIMULTANEOUSLY "
 		if selected == 0 {
@@ -593,34 +616,51 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 		// move the cursor back up for the next print
 		fmt.Print(fmt.Sprintf("\033[%vA", lenList))
 
-		// TODO replace with my own code
 		// scan for user input
-		ch, key, err := keyboard.GetSingleKey()
+		ch, err := GetCharJustHit()
 		if err != nil {
 			return ""
 		}
 
-		// TODO ability to use arrow keys
+		// TODO get arrow keys to work
 		switch {
+		// up or left (arrow keys and vim)
 		case ch == 'k' || ch == 'h':
 			if selected > 0 {
 				selected--
 			}
+			// down or right (arrow keys and vim)
 		case ch == 'j' || ch == 'l':
 			if selected < lenList-1 {
 				selected++
 			}
-		case key == keyboard.KeyEnter:
+		case ch == '\r': // enter
 			switch selected {
 			case 0:
 				return query // "all" of the original query
 			default:
 				return fmt.Sprintf("%v", ideas[selected-1].Id)
 			}
-		case key == keyboard.KeyEsc || key == keyboard.KeyCtrlC:
+		case ch == '\033' || ch == 'q' || ch == 'c': // escape key or 'q'
 			return ""
 		}
 	}
+}
+
+func GetCharJustHit() (rune, error) {
+	// switch stdin into 'raw' mode
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		return ' ', err
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	b := make([]byte, 1)
+	_, err = os.Stdin.Read(b)
+	if err != nil {
+		return ' ', err
+	}
+	return rune(b[0]), nil
 }
 
 func ListAllFilesWithQuery(query string) {

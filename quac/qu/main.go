@@ -25,6 +25,7 @@ import (
 //keywords used throughout qu
 const (
 	keyHelp1, keyHelp2 = "--help", "-h"
+	keyQuickEntry      = "qe"
 	keyCat             = "cat"
 	keyStats           = "stats"
 	keyScan            = "scan"
@@ -39,6 +40,7 @@ const (
 	keyManualEntry     = "manual-entry"
 	keySetEncryption   = "set-encryption"
 	keyRm              = "rm"
+	keyEmptyTrash      = "empty-trash"
 	keyCp              = "cp"
 	keyTags            = "tags"
 	keyRemoveTag       = "rm-tag"
@@ -77,7 +79,8 @@ qu new <tags> ----------------------------> create a new idea with the provided 
 qu manual-entry [tags] -------------------> interactive manual entry common tags may be entered 
                                               with this command
 qu set-encryption <id> -------------------> set encryption of existing idea
-qu rm <id1-id2> --------------------------> remove an idea by id or id-range
+qu rm <id1-id2> --------------------------> remove an idea by id or id-range to the trash can
+qu empty-trash ---------------------------> empty the trash can 
 qu cp <id> -------------------------------> duplicate an idea at the provided id
 qu tags <id> -----------------------------> list the tags for a given id
 qu rm-tag <id> <tag> ---------------------> remove a tag from an idea by id
@@ -188,6 +191,9 @@ func main() {
 	case keyRm:
 		EnsureLen(args, 2)
 		RemoveByID(args[1])
+	case keyEmptyTrash:
+		EnsureLen(args, 1)
+		EmptyTrash()
 	case keyCp:
 		EnsureLen(args, 2)
 		CopyByID(args[1])

@@ -33,6 +33,16 @@ func GetFilepathByID(id uint32) (filepath string, found bool) {
 	return path.Join(idea.IdeasDir, filename), true
 }
 
+func GetTrashcanFilepathsByID(id uint32) (currFilepath, trashCanFilePath string, found bool) {
+	filename := GetFilenameByID(id)
+	if filename == "" {
+		return "", "", false
+	}
+	currFilepath = path.Join(idea.IdeasDir, filename)
+	trashCanFilePath = path.Join(TrashCanDir, filename)
+	return currFilepath, trashCanFilePath, true
+}
+
 func GetFilenameByID(id uint32) (fileName string) {
 	files, err := ioutil.ReadDir(idea.IdeasDir)
 	if err != nil {
@@ -56,13 +66,12 @@ func GetIdeaByID(id uint32, loglast bool) idea.Idea {
 }
 
 func RemoveByID(id uint32) {
-	fp, found := GetFilepathByID(id)
+	existingFp, trashFp, found := GetTrashcanFilepathsByID(id)
 	if !found {
 		fmt.Println("nothing found at that ID")
 		os.Exit(1)
 	}
-	err := os.Remove(fp)
-	if err != nil {
+	if err := os.Rename(existingFp, trashFp); err != nil {
 		log.Fatal(err)
 	}
 }
