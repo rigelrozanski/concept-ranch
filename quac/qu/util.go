@@ -554,7 +554,7 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 	idStart, idEnd, isRange := IsIDorIDRange(query)
 	switch {
 	case isRange:
-		ideas = quac.GetAllIdeasInRange(idStart, idEnd)
+		ideas = quac.GetAllIdeas().InRange(idStart, idEnd)
 	case query == "last":
 		ids := quac.GetLastIDs()
 		for _, id := range ids {
@@ -702,12 +702,13 @@ func ListAllFilesWithTags(tagsGrouped string, showFilepath bool) {
 }
 
 func ListAllFilesIDRange(idStart, idEnd uint32, showFilepath bool) {
-	ideas := quac.GetAllIdeasInRange(idStart, idEnd)
+	ideas := quac.GetAllIdeas()
+	subset := ideas.InRange(idStart, idEnd)
 	if len(ideas) == 0 {
 		fmt.Println("no ideas found with in that range")
 		os.Exit(1)
 	}
-	for _, idea := range ideas {
+	for _, idea := range subset {
 		quac.PrependLast(idea.Id)
 		if showFilepath {
 			fmt.Println(idea.Path())

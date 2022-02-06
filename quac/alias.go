@@ -41,7 +41,6 @@ var (
 	GetAllIdeasNonConsuming  = idea.GetAllIdeasNonConsuming
 	TagUsedInNonConsuming    = idea.TagUsedInNonConsuming
 	GetAllIdeas              = idea.GetAllIdeas
-	GetAllIdeasInRange       = idea.GetAllIdeasInRange
 	ConcatAllContentFromTags = idea.ConcatAllContentFromTags
 	ParseClumpedTags         = idea.ParseClumpedTags
 	TodayDate                = idea.TodayDate

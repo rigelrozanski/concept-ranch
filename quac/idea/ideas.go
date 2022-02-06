@@ -62,26 +62,37 @@ func GetAllIdeas() (ideas Ideas) {
 	return ideas
 }
 
-// these ideas will be sorted from oldest to newest
-func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
-	files, err := ioutil.ReadDir(IdeasDir)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// TODO there has got to be a faster way of doing this!!!!
-	for _, file := range files {
-		id, skip := GetIdByFilename(file.Name())
-		if skip {
-			continue
+// XXX delete this
+//// these ideas will be sorted from oldest to newest
+//func GetAllIdeasInRange(idStart, idEnd uint32) (ideas Ideas) {
+//    files, err := ioutil.ReadDir(IdeasDir)
+//    if err != nil {
+//        log.Fatal(err)
+//    }
+//    // TODO there has got to be a faster way of doing this!!!!
+//    for _, file := range files {
+//        id, skip := GetIdByFilename(file.Name())
+//        if skip {
+//            continue
+//        }
+//        if id >= idStart && id <= idEnd {
+//            if path.Ext(file.Name()) == ".swp" {
+//                continue
+//            }
+//            ideas = append(ideas, NewIdeaFromFilename(file.Name(), false))
+//        }
+//    }
+//    return ideas
+//}
+
+// inclusive range
+func (ideas Ideas) InRange(idStart, idEnd uint32) (subset Ideas) {
+	for _, idea := range ideas {
+		if idStart <= idea.Id && idea.Id <= idEnd {
+			subset = append(subset, idea)
 		}
-		if id >= idStart && id <= idEnd {
-			if path.Ext(file.Name()) == ".swp" {
-				continue
-			}
-			ideas = append(ideas, NewIdeaFromFilename(file.Name(), false))
-		}
 	}
-	return ideas
+	return subset
 }
 
 func (ideas Ideas) WithTag(tag string) (subset Ideas) {

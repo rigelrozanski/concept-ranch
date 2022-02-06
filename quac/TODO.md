@@ -1,5 +1,4 @@
  
- - improve speed by not iterating through every single file all the time
  - fix various bugs preventing error output
  - search or list by file contents as well as tags
  - add dynamic linking within the idea files like logseq has, this should:

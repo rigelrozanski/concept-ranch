@@ -15,18 +15,22 @@ import (
 
 const SPLIT = "SPLIT"
 
-func WriteWorkingContentAndFilenamesFromRange(startId, endId uint32, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
-	ideas := idea.GetAllIdeasInRange(startId, endId)
+func WriteWorkingContentAndFilenamesFromRange(startId, endId uint32,
+	forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
+
+	ideas := GetAllIdeas().InRange(startId, endId)
 	return WriteWorkingContentAndFilenamesFromIdeas(ideas, forceSplitView)
 }
 
-func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
-	ideas := idea.GetAllIdeasNonConsuming()
-	subset := ideas.WithTags(tags)
-	return WriteWorkingContentAndFilenamesFromIdeas(subset, forceSplitView)
+func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (
+	found bool, maxFNLen int, singleReturn string) {
+
+	ideas := idea.GetAllIdeasNonConsuming().WithTags(tags)
+	return WriteWorkingContentAndFilenamesFromIdeas(ideas, forceSplitView)
 }
 
-func WriteWorkingContentAndFilenamesFromIdeas(idears idea.Ideas, forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
+func WriteWorkingContentAndFilenamesFromIdeas(idears idea.Ideas,
+	forceSplitView bool) (found bool, maxFNLen int, singleReturn string) {
 
 	switch len(idears) {
 	case 0:
@@ -145,7 +149,8 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 	}
 
 	if len(fnLines) != len(contentLines) {
-		fmt.Println("Error! unequal number of lines in working files! Correct manually with cmd: qu open-working")
+		fmt.Println("Error! unequal number of lines in working files!" +
+			" Correct manually with cmd: qu open-working")
 		os.Exit(1)
 	}
 
