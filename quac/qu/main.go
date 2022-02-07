@@ -70,7 +70,7 @@ qu scan <dir/file> [tags] ----------------> add provided image(s) to untranscrib
 qu retag ---------------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
 qu transcribe [query] --------------------> transcribe either a random untranscribed image 
                                               or specific image(s) by query
-qu wc ------------------------------------> (washroom) retag all then transcribe
+qu wc ------------------------------------> (water closet) retag all then transcribe
 qu consume <id> [entry] ------------------> quick consumes the given id into a new entry
 qu consumes <consumed-id> <consumer-id> --> set the consumption of existing ideas
 qu zombie <id> ---------------------------> "unconsume" an idea based on id

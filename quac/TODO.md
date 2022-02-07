@@ -1,5 +1,4 @@
  
- - fix various bugs preventing error output
  - search or list by file contents as well as tags
  - add dynamic linking within the idea files like logseq has, this should:
     - [[1892]] - this will link to idea number 1892 

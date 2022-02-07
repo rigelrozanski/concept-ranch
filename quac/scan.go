@@ -17,6 +17,7 @@ import (
 	"github.com/disintegration/imaging"
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/common/colour"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 // calibration area is 1/2 squared top left corner
@@ -77,17 +78,19 @@ func Scan(pathToImageOrDir, opTag string) {
 
 	// retrieve calibration colours directly from ideas
 	var caliNN, caliQP, caliHP, caliQT colour.Colour
-	imagesIdeas := GetImagesByTag([]string{"scan-calibration"})
-	for _, idea := range imagesIdeas {
+	tags := []idea.Tag{idea.MustNewTagReg("scan-calibration")}
+	imagesIdeas := GetAllIdeas().WithImage().WithTags(tags)
+	for _, idear := range imagesIdeas {
+		avgCol := getAvgColourFromFile(idear.Path())
 		switch {
-		case idea.HasTag("orientation=noon"):
-			caliNN = getAvgColourFromFile(idea.Path())
-		case idea.HasTag("orientation=quarter-past"):
-			caliQP = getAvgColourFromFile(idea.Path())
-		case idea.HasTag("orientation=half-past"):
-			caliHP = getAvgColourFromFile(idea.Path())
-		case idea.HasTag("orientation=quarter-to"):
-			caliQT = getAvgColourFromFile(idea.Path())
+		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "noon")):
+			caliNN = avgCol
+		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "quarter-past")):
+			caliQP = avgCol
+		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "half-past")):
+			caliHP = avgCol
+		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "quarter-to")):
+			caliQT = avgCol
 		}
 	}
 
@@ -177,8 +180,10 @@ func Scan(pathToImageOrDir, opTag string) {
 				tags = append(tags, opTag)
 			}
 
+			clumpedTags := strings.Join(tags, ",")
+
 			// save the new idea
-			idea := NewIdeaFromFile(tags, imgPath)
+			idea := NewIdeaFromFile(clumpedTags, imgPath)
 			err := cmn.Copy(imgPath, idea.Path())
 			if err != nil {
 				log.Fatal(err)

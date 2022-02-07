@@ -20,29 +20,29 @@ type Idea struct {
 	Created     time.Time
 	Edited      time.Time
 	Consumed    time.Time
-	Tags        []string
+	Tags        []Tag
 }
 
-func NewNonConsumingTextIdea(tags []string) Idea {
-	return NewTextIdea([]uint32{}, tags)
+func NewNonConsumingTextIdea(clumpedTags string) Idea {
+	return NewTextIdea([]uint32{}, clumpedTags)
 }
 
-func NewNonConsumingAudioIdea(tags []string) Idea {
-	return NewIdea([]uint32{}, tags, ".wav")
-}
-
-// NewAliveIdea creates a new idea object
-func NewTextIdea(consumesIds []uint32, tags []string) Idea {
-	return NewIdea(consumesIds, tags, "")
+func NewNonConsumingAudioIdea(clumpedTags string) Idea {
+	return NewIdea([]uint32{}, clumpedTags, ".wav")
 }
 
 // NewAliveIdea creates a new idea object
-func NewAudioIdea(consumesIds []uint32, tags []string) Idea {
-	return NewIdea(consumesIds, tags, ".wav")
+func NewTextIdea(consumesIds []uint32, clumpedTags string) Idea {
+	return NewIdea(consumesIds, clumpedTags, "")
+}
+
+// NewAliveIdea creates a new idea object
+func NewAudioIdea(consumesIds []uint32, clumpedTags string) Idea {
+	return NewIdea(consumesIds, clumpedTags, ".wav")
 }
 
 // new idea with an arbitrary extension
-func NewIdea(consumesIds []uint32, tags []string, extension string) Idea {
+func NewIdea(consumesIds []uint32, clumpedTags string, extension string) Idea {
 
 	todayDate := TodayDate()
 
@@ -61,7 +61,7 @@ func NewIdea(consumesIds []uint32, tags []string, extension string) Idea {
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
-		Tags:        tags,
+		Tags:        ParseClumpedTags(clumpedTags),
 	}
 
 	(&idea).UpdateFilename()
@@ -69,7 +69,7 @@ func NewIdea(consumesIds []uint32, tags []string, extension string) Idea {
 
 }
 
-func NewIdeaFromFile(tags []string, filepath string) Idea {
+func NewIdeaFromFile(clumpedTags string, filepath string) Idea {
 	todayDate := TodayDate()
 
 	ext := path.Ext(filepath)
@@ -87,20 +87,20 @@ func NewIdeaFromFile(tags []string, filepath string) Idea {
 		Created:     todayDate,
 		Edited:      todayDate,
 		Consumed:    zeroDate,
-		Tags:        tags,
+		Tags:        ParseClumpedTags(clumpedTags),
 	}
 
 	(&idea).UpdateFilename()
 	return idea
 }
 
-// NewAliveIdea creates a new idea object
+// NewConsumingTextIdea creates a new idea object
 func NewConsumingTextIdea(consumesIdea Idea) Idea {
 
 	todayDate := TodayDate()
 
 	consumesIdCp := make([]uint32, len(consumesIdea.ConsumesIds))
-	consumesTagCp := make([]string, len(consumesIdea.Tags))
+	consumesTagCp := make([]Tag, len(consumesIdea.Tags))
 	copy(consumesIdCp, consumesIdea.ConsumesIds)
 	copy(consumesTagCp, consumesIdea.Tags)
 
@@ -135,7 +135,7 @@ func NewIdeaFromFilename(filename string, loglast bool) (idea Idea) {
 	}
 
 	base := strings.TrimSuffix(filename, path.Ext(filename))
-	split := ParseClumpedTags(base)
+	split := strings.Split(base, ",")
 	if len(split) < 5 { // must have at minimum: ConsumedPrefix, Id, Created, Edited,and a Tag
 		log.Fatalf("bad filename at %v", filename)
 	}
@@ -207,7 +207,7 @@ func NewIdeaFromFilename(filename string, loglast bool) (idea Idea) {
 		log.Fatalf("no tags on file: %v", filename)
 	}
 	for ; ri < len(split); ri++ {
-		idea.Tags = append(idea.Tags, split[ri])
+		idea.Tags = append(idea.Tags, ParseTagFromString(split[ri]))
 	}
 
 	return idea

@@ -286,7 +286,7 @@ func run() {
 					panic(err)
 				}
 
-				idea := NewIdeaFromFile([]string{"UNTAGGED"}, filepath)
+				idea := NewIdeaFromFile("UNTAGGED", filepath)
 				err = cmn.Copy(filepath, idea.Path())
 				if err != nil {
 					log.Fatal(err)

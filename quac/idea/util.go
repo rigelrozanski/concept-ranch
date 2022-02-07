@@ -106,7 +106,9 @@ func (idea *Idea) UpdateFilename() {
 		strList = append(strList, "c"+idea.Consumed.Format(cmn.LayoutYYYYdMMdDD))
 	}
 	strList = append(strList, itoa(idea.ConsumesIds)...)
-	strList = append(strList, idea.Tags...)
+	for _, t := range idea.Tags {
+		strList = append(strList, t.String())
+	}
 
 	joined := strings.Join(strList, ",")
 	joined += idea.Ext

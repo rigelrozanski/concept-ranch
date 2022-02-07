@@ -9,9 +9,8 @@ import (
 	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
-func NewEmptyAudioEntry(unsplitTags string) (filepath string, id uint32) {
-	splitTags := idea.ParseClumpedTags(unsplitTags)
-	idear := idea.NewNonConsumingAudioIdea(splitTags)
+func NewEmptyAudioEntry(clumpedTags string) (filepath string, id uint32) {
+	idear := idea.NewNonConsumingAudioIdea(clumpedTags)
 	writePath := path.Join(idea.IdeasDir, idear.Filename)
 	idea.IncrementID()
 	return writePath, idear.Id

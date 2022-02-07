@@ -21,6 +21,7 @@ const (
 
 var (
 	// functions aliases
+	ValidateFilenameAsIdea   = idea.ValidateFilenameAsIdea
 	GetIdByFilename          = idea.GetIdByFilename
 	GetNextID                = idea.GetNextID
 	IncrementID              = idea.IncrementID
@@ -41,19 +42,34 @@ var (
 	GetAllIdeasNonConsuming  = idea.GetAllIdeasNonConsuming
 	TagUsedInNonConsuming    = idea.TagUsedInNonConsuming
 	GetAllIdeas              = idea.GetAllIdeas
+	NewTagBase               = idea.NewTagBase
+	NewTagReg                = idea.NewTagReg
+	MustNewTagReg            = idea.MustNewTagReg
+	NewTagRegWithValue       = idea.NewTagRegWithValue
+	MustNewTagRegWithValue   = idea.MustNewTagRegWithValue
+	NewTagWithout            = idea.NewTagWithout
+	ParseTagFromString       = idea.ParseTagFromString
 	ConcatAllContentFromTags = idea.ConcatAllContentFromTags
 	ParseClumpedTags         = idea.ParseClumpedTags
+	ParseStringTags          = idea.ParseStringTags
+	CombineClumpedTags       = idea.CombineClumpedTags
 	TodayDate                = idea.TodayDate
 	GetKind                  = idea.GetKind
 	IdStr                    = idea.IdStr
 
 	// variable aliases
-	IdeasDir   = idea.IdeasDir
-	ConfigFile = idea.ConfigFile
-	LastIdFile = idea.LastIdFile
+	ReservedTagNames = idea.ReservedTagNames
+	WithoutKeyword   = idea.WithoutKeyword
+	IdeasDir         = idea.IdeasDir
+	ConfigFile       = idea.ConfigFile
+	LastIdFile       = idea.LastIdFile
 )
 
 type (
-	Idea  = idea.Idea
-	Ideas = idea.Ideas
+	Idea       = idea.Idea
+	Ideas      = idea.Ideas
+	Tag        = idea.Tag
+	TagBase    = idea.TagBase
+	TagReg     = idea.TagReg
+	TagWithout = idea.TagWithout
 )

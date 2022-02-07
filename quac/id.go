@@ -79,7 +79,7 @@ func RemoveByID(id uint32) {
 // copy an idea by the id
 func CopyByID(id uint32) (newFilepath string) {
 	fn := GetFilenameByID(id)
-	newFilename := ReserveCopyFilename(fn, []string{})
+	newFilename := ReserveCopyFilename(fn, "")
 
 	// perform the copy
 	srcPath := path.Join(idea.IdeasDir, fn)
@@ -89,13 +89,16 @@ func CopyByID(id uint32) (newFilepath string) {
 	return writePath
 }
 
-func ReserveCopyFilename(oldFilename string, newTags []string) (newFilename string) {
+func ReserveCopyFilename(oldFilename string, additionalClumpedTags string) (newFilename string) {
 
 	// remove the id, add in a new id
 	idear := idea.NewIdeaFromFilename(oldFilename, true)
 	idear.Id = idea.GetNextID()
 	idear.Created = idea.TodayDate()
-	idear.Tags = append(idear.Tags, newTags...)
+	if additionalClumpedTags != "" {
+		newTags := idea.ParseClumpedTags(additionalClumpedTags)
+		idear.Tags = append(idear.Tags, newTags...)
+	}
 	(&idear).UpdateFilename()
 
 	idea.IncrementID()

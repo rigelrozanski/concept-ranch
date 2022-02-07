@@ -22,7 +22,7 @@ func WriteWorkingContentAndFilenamesFromRange(startId, endId uint32,
 	return WriteWorkingContentAndFilenamesFromIdeas(ideas, forceSplitView)
 }
 
-func WriteWorkingContentAndFilenamesFromTags(tags []string, forceSplitView bool) (
+func WriteWorkingContentAndFilenamesFromTags(tags []idea.Tag, forceSplitView bool) (
 	found bool, maxFNLen int, singleReturn string) {
 
 	ideas := idea.GetAllIdeasNonConsuming().WithTags(tags)
@@ -181,9 +181,7 @@ func SaveFromWorkingFiles(origBzFN, origBzContent []byte) {
 			}
 			potentialTags := strings.TrimSpace(
 				strings.TrimPrefix(fnLine, SPLIT))
-			tags := idea.ParseClumpedTags(potentialTags)
-
-			filename := ReserveCopyFilename(recentFileName, tags)
+			filename := ReserveCopyFilename(recentFileName, potentialTags)
 
 			// create the split filepath but change the id
 			filepath = path.Join(idea.IdeasDir, filename)

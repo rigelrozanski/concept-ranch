@@ -69,7 +69,7 @@ func rankByWordCount(wordFrequencies map[string]int) PairList {
 	return pl
 }
 
-func GetAssociations(idears idea.Ideas, tags []string, searchForFilenames bool) (associatedTags PairList, outIdears idea.Ideas) {
+func GetAssociations(idears idea.Ideas, tags []idea.Tag, searchForFilenames bool) (associatedTags PairList, outIdears idea.Ideas) {
 	subset := idears
 	if len(tags) > 0 {
 		subset = idears.WithTags(tags)
@@ -85,20 +85,20 @@ func GetAssociations(idears idea.Ideas, tags []string, searchForFilenames bool) 
 			// don't count inputs or highlights
 			inInputs := false
 			for _, inputTags := range tags {
-				if tag == inputTags {
+				if tag.String() == inputTags.String() {
 					inInputs = true
 					break
 				}
 			}
 			for _, inputTags := range highlighted {
-				if tag == inputTags || inInputs {
+				if tag.String() == inputTags || inInputs {
 					inInputs = true
 					break
 				}
 			}
 
 			if !inInputs {
-				at[tag] += 1
+				at[tag.String()] += 1
 			}
 		}
 	}

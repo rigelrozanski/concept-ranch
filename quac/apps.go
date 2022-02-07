@@ -6,12 +6,19 @@ import (
 	"path"
 
 	"github.com/rigelrozanski/common"
+	"github.com/rigelrozanski/thranch/quac/idea"
 )
+
+func appTags(application string) []idea.Tag {
+	return []idea.Tag{
+		idea.MustNewTagReg("external-use"),
+		idea.MustNewTagRegWithValue("app", application),
+	}
+}
 
 // for applications to receive content
 func GetForApp(application string) string {
-	tags := []string{"external-use", "app=" + application}
-	content, found := ConcatAllContentFromTags(tags)
+	content, found := ConcatAllContentFromTags(appTags(application))
 	if !found {
 		fmt.Println("nothing found with those tags")
 	}
@@ -19,9 +26,8 @@ func GetForApp(application string) string {
 }
 
 func AppendLineForApp(application, appendLine string) error {
-	tags := []string{"external-use", "app=" + application}
 	ideas := GetAllIdeasNonConsuming()
-	subset := ideas.WithTags(tags).WithText()
+	subset := ideas.WithTags(appTags(application)).WithText()
 	if len(subset) != 1 {
 		return errors.New("nothing found with those tags")
 	}
@@ -34,9 +40,4 @@ func AppendLineForApp(application, appendLine string) error {
 	content = append(content, appendLine)
 	_ = common.WriteLines(content, path)
 	return nil
-}
-
-// get a group of images by tag
-func GetImagesByTag(tags []string) (ideas Ideas) {
-	return GetAllIdeas().WithImage().WithTags(tags)
 }

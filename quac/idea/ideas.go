@@ -95,11 +95,11 @@ func (ideas Ideas) InRange(idStart, idEnd uint32) (subset Ideas) {
 	return subset
 }
 
-func (ideas Ideas) WithTag(tag string) (subset Ideas) {
-	return ideas.WithTags([]string{tag})
+func (ideas Ideas) WithTag(tag Tag) (subset Ideas) {
+	return ideas.WithTags([]Tag{tag})
 }
 
-func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
+func (ideas Ideas) WithTags(tags []Tag) (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.HasTags(tags) {
 			subset = append(subset, idea)
@@ -108,22 +108,9 @@ func (ideas Ideas) WithTags(tags []string) (subset Ideas) {
 	return subset
 }
 
-func (ideas Ideas) WithAnyOfTags(tags []string) (subset Ideas) {
+func (ideas Ideas) WithAnyOfTags(tags []Tag) (subset Ideas) {
 	for _, idea := range ideas {
 		if idea.HasAnyOfTags(tags) {
-			subset = append(subset, idea)
-		}
-	}
-	return subset
-}
-
-func (ideas Ideas) WithoutTag(tag string) (subset Ideas) {
-	return ideas.WithoutTags([]string{tag})
-}
-
-func (ideas Ideas) WithoutTags(tags []string) (subset Ideas) {
-	for _, idea := range ideas {
-		if !idea.HasTags(tags) {
 			subset = append(subset, idea)
 		}
 	}
@@ -148,15 +135,15 @@ func (ideas Ideas) WithImage() (subset Ideas) {
 	return subset
 }
 
-func (ideas Ideas) UniqueTags() []string {
-	tags := make(map[string]string)
+func (ideas Ideas) UniqueTags() []Tag {
+	tags := make(map[string]Tag)
 	for _, idea := range ideas {
 		for _, tag := range idea.Tags {
-			tags[tag] = ""
+			tags[tag.String()] = tag
 		}
 	}
-	var out []string
-	for tag, _ := range tags {
+	var out []Tag
+	for _, tag := range tags {
 		out = append(out, tag)
 	}
 	return out
