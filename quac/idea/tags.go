@@ -53,8 +53,9 @@ type TagReg struct{ TagBase }
 var _ Tag = TagReg{}
 
 var ReservedTagNames = []string{
-	"CONTAINS",
-	"WITHOUT",
+	ContainsKeyword,
+	ContainsCIKeyword,
+	WithoutKeyword,
 }
 
 // NewTagWithValue creates a new Tag with a value
@@ -125,6 +126,37 @@ func (t TagWithout) Includes(idea Idea) bool {
 	return true
 }
 
+// ------------------------------------------
+type TagContains struct{ TagBase }
+
+var _ Tag = TagContains{}
+var ContainsKeyword = "CONTAINS"
+
+func NewTagContains(containsWhat string) Tag {
+	tb := NewTagBase(ContainsKeyword, containsWhat)
+	return TagContains{tb}
+}
+
+func (t TagContains) Includes(idea Idea) bool {
+	bz := idea.GetContent()
+	return strings.Contains(string(bz), t.Value)
+}
+
+// ------------------------------------------
+type TagContainsCI struct{ TagBase } // contains, case-insensitive
+var _ Tag = TagContainsCI{}
+var ContainsCIKeyword = "CONTAINS-CI"
+
+func NewTagContainsCI(containsWhat string) Tag {
+	tb := NewTagBase(ContainsCIKeyword, containsWhat)
+	return TagContainsCI{tb}
+}
+
+func (t TagContainsCI) Includes(idea Idea) bool {
+	bz := idea.GetContent()
+	return strings.Contains(strings.ToLower(string(bz)), strings.ToLower(t.Value))
+}
+
 //_______________________________________________________
 
 // NOTE all tag types must be registered within this function
@@ -134,6 +166,10 @@ func ParseTagFromString(in string) Tag {
 		switch splt[0] {
 		case WithoutKeyword:
 			return NewTagWithout(splt[1])
+		case ContainsKeyword:
+			return NewTagContains(splt[1])
+		case ContainsCIKeyword:
+			return NewTagContainsCI(splt[1])
 		default:
 			t, err := NewTagRegWithValue(splt[0], splt[1])
 			if err != nil {
@@ -142,6 +178,7 @@ func ParseTagFromString(in string) Tag {
 			return t
 		}
 	}
+
 	t, err := NewTagReg(in)
 	if err != nil {
 		log.Fatal(err)
