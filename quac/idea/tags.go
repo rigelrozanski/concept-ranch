@@ -12,7 +12,7 @@ type Tag interface {
 	GetName() string
 	GetValue() string
 	String() string
-	Has(Tag) bool
+	Includes(Idea) bool
 }
 
 // -----------------------------
@@ -95,8 +95,13 @@ func MustNewTagRegWithValue(name, value string) Tag {
 	return t
 }
 
-func (t TagReg) Has(t2 Tag) bool {
-	return t.Name == t2.GetName() && t.Value == t2.GetValue()
+func (t TagReg) Includes(idea Idea) bool {
+	for _, t2 := range idea.Tags {
+		if t.Name == t2.GetName() && t.Value == t2.GetValue() {
+			return true
+		}
+	}
+	return false
 }
 
 // ------------------------------------------
@@ -111,8 +116,13 @@ func NewTagWithout(withoutName string) Tag {
 	return TagWithout{tb}
 }
 
-func (t TagWithout) Has(t2 Tag) bool {
-	return !(t.Value == t2.GetName())
+func (t TagWithout) Includes(idea Idea) bool {
+	for _, t2 := range idea.Tags {
+		if t.Value == t2.GetName() {
+			return false
+		}
+	}
+	return true
 }
 
 //_______________________________________________________
@@ -179,25 +189,13 @@ func ParseStringTags(strTags []string) []Tag {
 //_______________________________________________________
 
 func (idea Idea) HasTag(tag Tag) bool {
-	for _, ideaTag := range idea.Tags {
-		if tag.Has(ideaTag) {
-			return true
-		}
-	}
-	return false
+	return tag.Includes(idea)
 }
 
 // returns true if the idea contains all the input tags
 func (idea Idea) HasTags(tags []Tag) bool {
 	for _, tag := range tags {
-		hasTag := false
-		for _, ideaTag := range idea.Tags {
-			if tag.Has(ideaTag) {
-				hasTag = true
-				continue
-			}
-		}
-		if !hasTag {
+		if !tag.Includes(idea) {
 			return false
 		}
 	}
@@ -207,10 +205,8 @@ func (idea Idea) HasTags(tags []Tag) bool {
 // returns true if the idea contains any of the input tags
 func (idea Idea) HasAnyOfTags(tags []Tag) bool {
 	for _, tag := range tags {
-		for _, ideaTag := range idea.Tags {
-			if tag.Has(ideaTag) {
-				return true
-			}
+		if tag.Includes(idea) {
+			return true
 		}
 	}
 	return false
