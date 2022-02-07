@@ -11,7 +11,7 @@ func GetStats() {
 	idears := idea.GetAllIdeas()
 	ncidears := idea.GetAllIdeasNonConsuming()
 	imgidears := ncidears.WithImage()
-	untranscribed := imgidears.WithTag(idea.NewTagWithout("DNT"))
+	untranscribed := imgidears.WithTags(idea.NewTagWithout("DNT"))
 	utags := ncidears.UniqueTags()
 
 	fmt.Println("\n ~ IDEA STATISTICS ~ ")

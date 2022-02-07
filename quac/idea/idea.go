@@ -207,7 +207,7 @@ func NewIdeaFromFilename(filename string, loglast bool) (idea Idea) {
 		log.Fatalf("no tags on file: %v", filename)
 	}
 	for ; ri < len(split); ri++ {
-		idea.Tags = append(idea.Tags, ParseTagFromString(split[ri]))
+		idea.Tags = append(idea.Tags, ParseTagFromString(split[ri])...)
 	}
 
 	return idea

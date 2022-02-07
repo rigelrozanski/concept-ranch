@@ -53,9 +53,11 @@ type TagReg struct{ TagBase }
 var _ Tag = TagReg{}
 
 var ReservedTagNames = []string{
+	WithoutKeyword,
 	ContainsKeyword,
 	ContainsCIKeyword,
-	WithoutKeyword,
+	NoContainsKeyword,
+	NoContainsCIKeyword,
 }
 
 // NewTagWithValue creates a new Tag with a value
@@ -112,9 +114,17 @@ var _ Tag = TagWithout{}
 
 var WithoutKeyword = "WITHOUT"
 
-func NewTagWithout(withoutName string) Tag {
-	tb := NewTagBase(WithoutKeyword, withoutName)
-	return TagWithout{tb}
+func NewTagWithout(without string) []Tag {
+	cws := splitCommaIfArray(without)
+	tags := []Tag{}
+	for _, cw := range cws {
+		tags = append(tags,
+			TagWithout{
+				NewTagBase(WithoutKeyword, cw),
+			},
+		)
+	}
+	return tags
 }
 
 func (t TagWithout) Includes(idea Idea) bool {
@@ -126,56 +136,80 @@ func (t TagWithout) Includes(idea Idea) bool {
 	return true
 }
 
+func splitCommaIfArray(in string) []string {
+	inChs := []rune(in)
+	if len(inChs) < 3 || inChs[0] != '[' ||
+		inChs[len(inChs)-1] != ']' {
+		return []string{in}
+	}
+	// remove curly brackets, and split
+	inNoBrac := string(inChs[1 : len(inChs)-1])
+	return strings.Split(inNoBrac, ",")
+}
+
 // ------------------------------------------
-type TagContains struct{ TagBase }
+type TagContains struct {
+	TagBase
+	DoesNotContain  bool
+	CaseInsensitive bool
+}
 
 var _ Tag = TagContains{}
 var ContainsKeyword = "CONTAINS"
+var ContainsCIKeyword = "CONTAINS-CI"
+var NoContainsKeyword = "NO-CONTAINS"
+var NoContainsCIKeyword = "NO-CONTAINS-CI"
 
-func NewTagContains(containsWhat string) Tag {
-	tb := NewTagBase(ContainsKeyword, containsWhat)
-	return TagContains{tb}
+func NewTagContains(keyword, containsWhat string) []Tag {
+	cws := splitCommaIfArray(containsWhat)
+	tags := []Tag{}
+	for _, cw := range cws {
+		tb := NewTagBase(keyword, cw)
+		switch keyword {
+		case ContainsKeyword:
+			tags = append(tags, TagContains{tb, false, false})
+		case ContainsCIKeyword:
+			tags = append(tags, TagContains{tb, false, true})
+		case NoContainsKeyword:
+			tags = append(tags, TagContains{tb, true, false})
+		case NoContainsCIKeyword:
+			tags = append(tags, TagContains{tb, true, true})
+		}
+	}
+	return tags
 }
 
 func (t TagContains) Includes(idea Idea) bool {
 	bz := idea.GetContent()
-	return strings.Contains(string(bz), t.Value)
-}
-
-// ------------------------------------------
-type TagContainsCI struct{ TagBase } // contains, case-insensitive
-var _ Tag = TagContainsCI{}
-var ContainsCIKeyword = "CONTAINS-CI"
-
-func NewTagContainsCI(containsWhat string) Tag {
-	tb := NewTagBase(ContainsCIKeyword, containsWhat)
-	return TagContainsCI{tb}
-}
-
-func (t TagContainsCI) Includes(idea Idea) bool {
-	bz := idea.GetContent()
-	return strings.Contains(strings.ToLower(string(bz)), strings.ToLower(t.Value))
+	fnToLower := func(in string) string { return in }
+	if t.CaseInsensitive {
+		fnToLower = strings.ToLower
+	}
+	res := strings.Contains(fnToLower(string(bz)), fnToLower(t.Value))
+	if t.DoesNotContain {
+		return !res
+	}
+	return res
 }
 
 //_______________________________________________________
 
 // NOTE all tag types must be registered within this function
-func ParseTagFromString(in string) Tag {
+func ParseTagFromString(in string) []Tag {
 	splt := strings.Split(in, "=")
 	if len(splt) == 2 {
 		switch splt[0] {
 		case WithoutKeyword:
 			return NewTagWithout(splt[1])
-		case ContainsKeyword:
-			return NewTagContains(splt[1])
-		case ContainsCIKeyword:
-			return NewTagContainsCI(splt[1])
+		case ContainsKeyword, ContainsCIKeyword,
+			NoContainsKeyword, NoContainsCIKeyword:
+			return NewTagContains(splt[0], splt[1])
 		default:
 			t, err := NewTagRegWithValue(splt[0], splt[1])
 			if err != nil {
 				log.Fatal(err)
 			}
-			return t
+			return []Tag{t}
 		}
 	}
 
@@ -183,7 +217,11 @@ func ParseTagFromString(in string) Tag {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return t
+	return []Tag{t}
+}
+
+func ParseFirstTagFromString(in string) Tag {
+	return ParseTagFromString(in)[0]
 }
 
 //_______________________________________________________
@@ -208,7 +246,30 @@ func ConcatAllContentFromTags(tags []Tag) (content []byte, found bool) {
 func ParseClumpedTags(clumpedTags string) []Tag {
 	trim := strings.TrimPrefix(clumpedTags, ",")
 	trim = strings.TrimSuffix(trim, ",")
-	split := strings.Split(trim, ",")
+
+	// split strings by "," not contained within square brackets
+	split := []string{}
+	collecting := ""
+	bracCount := 0
+	for _, ch := range trim {
+		if ch == '[' {
+			bracCount++
+		} else if ch == ']' {
+			bracCount--
+		}
+		if bracCount == 0 && ch == ',' {
+			if len(collecting) > 0 {
+				split = append(split, collecting)
+			}
+			collecting = ""
+		} else {
+			collecting += string(ch)
+		}
+	}
+	if len(collecting) > 0 {
+		split = append(split, collecting)
+	}
+
 	return ParseStringTags(split)
 }
 
@@ -217,7 +278,7 @@ func ParseStringTags(strTags []string) []Tag {
 	for _, s := range strTags {
 		trim := strings.TrimSpace(s)
 		if len(trim) > 0 {
-			out = append(out, ParseTagFromString(trim))
+			out = append(out, ParseTagFromString(trim)...)
 		}
 	}
 	return out
@@ -272,24 +333,28 @@ func (idea *Idea) RenameTag(from, to Tag) {
 }
 
 // remove the tag on this idea
-func (idea *Idea) RemoveTag(tagToRemove Tag) {
-	if len(idea.Tags) == 1 && idea.Tags[0] == tagToRemove {
-		log.Fatalf("cannot remove the final tag of %v, aborting", idea.Filename)
-	}
-	for i, tag := range idea.Tags {
-		if tag.String() == tagToRemove.String() {
-			idea.Tags = append(idea.Tags[:i], idea.Tags[i+1:]...)
-			break
+func (idea *Idea) RemoveTags(tagsToRemove []Tag) {
+	for _, tagToRemove := range tagsToRemove {
+		if len(idea.Tags) == 1 && idea.Tags[0] == tagToRemove {
+			log.Fatalf("cannot remove the final tag of %v, aborting", idea.Filename)
+		}
+		for i, tag := range idea.Tags {
+			if tag.String() == tagToRemove.String() {
+				idea.Tags = append(idea.Tags[:i], idea.Tags[i+1:]...)
+				break
+			}
 		}
 	}
 }
 
 // add the tag on this idea
-func (idea *Idea) AddTag(tag Tag) {
-	if idea.HasTag(tag) {
-		return
+func (idea *Idea) AddTags(tags []Tag) {
+	for _, tag := range tags {
+		if idea.HasTag(tag) {
+			return
+		}
+		idea.Tags = append(idea.Tags, tag)
 	}
-	idea.Tags = append(idea.Tags, tag)
 }
 
 // -----------------------------------

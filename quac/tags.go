@@ -11,7 +11,7 @@ import (
 
 func RemoveTagByIdea(idea *Idea, tagToRemove string) {
 	origFilename := (*idea).Filename
-	idea.RemoveTag(ParseTagFromString(tagToRemove))
+	idea.RemoveTags(ParseTagFromString(tagToRemove))
 	idea.UpdateFilename()
 	origPath := path.Join(IdeasDir, origFilename)
 	newPath := path.Join(IdeasDir, (*idea).Filename)
@@ -24,7 +24,7 @@ func RemoveTagByIdea(idea *Idea, tagToRemove string) {
 func AddTagByIdea(idea *Idea, tagToAdd string) {
 	origFilename := (*idea).Filename
 
-	idea.AddTag(ParseTagFromString(tagToAdd))
+	idea.AddTags(ParseTagFromString(tagToAdd))
 	idea.UpdateFilename()
 	origPath := path.Join(IdeasDir, origFilename)
 	newPath := path.Join(IdeasDir, (*idea).Filename)

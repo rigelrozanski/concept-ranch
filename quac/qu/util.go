@@ -71,7 +71,7 @@ func Transcribe(optionalQuery string) {
 		ideaImages = []quac.Idea{idear}
 	} else { // not an id, get by tags
 		ideaImages = quac.GetAllIdeasNonConsuming().
-			WithImage().WithTag(idea.NewTagWithout("DNT"))
+			WithImage().WithTags(idea.NewTagWithout("DNT"))
 		if optionalQuery != "" {
 			ideaImages = ideaImages.WithTags(idea.ParseClumpedTags(optionalQuery))
 			if len(ideaImages) == 0 {
@@ -401,8 +401,8 @@ func RenameTag(from, to string) {
 			continue
 		}
 		idea := quac.NewIdeaFromFilename(origFn, true)
-		fromTag := quac.ParseTagFromString(from)
-		toTag := quac.ParseTagFromString(from)
+		fromTag := quac.ParseFirstTagFromString(from)
+		toTag := quac.ParseFirstTagFromString(to)
 		(&idea).RenameTag(fromTag, toTag)
 		(&idea).UpdateFilename()
 
@@ -427,7 +427,7 @@ func DestroyTag(tag string) {
 			continue
 		}
 		idea := quac.NewIdeaFromFilename(origFn, true)
-		(&idea).RemoveTag(quac.ParseTagFromString(tag))
+		(&idea).RemoveTags(quac.ParseTagFromString(tag))
 		(&idea).UpdateFilename()
 
 		// perform the file rename

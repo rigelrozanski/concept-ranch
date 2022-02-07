@@ -48,7 +48,9 @@ var (
 	NewTagRegWithValue       = idea.NewTagRegWithValue
 	MustNewTagRegWithValue   = idea.MustNewTagRegWithValue
 	NewTagWithout            = idea.NewTagWithout
+	NewTagContains           = idea.NewTagContains
 	ParseTagFromString       = idea.ParseTagFromString
+	ParseFirstTagFromString  = idea.ParseFirstTagFromString
 	ConcatAllContentFromTags = idea.ConcatAllContentFromTags
 	ParseClumpedTags         = idea.ParseClumpedTags
 	ParseStringTags          = idea.ParseStringTags
@@ -58,18 +60,23 @@ var (
 	IdStr                    = idea.IdStr
 
 	// variable aliases
-	ReservedTagNames = idea.ReservedTagNames
-	WithoutKeyword   = idea.WithoutKeyword
-	IdeasDir         = idea.IdeasDir
-	ConfigFile       = idea.ConfigFile
-	LastIdFile       = idea.LastIdFile
+	ReservedTagNames    = idea.ReservedTagNames
+	WithoutKeyword      = idea.WithoutKeyword
+	ContainsKeyword     = idea.ContainsKeyword
+	ContainsCIKeyword   = idea.ContainsCIKeyword
+	NoContainsKeyword   = idea.NoContainsKeyword
+	NoContainsCIKeyword = idea.NoContainsCIKeyword
+	IdeasDir            = idea.IdeasDir
+	ConfigFile          = idea.ConfigFile
+	LastIdFile          = idea.LastIdFile
 )
 
 type (
-	Idea       = idea.Idea
-	Ideas      = idea.Ideas
-	Tag        = idea.Tag
-	TagBase    = idea.TagBase
-	TagReg     = idea.TagReg
-	TagWithout = idea.TagWithout
+	Idea        = idea.Idea
+	Ideas       = idea.Ideas
+	Tag         = idea.Tag
+	TagBase     = idea.TagBase
+	TagReg      = idea.TagReg
+	TagWithout  = idea.TagWithout
+	TagContains = idea.TagContains
 )

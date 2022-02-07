@@ -16,9 +16,10 @@ import (
 //       ./config
 //       ./working_files
 //       ./working_content
-// 123456 = id
-// c123456 = consumes-id
-// YYYYMMDD = creation date
+//
+// 123456    = id
+// c123456   = consumes-id
+// YYYYMMDD  = creation date
 // eYYYYMMDD = last edited date
 // cYYYYMMDD = consumed date
 
@@ -109,6 +110,14 @@ tag ------------ a catagory to query or organize your ideas with
 				   each entry file will be included as a tag per idea, 
 				   errors if entry is raw text input
 tags ----------- a list of tags seperated by commas (such as "tag1,tag2,tag3")
+                 SPECIAL TAGS: 
+				   WITHOUT=foo        <- exclude tags 'foo' 
+				   CONTAINS=foo       <- include ideas which contain the text 'foo' 
+				   CONTAINS-CI=foo    <- same as CONTAINS but case-insensitive
+				   NO-CONTAINS=foo    <- excludes ideas which contain the text 'foo' 
+				   NO-CONTAINS-CI=foo <- same as NO-CONTAINS but case-insensitive
+				   *NOTE: Within these examples 'foo' may also be an array 
+				          in the format of ['foo','bar']
 entry ---------- either raw input text or source input as a file or directory
 force-split ---- if the text "force-split" is included, split view will be used 
                    even if only one entry is found 
