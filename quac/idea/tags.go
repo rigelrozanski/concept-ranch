@@ -6,6 +6,9 @@ import (
 	"log"
 	"path"
 	"strings"
+	"time"
+
+	cmn "github.com/rigelrozanski/common"
 )
 
 type Tag interface {
@@ -108,6 +111,19 @@ func (t TagReg) Includes(idea Idea) bool {
 }
 
 // ------------------------------------------
+
+func splitCommaIfArray(in string) []string {
+	inChs := []rune(in)
+	if len(inChs) < 3 || inChs[0] != '[' ||
+		inChs[len(inChs)-1] != ']' {
+		return []string{in}
+	}
+	// remove curly brackets, and split
+	inNoBrac := string(inChs[1 : len(inChs)-1])
+	return strings.Split(inNoBrac, ",")
+}
+
+// ------------------------------------------
 type TagWithout struct{ TagBase }
 
 var _ Tag = TagWithout{}
@@ -134,17 +150,6 @@ func (t TagWithout) Includes(idea Idea) bool {
 		}
 	}
 	return true
-}
-
-func splitCommaIfArray(in string) []string {
-	inChs := []rune(in)
-	if len(inChs) < 3 || inChs[0] != '[' ||
-		inChs[len(inChs)-1] != ']' {
-		return []string{in}
-	}
-	// remove curly brackets, and split
-	inNoBrac := string(inChs[1 : len(inChs)-1])
-	return strings.Split(inNoBrac, ",")
 }
 
 // ------------------------------------------
@@ -192,6 +197,76 @@ func (t TagContains) Includes(idea Idea) bool {
 	return res
 }
 
+// ------------------------------------------
+type TagDates struct {
+	TagBase
+	startDate time.Time
+	endDate   time.Time
+}
+
+var _ Tag = TagDates{}
+var (
+	CreatedDateKeyword   = "DATE"
+	CreatedDatesKeyword  = "DATES"
+	EditedDateKeyword    = "EDIT-DATE"
+	EditedDatesKeyword   = "EDIT-DATES"
+	ConsumedDateKeyword  = "CONSUMED-DATE"
+	ConsumedDatesKeyword = "CONSUMED-DATES"
+)
+
+func NewTagDate(keyword, date string) (Tag, error) {
+	dateTime, err := cmn.ParseYYYYdMMdDD(date)
+	if err != nil {
+		return TagDates{}, err
+	}
+	tb := NewTagBase(keyword, date)
+	return TagDates{
+		TagBase:   tb,
+		startDate: dateTime,
+		endDate:   dateTime,
+	}, nil
+}
+
+func NewTagDates(keyword, date string) (Tag, error) {
+	dateRangeStr := splitCommaIfArray(date)
+	if len(dateRangeStr) != 2 {
+		return TagDates{}, fmt.Errorf("bad dates range: %v", dateRangeStr)
+	}
+	dateTimeStart, err := cmn.ParseYYYYdMMdDD(dateRangeStr[0])
+	if err != nil {
+		return TagDates{}, err
+	}
+	dateTimeEnd, err := cmn.ParseYYYYdMMdDD(dateRangeStr[1])
+	if err != nil {
+		return TagDates{}, err
+	}
+	tb := NewTagBase(keyword, date)
+	return TagDates{
+		TagBase:   tb,
+		startDate: dateTimeStart,
+		endDate:   dateTimeEnd,
+	}, nil
+}
+
+func (t TagDates) Includes(idea Idea) bool {
+	var ideaDate time.Time
+	switch t.Name {
+	case CreatedDateKeyword, CreatedDatesKeyword:
+		ideaDate = idea.Created
+	case EditedDateKeyword, EditedDatesKeyword:
+		ideaDate = idea.Edited
+	case ConsumedDateKeyword, ConsumedDatesKeyword:
+		ideaDate = idea.Consumed
+	default:
+		panic("unknown date kind")
+	}
+	if (t.startDate.Before(ideaDate) || t.startDate.Equal(ideaDate)) &&
+		(ideaDate.Before(t.endDate) || ideaDate.Equal(t.endDate)) {
+		return true
+	}
+	return false
+}
+
 //_______________________________________________________
 
 // NOTE all tag types must be registered within this function
@@ -204,6 +279,18 @@ func ParseTagFromString(in string) []Tag {
 		case ContainsKeyword, ContainsCIKeyword,
 			NoContainsKeyword, NoContainsCIKeyword:
 			return NewTagContains(splt[0], splt[1])
+		case CreatedDateKeyword, EditedDateKeyword, ConsumedDateKeyword:
+			t, err := NewTagDate(splt[0], splt[1])
+			if err != nil {
+				log.Fatal(err)
+			}
+			return []Tag{t}
+		case CreatedDatesKeyword, EditedDatesKeyword, ConsumedDatesKeyword:
+			t, err := NewTagDates(splt[0], splt[1])
+			if err != nil {
+				log.Fatal(err)
+			}
+			return []Tag{t}
 		default:
 			t, err := NewTagRegWithValue(splt[0], splt[1])
 			if err != nil {
