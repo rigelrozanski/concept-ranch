@@ -112,7 +112,7 @@ func (t TagReg) Includes(idea Idea) bool {
 
 // ------------------------------------------
 
-func splitCommaIfArray(in string) []string {
+func splitIfArray(in string) []string {
 	inChs := []rune(in)
 	if len(inChs) < 3 || inChs[0] != '[' ||
 		inChs[len(inChs)-1] != ']' {
@@ -120,7 +120,9 @@ func splitCommaIfArray(in string) []string {
 	}
 	// remove curly brackets, and split
 	inNoBrac := string(inChs[1 : len(inChs)-1])
-	return strings.Split(inNoBrac, ",")
+	return strings.FieldsFunc(inNoBrac, func(ch rune) bool {
+		return (ch == ',' || ch == ' ')
+	})
 }
 
 // ------------------------------------------
@@ -131,7 +133,7 @@ var _ Tag = TagWithout{}
 var WithoutKeyword = "WITHOUT"
 
 func NewTagWithout(without string) []Tag {
-	cws := splitCommaIfArray(without)
+	cws := splitIfArray(without)
 	tags := []Tag{}
 	for _, cw := range cws {
 		tags = append(tags,
@@ -166,7 +168,7 @@ var NoContainsKeyword = "NO-CONTAINS"
 var NoContainsCIKeyword = "NO-CONTAINS-CI"
 
 func NewTagContains(keyword, containsWhat string) []Tag {
-	cws := splitCommaIfArray(containsWhat)
+	cws := splitIfArray(containsWhat)
 	tags := []Tag{}
 	for _, cw := range cws {
 		tb := NewTagBase(keyword, cw)
@@ -228,7 +230,7 @@ func NewTagDate(keyword, date string) (Tag, error) {
 }
 
 func NewTagDates(keyword, date string) (Tag, error) {
-	dateRangeStr := splitCommaIfArray(date)
+	dateRangeStr := splitIfArray(date)
 	if len(dateRangeStr) != 2 {
 		return TagDates{}, fmt.Errorf("bad dates range: %v", dateRangeStr)
 	}
@@ -330,9 +332,12 @@ func ConcatAllContentFromTags(tags []Tag) (content []byte, found bool) {
 	return content, true
 }
 
+// parse clumped tags seperated by spaces or commas
 func ParseClumpedTags(clumpedTags string) []Tag {
 	trim := strings.TrimPrefix(clumpedTags, ",")
 	trim = strings.TrimSuffix(trim, ",")
+	trim = strings.TrimSuffix(trim, " ")
+	trim = strings.TrimPrefix(clumpedTags, " ")
 
 	// split strings by "," not contained within square brackets
 	split := []string{}
@@ -344,7 +349,7 @@ func ParseClumpedTags(clumpedTags string) []Tag {
 		} else if ch == ']' {
 			bracCount--
 		}
-		if bracCount == 0 && ch == ',' {
+		if bracCount == 0 && (ch == ',' || ch == ' ') {
 			if len(collecting) > 0 {
 				split = append(split, collecting)
 			}

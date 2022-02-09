@@ -152,7 +152,7 @@ func main() {
 		case 2:
 			quac.ScanManual(args[1])
 		default:
-			EnsureLen(args, 1)
+			EnsureLenAtLeast(args, 1)
 		}
 	case keyTranscribe:
 		switch len(args) {
@@ -161,7 +161,7 @@ func main() {
 		case 2:
 			Transcribe(args[1])
 		default:
-			EnsureLen(args, 1)
+			EnsureLenAtLeast(args, 1)
 		}
 	case keyRetag:
 		Retag()
@@ -174,20 +174,20 @@ func main() {
 		case 3:
 			Consume(args[1], args[2])
 		default:
-			EnsureLen(args, 2)
+			EnsureLenAtLeast(args, 2)
 		}
 	case keyConsumes:
-		EnsureLen(args, 3)
+		EnsureLenAtLeast(args, 3)
 		Consumes(args[1], args[2])
 	case keyZombie:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		Zombie(args[1])
 	case keyLineage:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		Lineage(args[1])
 	case keyNew:
-		EnsureLen(args, 2)
-		NewEmptyEntry(args[1])
+		EnsureLenAtLeast(args, 2)
+		NewEmptyEntry(strings.Join(args[1:], " "))
 	case keyManualEntry:
 		if len(args) == 1 {
 			ManualEntry("")
@@ -195,36 +195,36 @@ func main() {
 			ManualEntry(args[1])
 		}
 	case keySetEncryption:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		SetEncryption(args[1])
 	case keyRm:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		RemoveByID(args[1])
 	case keyEmptyTrash:
-		EnsureLen(args, 1)
+		EnsureLenAtLeast(args, 1)
 		EmptyTrash()
 	case keyCp:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		CopyByID(args[1])
 	case keyTags:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		ListTagsByID(args[1])
 	case keyRemoveTag:
-		EnsureLen(args, 3)
+		EnsureLenAtLeast(args, 3)
 		RemoveTagByID(args[1], args[2])
 	case "rm-tags":
 		fmt.Println("didn't you mean rm-tag???")
 	case keyAddTag, keyAddTags:
-		EnsureLen(args, 3)
+		EnsureLenAtLeast(args, 3)
 		AddTagByID(args[1], args[2])
 	case keyAddTagToMany:
-		EnsureLen(args, 3)
+		EnsureLenAtLeast(args, 3)
 		AddTagToMany(args[1], args[2])
 	case keyRenameTagToMany:
-		EnsureLen(args, 3)
+		EnsureLenAtLeast(args, 3)
 		RenameTag(args[1], args[2])
 	case keyDestroyTag:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		DestroyTag(args[1])
 	case keyLsTags:
 		if len(args) == 1 {
@@ -240,7 +240,7 @@ func main() {
 		}
 	case keySelectFiles:
 		if len(args) == 1 {
-			EnsureLen(args, 2)
+			EnsureLenAtLeast(args, 2)
 		} else {
 			ListSelectAllFilesWithQuery(args[1])
 		}
@@ -249,7 +249,7 @@ func main() {
 	case keyStats:
 		quac.GetStats()
 	case keyForceSplit:
-		EnsureLen(args, 2)
+		EnsureLenAtLeast(args, 2)
 		MultiOpen(args[1], true) // quick entry force split view
 	case keyOpenWorking:
 		OpenWorking()
@@ -264,7 +264,7 @@ func main() {
 	}
 }
 
-func EnsureLen(args []string, enLen int) {
+func EnsureLenAtLeast(args []string, enLen int) {
 	if len(args) < enLen {
 		log.Fatalf("expected at least %v args", enLen)
 	}

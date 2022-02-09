@@ -1,4 +1,11 @@
  
+ - make the order of the "add-tag", "add-tags", & "keyRemoveTag" command not
+   matter (tags first, or number first would be okay)
+ - rename the "retag" command
+ - remove "tags" command
+ - use a flag for `lst` and convert lsf -> ls 
+ - default that qu lsf doesn't include consumed files
+   -> maybe only lsf -all should show files, default should be "last" 
  - add dynamic linking within the idea files like logseq has, this should:
     - [[1892]] - this will link to idea number 1892 
     - when the cursor is over 1892, need to build vim scripts so that `gd` will 
