@@ -51,54 +51,66 @@ func (t TagBase) String() string {
 }
 
 // ------------------------------------------
+var st = &specialTags{} // global instantiation used throughout
+
+type specialTags struct {
+	sts []specialTagsRoute
+}
+
+type newTagFn func(keyword, name string) ([]Tag, error)
+
+type specialTagsRoute struct {
+	newFn    newTagFn
+	keywords []string
+}
+
+// ReserveTag reserves a tag
+func (s *specialTags) registerTags(fn newTagFn, tagKeywords ...string) {
+	s.sts = append(s.sts, specialTagsRoute{fn, tagKeywords})
+}
+
+// ReserveTag reserves a tag
+func (s *specialTags) verifyUnreserved(tagName string) error {
+	for _, str := range s.sts {
+		for _, keyword := range str.keywords {
+			if tagName == keyword {
+				return fmt.Errorf("reserved tag name %v used", tagName)
+			}
+		}
+	}
+	return nil
+}
+
+// ReserveTag reserves a tag
+func (s *specialTags) getNewFn(tagKeyword string) (fn newTagFn, found bool) {
+	for _, str := range s.sts {
+		for _, keyword := range str.keywords {
+			if tagKeyword == keyword {
+				return str.newFn, true
+			}
+		}
+	}
+	return fn, false
+}
+
+// ------------------------------------------
 type TagReg struct{ TagBase }
 
 var _ Tag = TagReg{}
 
-var ReservedTagNames = []string{
-	WithoutKeyword,
-	ContainsKeyword,
-	ContainsCIKeyword,
-	NoContainsKeyword,
-	NoContainsCIKeyword,
-}
-
 // NewTagWithValue creates a new Tag with a value
-func NewTagReg(name string) (Tag, error) {
-	for _, rn := range ReservedTagNames {
-		if name == rn {
-			return TagReg{}, fmt.Errorf("reserved tag name %v used", rn)
-		}
-	}
-	tb := NewTagBase(name, "")
-	return TagReg{tb}, nil
-}
-
-func MustNewTagReg(name string) Tag {
-	t, err := NewTagReg(name)
-	if err != nil {
-		panic(err)
-	}
-	return t
-}
-
-// NewTagWithValue creates a new Tag with a value
-func NewTagRegWithValue(name, value string) (Tag, error) {
-	for _, rn := range ReservedTagNames {
-		if name == rn {
-			return TagReg{}, fmt.Errorf("reserved tag name %v used", rn)
-		}
-	}
+func NewTagReg(name, value string) ([]Tag, error) {
+	err := st.verifyUnreserved(name)
 	tb := NewTagBase(name, value)
-	return TagReg{tb}, nil
+	return []Tag{TagReg{tb}}, err
 }
 
-func MustNewTagRegWithValue(name, value string) Tag {
-	t, err := NewTagRegWithValue(name, value)
+func MustNewTagReg(name, value string) Tag {
+	t, err := NewTagReg(name, value)
 	if err != nil {
 		panic(err)
 	}
-	return t
+	return t[0]
 }
 
 func (t TagReg) Includes(idea Idea) bool {
@@ -132,17 +144,19 @@ var _ Tag = TagWithout{}
 
 var WithoutKeyword = "WITHOUT"
 
-func NewTagWithout(without string) []Tag {
+func init() { st.registerTags(NewTagWithout, WithoutKeyword) }
+
+func NewTagWithout(keyword, without string) ([]Tag, error) {
 	cws := splitIfArray(without)
 	tags := []Tag{}
 	for _, cw := range cws {
 		tags = append(tags,
 			TagWithout{
-				NewTagBase(WithoutKeyword, cw),
+				NewTagBase(keyword, cw),
 			},
 		)
 	}
-	return tags
+	return tags, nil
 }
 
 func (t TagWithout) Includes(idea Idea) bool {
@@ -155,6 +169,37 @@ func (t TagWithout) Includes(idea Idea) bool {
 }
 
 // ------------------------------------------
+type TagAll struct{ TagBase }
+
+var _ Tag = TagAll{}
+var (
+	AllAliveKeyword    = "ALL"
+	AllConsumedKeyword = "ALL-CONSUMED"
+	AllZombieKeyword   = "ALL-ZOMBIE"
+)
+
+func init() {
+	st.registerTags(NewTagAll,
+		AllAliveKeyword, AllConsumedKeyword, AllZombieKeyword)
+}
+
+func NewTagAll(keyword, _ string) ([]Tag, error) {
+	return []Tag{TagAll{NewTagBase(keyword, "")}}, nil
+}
+
+func (t TagAll) Includes(idea Idea) bool {
+	switch t.GetName() {
+	case AllAliveKeyword:
+		return idea.Cycle == CycleAlive
+	case AllConsumedKeyword:
+		return idea.Cycle == CycleConsumed
+	case AllZombieKeyword:
+		return idea.Cycle == CycleZombie
+	}
+	return true
+}
+
+// ------------------------------------------
 type TagContains struct {
 	TagBase
 	DoesNotContain  bool
@@ -162,12 +207,20 @@ type TagContains struct {
 }
 
 var _ Tag = TagContains{}
-var ContainsKeyword = "CONTAINS"
-var ContainsCIKeyword = "CONTAINS-CI"
-var NoContainsKeyword = "NO-CONTAINS"
-var NoContainsCIKeyword = "NO-CONTAINS-CI"
+var (
+	ContainsKeyword     = "CONTAINS"
+	ContainsCIKeyword   = "CONTAINS-CI"
+	NoContainsKeyword   = "NO-CONTAINS"
+	NoContainsCIKeyword = "NO-CONTAINS-CI"
+)
 
-func NewTagContains(keyword, containsWhat string) []Tag {
+func init() {
+	st.registerTags(NewTagContains,
+		ContainsKeyword, ContainsCIKeyword,
+		NoContainsKeyword, NoContainsCIKeyword)
+}
+
+func NewTagContains(keyword, containsWhat string) ([]Tag, error) {
 	cws := splitIfArray(containsWhat)
 	tags := []Tag{}
 	for _, cw := range cws {
@@ -183,7 +236,7 @@ func NewTagContains(keyword, containsWhat string) []Tag {
 			tags = append(tags, TagContains{tb, true, true})
 		}
 	}
-	return tags
+	return tags, nil
 }
 
 func (t TagContains) Includes(idea Idea) bool {
@@ -209,6 +262,7 @@ type TagDates struct {
 var _ Tag = TagDates{}
 var (
 	CreatedDateKeyword   = "DATE"
+	CreatedYearKeyword   = "YEAR"
 	CreatedDatesKeyword  = "DATES"
 	EditedDateKeyword    = "EDIT-DATE"
 	EditedDatesKeyword   = "EDIT-DATES"
@@ -216,44 +270,49 @@ var (
 	ConsumedDatesKeyword = "CONSUMED-DATES"
 )
 
-func NewTagDate(keyword, date string) (Tag, error) {
-	dateTime, err := cmn.ParseYYYYdMMdDD(date)
-	if err != nil {
-		return TagDates{}, err
-	}
-	tb := NewTagBase(keyword, date)
-	return TagDates{
-		TagBase:   tb,
-		startDate: dateTime,
-		endDate:   dateTime,
-	}, nil
+func init() {
+	st.registerTags(NewTagDates,
+		CreatedDateKeyword, CreatedYearKeyword,
+		CreatedDatesKeyword, EditedDateKeyword, EditedDatesKeyword,
+		ConsumedDateKeyword, ConsumedDatesKeyword)
 }
 
-func NewTagDates(keyword, date string) (Tag, error) {
+// can take either a single date or a [date,range]
+func NewTagDates(keyword, date string) ([]Tag, error) {
 	dateRangeStr := splitIfArray(date)
 	if len(dateRangeStr) != 2 {
-		return TagDates{}, fmt.Errorf("bad dates range: %v", dateRangeStr)
+		// assume a single date entered
+		dateRangeStr = []string{date, date}
 	}
+
+	// special logic to allow for the date to just be a year
+	if len(dateRangeStr[0]) == 4 {
+		dateRangeStr[0] = dateRangeStr[0] + "-01-01"
+	}
+	if len(dateRangeStr[1]) == 4 {
+		dateRangeStr[1] = dateRangeStr[1] + "-12-31"
+	}
+
 	dateTimeStart, err := cmn.ParseYYYYdMMdDD(dateRangeStr[0])
 	if err != nil {
-		return TagDates{}, err
+		return []Tag{}, err
 	}
 	dateTimeEnd, err := cmn.ParseYYYYdMMdDD(dateRangeStr[1])
 	if err != nil {
-		return TagDates{}, err
+		return []Tag{}, err
 	}
 	tb := NewTagBase(keyword, date)
-	return TagDates{
+	return []Tag{TagDates{
 		TagBase:   tb,
 		startDate: dateTimeStart,
 		endDate:   dateTimeEnd,
-	}, nil
+	}}, nil
 }
 
 func (t TagDates) Includes(idea Idea) bool {
 	var ideaDate time.Time
 	switch t.Name {
-	case CreatedDateKeyword, CreatedDatesKeyword:
+	case CreatedDateKeyword, CreatedYearKeyword, CreatedDatesKeyword:
 		ideaDate = idea.Created
 	case EditedDateKeyword, EditedDatesKeyword:
 		ideaDate = idea.Edited
@@ -273,40 +332,20 @@ func (t TagDates) Includes(idea Idea) bool {
 
 // NOTE all tag types must be registered within this function
 func ParseTagFromString(in string) []Tag {
+	keyword, value := in, ""
 	splt := strings.Split(in, "=")
 	if len(splt) == 2 {
-		switch splt[0] {
-		case WithoutKeyword:
-			return NewTagWithout(splt[1])
-		case ContainsKeyword, ContainsCIKeyword,
-			NoContainsKeyword, NoContainsCIKeyword:
-			return NewTagContains(splt[0], splt[1])
-		case CreatedDateKeyword, EditedDateKeyword, ConsumedDateKeyword:
-			t, err := NewTagDate(splt[0], splt[1])
-			if err != nil {
-				log.Fatal(err)
-			}
-			return []Tag{t}
-		case CreatedDatesKeyword, EditedDatesKeyword, ConsumedDatesKeyword:
-			t, err := NewTagDates(splt[0], splt[1])
-			if err != nil {
-				log.Fatal(err)
-			}
-			return []Tag{t}
-		default:
-			t, err := NewTagRegWithValue(splt[0], splt[1])
-			if err != nil {
-				log.Fatal(err)
-			}
-			return []Tag{t}
-		}
+		keyword, value = splt[0], splt[1]
 	}
-
-	t, err := NewTagReg(in)
+	fn, found := st.getNewFn(keyword)
+	if !found {
+		fn = NewTagReg
+	}
+	ts, err := fn(keyword, value)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return []Tag{t}
+	return ts
 }
 
 func ParseFirstTagFromString(in string) Tag {

@@ -70,8 +70,9 @@ func Transcribe(optionalQuery string) {
 		}
 		ideaImages = []quac.Idea{idear}
 	} else { // not an id, get by tags
+		wot, _ := idea.NewTagWithout("DNT", "")
 		ideaImages = quac.GetAllIdeasNonConsuming().
-			WithImage().WithTags(idea.NewTagWithout("DNT"))
+			WithImage().WithTags(wot)
 		if optionalQuery != "" {
 			ideaImages = ideaImages.WithTags(idea.ParseClumpedTags(optionalQuery))
 			if len(ideaImages) == 0 {
@@ -152,8 +153,8 @@ IdeaLoop:
 	}
 }
 
-func Retag() {
-	untaggedIdeas := idea.GetAllIdeasNonConsuming().WithTag(idea.MustNewTagReg("UNTAGGED"))
+func TagUntagged() {
+	untaggedIdeas := idea.GetAllIdeasNonConsuming().WithTag(idea.MustNewTagReg("UNTAGGED", ""))
 
 	fmt.Println("             ~ Instructions ~")
 	fmt.Println("enter desired tags seperated by spaces")
@@ -203,7 +204,7 @@ func Retag() {
 
 func WaterCloset() {
 	if idea.TagUsedInNonConsuming("UNTAGGED") {
-		Retag()
+		TagUntagged()
 	} else {
 		Transcribe("")
 	}
@@ -314,12 +315,12 @@ func SaveWorking() {
 	quac.SaveFromWorkingFiles([]byte{}, []byte{})
 }
 
-func parseIdStr(idStr string) uint32 {
+func parseIdStr(idStr string) (uint32, error) {
 	idI, err := quac.ParseID(idStr)
 	if err != nil {
-		log.Fatalf("error parsing id, error: %v", err)
+		return 0, fmt.Errorf("error parsing id, error: %v", err)
 	}
-	return uint32(idI)
+	return uint32(idI), nil
 }
 
 func RemoveByID(idOrIds string) {
@@ -359,24 +360,40 @@ func RemoveAcrossIDs(id1, id2 uint32) {
 }
 
 func CopyByID(idStr string) {
-	id := parseIdStr(idStr)
+	id, err := parseIdStr(idStr)
+	if err != nil {
+		log.Fatal(err)
+	}
 	quac.Open(quac.CopyByID(id))
 }
 
-func ListTagsByID(idStr string) {
-	id := parseIdStr(idStr)
-	idea := quac.GetIdeaByID(id, false)
-	fmt.Println(idea.Tags)
-}
-
+// NOTE allows for reversed inputs
 func RemoveTagByID(idStr, tagToRemove string) {
-	id := parseIdStr(idStr)
+	id, err := parseIdStr(idStr)
+	if err != nil {
+		// swap inputs
+		id, err = parseIdStr(tagToRemove)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tagToRemove = idStr
+	}
+
 	idea := quac.GetIdeaByID(id, true)
 	quac.RemoveTagByIdea(&idea, tagToRemove)
 }
 
+// NOTE allows for reversed inputs
 func AddTagByID(idStr, tagToAdd string) {
-	id := parseIdStr(idStr)
+	id, err := parseIdStr(idStr)
+	if err != nil {
+		// swap inputs
+		id, err = parseIdStr(tagToAdd)
+		if err != nil {
+			log.Fatal(err)
+		}
+		tagToAdd = idStr
+	}
 	idea := quac.GetIdeaByID(id, true)
 	quac.AddTagByIdea(&idea, tagToAdd)
 }

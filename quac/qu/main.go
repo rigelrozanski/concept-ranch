@@ -30,9 +30,9 @@ const (
 	keyCat             = "cat"
 	keyStats           = "stats"
 	keyScan            = "scan"
-	keyTranscribe      = "transcribe"
-	keyRetag           = "retag"
 	keyWaterCloset     = "wc"
+	keyTranscribe      = "transcribe"
+	keyTagUntagged     = "tag-untagged"
 	keyConsume         = "consume"
 	keyConsumes        = "consumes"
 	keyZombie          = "zombie"
@@ -43,15 +43,14 @@ const (
 	keyRm              = "rm"
 	keyEmptyTrash      = "empty-trash"
 	keyCp              = "cp"
-	keyTags            = "tags"
 	keyRemoveTag       = "rm-tag"
 	keyRenameTagToMany = "rename-tag-to-many"
 	keyAddTag          = "add-tag"
 	keyAddTagToMany    = "add-tag-to-many"
 	keyAddTags         = "add-tags"
 	keyDestroyTag      = "destroy-tag"
-	keyLsTags          = "lst"
-	keyLsFiles         = "lsf"
+	keyCommonTags      = "common-tags"
+	keyLS              = "ls"
 	keySelectFiles     = "sel"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
@@ -63,40 +62,42 @@ const (
 🦆 🦆 🦆 ✍️  🏁
 
 qu ---------------------------------------> edit the tagless master idea in vim
-qu qe <tags...> <entry> ------------------> quick entry to a new idea
 qu [force-split] <query> -----------------> open a vim tab with the contents of the query 
+qu new <tags> ----------------------------> create a new idea with the provided tags
 qu cat <query> ---------------------------> print idea(s) contents' to console
-qu scan <dir/file> [tags] ----------------> add provided image(s) to untranscribed ideas, 
-                                              optionally appending tags to all
-qu retag ---------------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
-qu transcribe [query] --------------------> transcribe either a random untranscribed image 
+qu ls [query] ----------------------------> list ideas which match the [query], if no query is
+                                              provided list recently opened ideas
+qu cp <id> -------------------------------> duplicate an idea at the provided id
+qu rm <id1-id2> --------------------------> remove an idea by id or id-range to the trash can
+qu empty-trash ---------------------------> empty the trash can optionally appending tags to all
                                               or specific image(s) by query
-qu wc ------------------------------------> (water closet) retag all then transcribe
+-- ENTRY --
+qu scan <dir/file> [tags] ----------------> add provided image(s) to untranscribed ideas, 
+qu tag-untagged --------------------------> iterate and add tags to ideas with the tag "UNTAGGED"
+qu transcribe [query] --------------------> transcribe either a random untranscribed image 
+qu wc ------------------------------------> (water closet) tag-untagged all then transcribe
+qu manual-entry [tags] -------------------> interactive manual entry common tags may be entered 
 qu consume <id> [entry] ------------------> quick consumes the given id into a new entry
 qu consumes <consumed-id> <consumer-id> --> set the consumption of existing ideas
 qu zombie <id> ---------------------------> "unconsume" an idea based on id
 qu lineage <id> --------------------------> show the consumtion lineage  
-qu new <tags> ----------------------------> create a new idea with the provided tags
-qu manual-entry [tags] -------------------> interactive manual entry common tags may be entered 
-                                              with this command
-qu set-encryption <id> -------------------> set encryption of existing idea
-qu rm <id1-id2> --------------------------> remove an idea by id or id-range to the trash can
-qu empty-trash ---------------------------> empty the trash can 
-qu cp <id> -------------------------------> duplicate an idea at the provided id
-qu tags <id> -----------------------------> list the tags for a given id
+
+-- TAGS MANAGEMENT --
+qu common-tags [tags] --------------------> list all tags which share a set of common [tags]
 qu rm-tag <id> <tag> ---------------------> remove a tag from an idea by id
 qu add-tags <id> <tags> ------------------> add (a) tag(s) to an idea by id (alias: add-tag)
 qu add-tag-to-many <newtag> <tags..> -----> add a <newtag> to all ideas with any of <tags...>
 qu rename-tag-to-many <from-tag> <to-tag> > rename all instances of a tag for all ideas
 qu destroy-tag <tag> ---------------------> remove all instances of a tag for all ideas
+
+-- OTHER --
+qu qe <tags...> <entry> ------------------> quick entry to a new idea
+qu set-encryption <id> -------------------> set encryption of existing idea
 qu open-working --------------------------> open the working split files to manually correct mistakes
 qu save-working --------------------------> save the working split files to manually correct mistakes
-qu lst [tags] ----------------------------> list all tags which share a set of common [tags]
-qu lsf [query] ---------------------------> list all files, optionally which contain provided tags, 
-                                              or the last 9 viewed
-qu sel [tags]-----------------------------> select the idea from the tags (in cui)
 qu pdf-backup ----------------------------> backup active ideas to a printable pdf
 qu stats ---------------------------------> statistics on your ideas
+qu sel [tags]-----------------------------> select the idea from the tags (in cui)
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
@@ -163,8 +164,8 @@ func main() {
 		default:
 			EnsureLenAtLeast(args, 1)
 		}
-	case keyRetag:
-		Retag()
+	case keyTagUntagged:
+		TagUntagged()
 	case keyWaterCloset:
 		WaterCloset()
 	case keyConsume:
@@ -206,9 +207,6 @@ func main() {
 	case keyCp:
 		EnsureLenAtLeast(args, 2)
 		CopyByID(args[1])
-	case keyTags:
-		EnsureLenAtLeast(args, 2)
-		ListTagsByID(args[1])
 	case keyRemoveTag:
 		EnsureLenAtLeast(args, 3)
 		RemoveTagByID(args[1], args[2])
@@ -226,15 +224,15 @@ func main() {
 	case keyDestroyTag:
 		EnsureLenAtLeast(args, 2)
 		DestroyTag(args[1])
-	case keyLsTags:
+	case keyCommonTags:
 		if len(args) == 1 {
 			ListAllTags()
 		} else {
 			ListAllTagsWithTags(args[1])
 		}
-	case keyLsFiles:
+	case keyLS:
 		if len(args) == 1 {
-			ListAllFiles()
+			ListAllFilesLast(false)
 		} else {
 			ListAllFilesWithQuery(args[1])
 		}

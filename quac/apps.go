@@ -11,8 +11,8 @@ import (
 
 func appTags(application string) []idea.Tag {
 	return []idea.Tag{
-		idea.MustNewTagReg("external-use"),
-		idea.MustNewTagRegWithValue("app", application),
+		idea.MustNewTagReg("external-use", ""),
+		idea.MustNewTagReg("app", application),
 	}
 }
 

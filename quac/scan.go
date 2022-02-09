@@ -78,18 +78,18 @@ func Scan(pathToImageOrDir, opTag string) {
 
 	// retrieve calibration colours directly from ideas
 	var caliNN, caliQP, caliHP, caliQT colour.Colour
-	tags := []idea.Tag{idea.MustNewTagReg("scan-calibration")}
+	tags := []idea.Tag{idea.MustNewTagReg("scan-calibration", "")}
 	imagesIdeas := GetAllIdeas().WithImage().WithTags(tags)
 	for _, idear := range imagesIdeas {
 		avgCol := getAvgColourFromFile(idear.Path())
 		switch {
-		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "noon")):
+		case idear.HasTag(idea.MustNewTagReg("orientation", "noon")):
 			caliNN = avgCol
-		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "quarter-past")):
+		case idear.HasTag(idea.MustNewTagReg("orientation", "quarter-past")):
 			caliQP = avgCol
-		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "half-past")):
+		case idear.HasTag(idea.MustNewTagReg("orientation", "half-past")):
 			caliHP = avgCol
-		case idear.HasTag(idea.MustNewTagRegWithValue("orientation", "quarter-to")):
+		case idear.HasTag(idea.MustNewTagReg("orientation", "quarter-to")):
 			caliQT = avgCol
 		}
 	}

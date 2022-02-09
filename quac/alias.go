@@ -45,10 +45,10 @@ var (
 	NewTagBase               = idea.NewTagBase
 	NewTagReg                = idea.NewTagReg
 	MustNewTagReg            = idea.MustNewTagReg
-	NewTagRegWithValue       = idea.NewTagRegWithValue
-	MustNewTagRegWithValue   = idea.MustNewTagRegWithValue
 	NewTagWithout            = idea.NewTagWithout
+	NewTagAll                = idea.NewTagAll
 	NewTagContains           = idea.NewTagContains
+	NewTagDates              = idea.NewTagDates
 	ParseTagFromString       = idea.ParseTagFromString
 	ParseFirstTagFromString  = idea.ParseFirstTagFromString
 	ConcatAllContentFromTags = idea.ConcatAllContentFromTags
@@ -60,15 +60,24 @@ var (
 	IdStr                    = idea.IdStr
 
 	// variable aliases
-	ReservedTagNames    = idea.ReservedTagNames
-	WithoutKeyword      = idea.WithoutKeyword
-	ContainsKeyword     = idea.ContainsKeyword
-	ContainsCIKeyword   = idea.ContainsCIKeyword
-	NoContainsKeyword   = idea.NoContainsKeyword
-	NoContainsCIKeyword = idea.NoContainsCIKeyword
-	IdeasDir            = idea.IdeasDir
-	ConfigFile          = idea.ConfigFile
-	LastIdFile          = idea.LastIdFile
+	WithoutKeyword       = idea.WithoutKeyword
+	AllAliveKeyword      = idea.AllAliveKeyword
+	AllConsumedKeyword   = idea.AllConsumedKeyword
+	AllZombieKeyword     = idea.AllZombieKeyword
+	ContainsKeyword      = idea.ContainsKeyword
+	ContainsCIKeyword    = idea.ContainsCIKeyword
+	NoContainsKeyword    = idea.NoContainsKeyword
+	NoContainsCIKeyword  = idea.NoContainsCIKeyword
+	CreatedDateKeyword   = idea.CreatedDateKeyword
+	CreatedYearKeyword   = idea.CreatedYearKeyword
+	CreatedDatesKeyword  = idea.CreatedDatesKeyword
+	EditedDateKeyword    = idea.EditedDateKeyword
+	EditedDatesKeyword   = idea.EditedDatesKeyword
+	ConsumedDateKeyword  = idea.ConsumedDateKeyword
+	ConsumedDatesKeyword = idea.ConsumedDatesKeyword
+	IdeasDir             = idea.IdeasDir
+	ConfigFile           = idea.ConfigFile
+	LastIdFile           = idea.LastIdFile
 )
 
 type (
@@ -78,5 +87,7 @@ type (
 	TagBase     = idea.TagBase
 	TagReg      = idea.TagReg
 	TagWithout  = idea.TagWithout
+	TagAll      = idea.TagAll
 	TagContains = idea.TagContains
+	TagDates    = idea.TagDates
 )
