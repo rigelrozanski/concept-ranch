@@ -1,1 +1,3 @@
-/Users/YOURNAME/go/src/keybase/private/YOURNAME/thranch
+qu-dir=/Users/YOURNAME/Desktop/ranch
+scan-dir=/Volumes/SOMESDCARD
+delete-when-scan=FALSE

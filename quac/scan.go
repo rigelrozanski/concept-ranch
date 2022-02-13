@@ -47,16 +47,19 @@ var LastScanCalibrationFile string
 func Scan(pathToImageOrDir, opTag string) {
 
 	image.RegisterFormat("png", "png", png.Decode, png.DecodeConfig)
+	image.RegisterFormat("PNG", "png", png.Decode, png.DecodeConfig)
 	image.RegisterFormat("jpg", "jpg", jpeg.Decode, jpeg.DecodeConfig)
+	image.RegisterFormat("JPG", "jpg", jpeg.Decode, jpeg.DecodeConfig)
 	image.RegisterFormat("jpeg", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
+	image.RegisterFormat("JPEG", "jpeg", jpeg.Decode, jpeg.DecodeConfig)
 
 	fod, err := os.Stat(pathToImageOrDir)
 	if err != nil {
 		log.Fatal(err)
 	}
 	isDir := fod.Mode().IsDir()
-	var imgFiles []string
 
+	var imgFiles []string
 	if isDir {
 		files, err := ioutil.ReadDir(pathToImageOrDir)
 		if err != nil {

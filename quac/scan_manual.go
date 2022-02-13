@@ -6,11 +6,11 @@ import (
 	"image/color"
 	"image/draw"
 	"image/png"
+	"io/ioutil"
 	"log"
 	"math"
 	"os"
 	"path"
-	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/faiface/pixel"
@@ -26,9 +26,10 @@ func loadPicture(path string) (pic pixel.Picture, img image.Image, err error) {
 		return nil, img, err
 	}
 	defer file.Close()
+
 	img, _, err = image.Decode(file)
 	if err != nil {
-		return nil, img, err
+		return nil, img, fmt.Errorf("error decoding: %v; error: %v", path, err)
 	}
 	return pixel.PictureDataFromImage(img), img, nil
 }
@@ -54,12 +55,43 @@ func concatImage(img1, img2 image.Image) image.Image {
 	return concatImg
 }
 
-var scanimgFilepath string
+var (
+	scanimgFilepath string
+	quit            = false
+)
+
+const (
+	rotated0deg   byte = 0x00
+	rotated90deg  byte = 0x01
+	rotated180deg byte = 0x02
+	rotated270deg byte = 0x03
+)
+
+func getRotatedPos(win *pixelgl.Window, pos pixel.Vec, rotation byte) pixel.Vec {
+	pos2 := pixel.Vec{}
+	switch rotation {
+	case rotated0deg:
+		pos2.X = pos.X
+		pos2.Y = pos.Y
+	case rotated90deg:
+		diff := math.Abs(win.Bounds().Max.Y-win.Bounds().Max.X) / 2
+		pos2.X = diff + pos.Y
+		pos2.Y = win.Bounds().Max.X - diff - pos.X
+	case rotated180deg:
+		pos2.X = win.Bounds().Max.X - pos.X
+		pos2.Y = win.Bounds().Max.Y - pos.Y
+	case rotated270deg:
+		diff := math.Abs(win.Bounds().Max.Y-win.Bounds().Max.X) / 2
+		pos2.X = win.Bounds().Max.Y + diff - pos.Y
+		pos2.Y = -diff + pos.X
+	}
+	return pos2
+}
 
 func run() {
 
 	cfg := pixelgl.WindowConfig{
-		Title:  "Manual Scan In...",
+		Title:  "Manual Scan In... q=quit,r=rotate,mouse-drag=create-box",
 		Bounds: pixel.R(0, 0, 1100, 850),
 		VSync:  true,
 	}
@@ -71,9 +103,7 @@ func run() {
 	imd := imdraw.New(nil)
 
 	if scanimgFilepath == "" {
-		cmn.Execute(fmt.Sprintf("open %v/quick_portrait_scan.kmtrigger", QuDir))
-		time.Sleep(60 * time.Second)
-		scanimgFilepath = path.Join(os.ExpandEnv("$HOME"), "Desktop", "auto_scan.png")
+		// XXX todo new logic which selects the default scan path from config
 	}
 
 	pic, img, err := loadPicture(scanimgFilepath)
@@ -97,16 +127,20 @@ func run() {
 	imgOffset := pixel.V(widthOffset, heightOffset)
 
 	var (
-		boxes                      [][]pixel.Vec // of the []pixel.Vex indexes 0 & 1 are rectangle coordinates of the box
-		boxesIsFlipped             []bool
+		// boxes of the []pixel.Vex indexes 0 & 1 are rectangle coordinates of the box
+		boxes                      [][]pixel.Vec
+		boxesRotation              []byte
 		boxesIsConnectedToPrevious []bool
 
 		camPos  = pixel.ZV
 		camZoom = 1.0
 		//camSpeed     = 100.0
 		//camZoomSpeed = 1.2
-		rotation      = 0.0
-		flipped       = false
+		camRotation = 0.0
+
+		rotation byte = rotated0deg
+		//flipped          = false
+
 		mouseDragging = false
 	)
 
@@ -118,42 +152,73 @@ func run() {
 		if win.JustPressed(pixelgl.MouseButtonLeft) {
 			mouseDragging = true
 			pos := win.MousePosition().Scaled(1 / camZoom).Add(camPos)
-			if flipped {
-				pos.X = win.Bounds().Max.X - pos.X
-				pos.Y = win.Bounds().Max.Y - pos.Y
-			}
-			boxes = append(boxes, []pixel.Vec{pos})
-			boxesIsFlipped = append(boxesIsFlipped, flipped)
+			//if flipped {
+			//    pos.X = win.Bounds().Max.X - pos.X
+			//    pos.Y = win.Bounds().Max.Y - pos.Y
+			//}
+			pos2 := getRotatedPos(win, pos, rotation)
+			boxes = append(boxes, []pixel.Vec{pos2})
+			boxesRotation = append(boxesRotation, rotation)
 		}
 		if win.JustReleased(pixelgl.MouseButtonLeft) {
 			mouseDragging = false
 			pos := win.MousePosition().Scaled(1 / camZoom).Add(camPos)
-			if flipped {
-				pos.X = win.Bounds().Max.X - pos.X
-				pos.Y = win.Bounds().Max.Y - pos.Y
-			}
-			boxes[len(boxes)-1] = append(boxes[len(boxes)-1], pos)
+			//if flipped {
+			//    pos.X = win.Bounds().Max.X - pos.X
+			//    pos.Y = win.Bounds().Max.Y - pos.Y
+			//}
+
+			pos2 := getRotatedPos(win, pos, rotation)
+			boxes[len(boxes)-1] = append(boxes[len(boxes)-1], pos2)
 			isConnected := win.Pressed(pixelgl.KeyC)
 			boxesIsConnectedToPrevious = append(boxesIsConnectedToPrevious, isConnected)
 		}
 
 		if win.JustPressed(pixelgl.KeyR) && !mouseDragging {
-			rotation += math.Pi
-			flipped = !flipped
+			//camRotation += math.Pi / 2
+			//flipped = !flipped
+			switch rotation {
+			case rotated0deg: // DONT ASK ME WHY, we need this order to go clockwise
+				camRotation = 3 * math.Pi / 2
+				rotation = rotated270deg
+			case rotated270deg:
+				camRotation = math.Pi
+				rotation = rotated180deg
+			case rotated180deg:
+				camRotation = math.Pi / 2
+				rotation = rotated90deg
+			case rotated90deg:
+				camRotation = 0
+				rotation = rotated0deg
+			}
+		}
+		if win.JustPressed(pixelgl.KeyQ) && !mouseDragging {
+			quit = true
+			err = os.RemoveAll(scanDir)
+			if err != nil {
+				log.Fatal(err)
+			}
+			win.Destroy()
+			return
 		}
 
-		if !flipped {
-			imd.SetMatrix(cam)
-		} else {
-			imd.SetMatrix(cam.Rotated(win.Bounds().Center(), rotation))
-		}
+		//if !flipped {
+		//    imd.SetMatrix(cam)
+		//} else {
+		imd.SetMatrix(cam.Rotated(win.Bounds().Center(), camRotation))
+		//}
 
 		imd.Clear()
 		for i, box := range boxes {
-			if boxesIsFlipped[i] {
+			switch boxesRotation[i] {
+			case rotated0deg:
 				imd.Color = colornames.Blue
-			} else {
+			case rotated90deg:
+				imd.Color = colornames.Green
+			case rotated180deg:
 				imd.Color = colornames.Red
+			case rotated270deg:
+				imd.Color = colornames.Orange
 			}
 			if len(box) == 2 {
 				imd.Push(box[0], box[1])
@@ -168,11 +233,13 @@ func run() {
 			}
 			if len(box) == 1 {
 				pos := win.MousePosition().Scaled(1 / camZoom).Add(camPos)
-				if flipped {
-					pos.X = win.Bounds().Max.X - pos.X
-					pos.Y = win.Bounds().Max.Y - pos.Y
-				}
-				imd.Push(box[0], pos)
+				//if flipped {
+				//    pos.X = win.Bounds().Max.X - pos.X
+				//    pos.Y = win.Bounds().Max.Y - pos.Y
+				//}
+
+				pos2 := getRotatedPos(win, pos, rotation)
+				imd.Push(box[0], pos2)
 				imd.Rectangle(5)
 			}
 		}
@@ -201,7 +268,7 @@ func run() {
 		// undo
 		if win.JustPressed(pixelgl.KeyU) {
 			boxes = boxes[:len(boxes)-1]
-			boxesIsFlipped = boxesIsFlipped[:len(boxesIsFlipped)-1]
+			boxesRotation = boxesRotation[:len(boxesRotation)-1]
 		}
 
 		if win.JustPressed(pixelgl.KeyEnter) {
@@ -225,12 +292,23 @@ func run() {
 					continue
 				}
 
-				if boxesIsFlipped[i] {
+				//if boxesIsFlipped[i] {
+				//simg = imaging.Rotate(simg, 180, color.RGBA{0, 0, 0, 1})
+				//}
+
+				switch boxesRotation[i] {
+				case rotated0deg:
+				case rotated90deg:
+					simg = imaging.Rotate(simg, 90, color.RGBA{0, 0, 0, 1})
+				case rotated180deg:
 					simg = imaging.Rotate(simg, 180, color.RGBA{0, 0, 0, 1})
+				case rotated270deg:
+					simg = imaging.Rotate(simg, 270, color.RGBA{0, 0, 0, 1})
 				}
 
 				imgs = append(imgs, simg)
-				imgsIsConnectedToPrevious = append(imgsIsConnectedToPrevious, boxesIsConnectedToPrevious[i])
+				imgsIsConnectedToPrevious = append(
+					imgsIsConnectedToPrevious, boxesIsConnectedToPrevious[i])
 			}
 
 			// save files
@@ -303,14 +381,13 @@ func run() {
 			if err != nil {
 				log.Fatal(err)
 			}
-
 			win.Destroy()
 			return
 		}
 
 		win.Clear(colornames.Aliceblue)
 		doc.Draw(win, pixel.IM.Moved(win.Bounds().Center()).
-			Rotated(win.Bounds().Center(), rotation).
+			Rotated(win.Bounds().Center(), camRotation).
 			Scaled(win.Bounds().Center(), imgScale),
 		)
 		imd.Draw(win)
@@ -318,7 +395,49 @@ func run() {
 	}
 }
 
-func ScanManual(scanFile string) {
-	scanimgFilepath = scanFile
-	pixelgl.Run(run)
+func ScanManual(pathToImageOrDir string) {
+
+	if pathToImageOrDir == "" && len(DefaultScanDir) > 0 {
+		pathToImageOrDir = DefaultScanDir
+	}
+
+	fod, err := os.Stat(pathToImageOrDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	isDir := fod.Mode().IsDir()
+
+	var imgFiles []string
+	if isDir {
+		files, err := ioutil.ReadDir(pathToImageOrDir)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, file := range files {
+			if !file.IsDir() && file.Name()[0] != '.' {
+				filepath := path.Join(pathToImageOrDir, file.Name())
+				imgFiles = append(imgFiles, filepath)
+			}
+		}
+		if len(imgFiles) == 0 {
+			log.Fatal("directory is empty")
+		}
+	} else {
+		imgFiles = []string{pathToImageOrDir}
+	}
+
+	for _, imgFile := range imgFiles {
+		if quit {
+			break
+		}
+		scanimgFilepath = imgFile
+		pixelgl.Run(run)
+		if quit {
+			break
+		}
+		if DeleteWhenScanning {
+			_ = os.Remove(imgFile)
+		}
+	}
 }

@@ -4,13 +4,23 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 
 	cmn "github.com/rigelrozanski/common"
 	"github.com/rigelrozanski/thranch/quac/idea"
 )
 
 // directory name where boards are stored in repo
-var QuDir, TrashCanDir, QuFile, LogFile, WorkingFnsFile, WorkingContentFile string
+var (
+	QuDir              string
+	DefaultScanDir     string
+	DeleteWhenScanning bool = false
+	TrashCanDir        string
+	QuFile             string
+	LogFile            string
+	WorkingFnsFile     string
+	WorkingContentFile string
+)
 
 // load config and set global file directories
 func Initialize(thranchConfigPath string) {
@@ -21,6 +31,20 @@ func Initialize(thranchConfigPath string) {
 	}
 
 	QuDir = lines[0]
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "qu-dir="):
+			QuDir = strings.TrimPrefix(line, "qu-dir=")
+		case strings.HasPrefix(line, "scan-dir="):
+			DefaultScanDir = strings.TrimPrefix(line, "scan-dir=")
+		case strings.HasPrefix(line, "delete-when-scan="):
+			dws := strings.TrimPrefix(line, "scan-dir=")
+			if dws == "true" || dws == "TRUE" || dws == "True" {
+				DeleteWhenScanning = true
+			}
+		}
+	}
+
 	idea.IdeasDir = path.Join(QuDir, "ideas")
 	TrashCanDir = path.Join(QuDir, "trash")
 	QuFile = path.Join(QuDir, "qu")
