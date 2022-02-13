@@ -563,9 +563,41 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 		return query
 	}
 
+	termWidth := 100
+	if term.IsTerminal(0) {
+		var err error
+		termWidth, _, err = term.GetSize(0)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	// for fitting all the ideas into a small space
+	maxDisplayIdeas := 30
+	displayedIdeasStartIndex := 0
+	displayedIdeasList := []string{">>> OPEN ALL SIMULTANEOUSLY"}
+	for _, idea := range ideas {
+
+		// Trucate the size if it's too big for the term
+		// TODO wrap it and account for the diff
+		toAdd := idea.Filename
+		if len([]rune(toAdd)) >= termWidth {
+			// NOTE need to subtract so much more than the
+			// actual width because of invisible characters
+			// used for the colouring of the line
+			toAdd = string([]rune(toAdd)[:termWidth-14])
+			toAdd += "..."
+		}
+		displayedIdeasList = append(displayedIdeasList, toAdd)
+	}
+
 	colorBlue := "\033[34m"
 	colorReset := "\033[0m"
-	lenList := len(ideas) + 3 // +1  for the "open all" line, +1 for usage line
+	lenList := len(ideas)
+	if lenList > maxDisplayIdeas {
+		lenList = maxDisplayIdeas
+	}
+	lenList += 2 // +1  for the "open all" line, +1 for usage line
 	selected := 0
 
 	fmt.Print("\033[?25l") // hide cursor
@@ -576,36 +608,51 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 		fmt.Print(fmt.Sprintf("\033[%vB", lenList))
 	}()
 
+	fmt.Printf("\n")
+	toPrintPrevious := []string{}
 	for {
-		fmt.Println("navigation: 'j'/'k', select: 'enter', escape: 'esc'/'q'\n")
+		toPrint := []string{"navigation: 'j'/'k', select: 'enter', escape: 'esc'/'q'", ""}
 
-		textToDisplay := ">>> OPEN ALL SIMULTANEOUSLY "
-		if selected == 0 {
-			fmt.Println(string(colorBlue), textToDisplay, string(colorReset))
-		} else { // print normally
-			fmt.Println(" " + textToDisplay)
+		startOffset, endOffset := 0, 0 // need this to keep everything with a constant maxDisplayIdeas
+		displayStartExpand, displayEndExpand := false, false
+		if displayedIdeasStartIndex > 0 {
+			displayStartExpand = true
+			startOffset = 1
+			toPrint = append(toPrint, " ...")
+		}
+		if displayedIdeasStartIndex+maxDisplayIdeas < len(displayedIdeasList) {
+			displayEndExpand = true
+			endOffset = 1
 		}
 
-		for i, idea := range ideas {
-			quac.PrependLast(idea.Id)
-			textToDisplay := idea.Filename
-			//if showFilepath {
-			//textToDisplay = idea.Path()
-			//}
-			textToDisplay += "      " // add extra space for visual errors once in a blue moon
-
-			// print text
-			if i+1 == selected {
-				// adds an extra space at the beginning for some reason
-				fmt.Println(string(colorBlue), textToDisplay, string(colorReset))
-			} else { // print normally
-				fmt.Println(" " + textToDisplay)
+		for i := displayedIdeasStartIndex + startOffset; i < displayedIdeasStartIndex+maxDisplayIdeas-endOffset; i++ {
+			if i >= len(displayedIdeasList) {
+				break
 			}
 
+			textToDisplay := displayedIdeasList[i]
+			if i == selected {
+				toPrint = append(toPrint, " "+string(colorBlue)+textToDisplay+string(colorReset))
+			} else {
+				toPrint = append(toPrint, " "+textToDisplay)
+			}
+		}
+		if displayEndExpand {
+			toPrint = append(toPrint, " ...")
 		}
 
-		// move the cursor back up for the next print
-		fmt.Print(fmt.Sprintf("\033[%vA", lenList))
+		//whiteout the previous lines
+		for _, tpl := range toPrintPrevious {
+			fmt.Printf("%"+fmt.Sprintf("%v", len(tpl))+"x\n", "")
+		}
+		fmt.Print(fmt.Sprintf("\033[%vA", len(toPrintPrevious))) // move the cursor back up for the next print
+		toPrintPrevious = toPrint
+
+		//print these lines
+		for _, tp := range toPrint {
+			fmt.Printf("%s\n", tp)
+		}
+		fmt.Print(fmt.Sprintf("\033[%vA", len(toPrint))) // move the cursor back up for the next print
 
 		// scan for user input
 		ch, err := GetCharJustHit()
@@ -619,13 +666,20 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 		case ch == 'k' || ch == 'h':
 			if selected > 0 {
 				selected--
+				if displayStartExpand && selected < displayedIdeasStartIndex+startOffset {
+					displayedIdeasStartIndex = selected - startOffset
+				}
 			}
 			// down or right (arrow keys and vim)
 		case ch == 'j' || ch == 'l':
-			if selected < lenList-1 {
+			if selected < len(ideas) {
 				selected++
+				if displayEndExpand && selected > displayedIdeasStartIndex+maxDisplayIdeas-endOffset-1 {
+					displayedIdeasStartIndex = selected - maxDisplayIdeas + endOffset + 1
+				}
 			}
 		case ch == '\r': // enter
+			fmt.Printf("\n")
 			switch selected {
 			case 0:
 				return query // "all" of the original query
@@ -633,6 +687,7 @@ func RefineQueryCUI(query string) (refinedQuery string) {
 				return fmt.Sprintf("%v", ideas[selected-1].Id)
 			}
 		case ch == '\033' || ch == 'q' || ch == 'c': // escape key or 'q'
+			fmt.Printf("\n")
 			return ""
 		}
 	}
