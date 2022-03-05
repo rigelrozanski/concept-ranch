@@ -51,6 +51,7 @@ const (
 	keyDestroyTag      = "destroy-tag"
 	keyCommonTags      = "common-tags"
 	keyLS              = "ls"
+	keyLSFile          = "lsfl"
 	keySelectFiles     = "sel"
 	keyPDFBackup       = "pdf-backup"
 	keyForceSplit      = "force-split"
@@ -98,6 +99,7 @@ qu save-working --------------------------> save the working split files to manu
 qu pdf-backup ----------------------------> backup active ideas to a printable pdf
 qu stats ---------------------------------> statistics on your ideas
 qu sel [tags]-----------------------------> select the idea from the tags (in cui)
+qu lsfl [query] --------------------------> list all files by file location
 
 Explanation of some terms:
 [...], <...> --- optional input, required input
@@ -235,6 +237,12 @@ func main() {
 			ListAllFilesLast(false)
 		} else {
 			ListAllFilesWithQuery(args[1])
+		}
+	case keyLSFile:
+		if len(args) == 1 {
+			ListAllFilesByLocation()
+		} else {
+			ListAllFilesByLocationWithQuery(args[1])
 		}
 	case keySelectFiles:
 		if len(args) == 1 {

@@ -1,4 +1,6 @@
  
+ - return responses for all commands
+    - add-tag needs a response showing the new idea file
  - add dynamic linking within the idea files like logseq has, this should:
     - [[1892]] - this will link to idea number 1892 
     - when the cursor is over 1892, need to build vim scripts so that `gd` will 

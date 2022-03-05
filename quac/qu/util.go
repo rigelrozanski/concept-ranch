@@ -522,6 +522,16 @@ func IsIDorIDRange(query string) (idStart, idEnd uint32, isIDorIDRange bool) {
 	return idStart, idEnd, true
 }
 
+func ListAllFilesByLocation() {
+	ideas := quac.GetAllIdeas()
+	if len(ideas) == 0 {
+		fmt.Println("no ideas found")
+	}
+	for _, idea := range ideas {
+		fmt.Println(idea.Path())
+	}
+}
+
 func ListSelectAllFilesWithQueryNoLast(query string) {
 	if query == "last" {
 		MultiOpen("last", false)
