@@ -13,7 +13,7 @@ require (
 	github.com/jung-kurt/gofpdf v1.16.2
 	github.com/marcusolsson/tui-go v0.4.0
 	github.com/rigelrozanski/common v0.0.0-20200204033706-d44f43da9cbb
-	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8
+	golang.org/x/image v0.5.0
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 )
 
